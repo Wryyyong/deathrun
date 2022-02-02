@@ -84,22 +84,18 @@ RunConsoleCommand("sv_sticktoground", 0)
 RunConsoleCommand("sv_airaccelerate", 0)
 RunConsoleCommand("sv_gravity", 800)
 
-local playermodels = {
-	"models/player/group01/male_01.mdl",
-	"models/player/group01/male_02.mdl",
-	"models/player/group01/male_03.mdl",
-	"models/player/group01/male_04.mdl",
-	"models/player/group01/male_05.mdl",
-	"models/player/group01/male_06.mdl",
-	"models/player/group01/male_07.mdl",
-	"models/player/group01/male_08.mdl",
-	"models/player/group01/male_09.mdl",
-	"models/player/group01/female_01.mdl",
-	"models/player/group01/female_02.mdl",
-	"models/player/group01/female_03.mdl",
-	"models/player/group01/female_04.mdl",
-	"models/player/group01/female_05.mdl",
-	"models/player/group01/female_06.mdl",
+local modelsDeath = {
+	"models/player/arctic.mdl",
+	"models/player/guerilla.mdl",
+	"models/player/leet.mdl",
+	"models/player/phoenix.mdl"
+}
+
+local modelsRunner = {
+	"models/player/gasmask.mdl",
+	"models/player/riot.mdl",
+	"models/player/urban.mdl",
+	"models/player/swat.mdl"
 }
 
 local defaultFlags = FCVAR_SERVER_CAN_EXECUTE + FCVAR_REPLICATED + FCVAR_NOTIFY + FCVAR_ARCHIVE
@@ -118,9 +114,6 @@ hook.Add("PlayerDisconnected", "DeathrunPlayerDisconnectMessage", function( ply 
 	DR:ChatBroadcast( ply:Nick().." has left the server." )
 end)
 
-CreateConVar("deathrun_death_model", "models/player/monk.mdl", defaultFlags, "The default model for the Deaths." )
-local deathModel = GetConVar( "deathrun_death_model" )
-
 local dropWeaponsOnDeath = CreateConVar("deathrun_drop_weapons_on_death", 1, defaultFlags, "Should players drop weapons on death?")
 
 hook.Add("PlayerSpawn", "DeathrunSetPlayerModels", function( ply )
@@ -128,14 +121,9 @@ hook.Add("PlayerSpawn", "DeathrunSetPlayerModels", function( ply )
 	--if dropWeaponsOnDeath
 
 	if ply:Team() == TEAM_DEATH then
-		local mdl = deathModel:GetString()
-		if string.sub( mdl, -4, -1 ) == ".mdl" then
-			ply:SetModel( mdl )
-		else
-			print("The default death model is not a valid .mdl file ('"..mdl.."'). Please change the deathrun_death_model ConVar.")
-		end
+		ply:SetModel( table.Random( modelsDeath ) )
 	elseif ply:Team() == TEAM_RUNNER then
-	    ply:SetModel( table.Random( playermodels ) )
+	    ply:SetModel( table.Random( modelsRunner ) )
 	end
 
 	local mdl = hook.Call("ChangePlayerModel", nil, ply)
@@ -144,7 +132,7 @@ hook.Add("PlayerSpawn", "DeathrunSetPlayerModels", function( ply )
 	else
 		if (not ply:GetModel()) or ply:GetModel() == "models/player.mdl" then -- don't override the current set model if there is one
 			print("Player "..tostring(ply:Nick()).." did not have a model - setting them a new one.")
-			ply:SetModel( table.Random( playermodels ) )
+			ply:SetModel( table.Random( modelsRunner ) )
 			
 		end
 	end
