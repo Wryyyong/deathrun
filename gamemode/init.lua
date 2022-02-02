@@ -597,9 +597,8 @@ local function IsCSSSecondary( wep )
 end
 
 local stop_the_drop = {
-	"weapon_fuckmeintheass",
-	"weapon_fuckmesilly2_fuckmybigblackass",
-	--"weapon_crowbar",
+	"weapon_crowbar",
+	"weapon_knife"
 }
 
 function DR:CanPlayerDropWeapon( ply, class )
