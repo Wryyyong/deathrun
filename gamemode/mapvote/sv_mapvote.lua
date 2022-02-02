@@ -287,13 +287,13 @@ end)
 
 local RTVRatio = CreateConVar("mapvote_rtv_ratio", 0.5, defaultFlags, "The ratio between votes and players in order to initiate a mapvote.")
 
-function MV:CheckRTV( suppress )
+function MV:CheckRTV( ply, suppress )
 
 	if MV.Active then return end
 
 	if not suppress then
 		if MV.LoadTime + 60 > CurTime() then
-			DR:ChatBroadcast("It is too early to call an RTV.")
+			DR:ChatMessage("It is too early to call an RTV.")
 			return
 		end
 	end
@@ -308,6 +308,8 @@ function MV:CheckRTV( suppress )
 		end
 	end
 
+	DR:ChatBroadcast(ply:Nick().." has voted to rock the vote.")
+
 	local ratio = votes/numplayers
 	if ratio > RTVRatio:GetFloat() then
 		if not hook.Call("DeathrunStartMapvote", nil, ROUND:GetRoundsPlayed()) then
@@ -318,7 +320,7 @@ function MV:CheckRTV( suppress )
 
 		local needed = math.ceil(RTVRatio:GetFloat() * numplayers) - votes + 1
 		if not suppress then
-			DR:ChatBroadcast(tostring(needed).." more votes needed in order to change the map. Type !rtv to vote.")
+			DR:ChatBroadcast(tostring(needed).." more votes needed in order to change the map.")
 		end
 	end
 
@@ -332,24 +334,21 @@ concommand.Add( "mapvote_rtv", function( ply, cmd, args )
 
 		ply.WantsRTV = true
 
-		MV:CheckRTV( suppress )
+		MV:CheckRTV( ply, suppress )
 
 	end
 
 end)
 
-DR:AddChatCommand("rtv",function( ply )
-	ply:ConCommand( "mapvote_rtv" )
-end)
+RTVcommands = {
+	"!rtv",
+	"/rtv",
+	"rtv"
+}
 
 hook.Add("PlayerSay", "CheckRTVChat", function(ply, text, pub)
-	local args = string.Split( text, " " )
-	if #args == 1 then
-		if args[1] == "rtv" then
-			ply:ConCommand( "mapvote_rtv" )
-		end
-		if args[1] == "nominate" or args[1] == "maps" then
-			ply:ConCommand( "mapvote_list_maps" )
-		end
+	if table.HasValue( RTVcommands, string.lower(text) ) then
+		ply:ConCommand( "mapvote_rtv" )
+		return false
 	end
 end)
