@@ -224,7 +224,13 @@ function GM:PlayerLoadout( ply )
 	ply:StripWeapons()
 	ply:StripAmmo()
 
-	ply:Give( GetConVarString("deathrun_starting_weapon") or "weapon_crowbar" )
+	if startingWeapons then
+		for _,weapon in ipairs(startingWeapons) do
+			ply:Give(weapon)
+		end
+	else
+		ply:Give( GetConVarString("deathrun_starting_weapon") or "weapon_crowbar" )
+	end
 
 	local teamcol = team.GetColor( ply:Team() )
 	--print(teamcol)
