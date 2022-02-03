@@ -266,7 +266,10 @@ local causesOfDeath = {
 	"The Patriarchy",
 	"The rains down in Africa",
 	"The horses",
-	"A saxophone solo"
+	"A saxophone solo",
+	"SkyFromXEN",
+	"SCP-055",
+	"Cock and ball torture"
 }
 
 function GM:PlayerDeath( ply, inflictor, attacker )
