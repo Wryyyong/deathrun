@@ -340,14 +340,14 @@ concommand.Add( "mapvote_rtv", function( ply, cmd, args )
 
 end)
 
-RTVcommands = {
-	"!rtv",
-	"/rtv",
-	"rtv"
+local RTVcommands = {
+	["!rtv"] = true,
+	["/rtv"] = true,
+	["rtv"] = true
 }
 
 hook.Add("PlayerSay", "CheckRTVChat", function(ply, text, pub)
-	if table.HasValue( RTVcommands, string.lower(text) ) then
+	if RTVcommands[string.lower(text)] then
 		ply:ConCommand( "mapvote_rtv" )
 		return false
 	end
