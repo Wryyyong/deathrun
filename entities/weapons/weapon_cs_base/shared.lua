@@ -20,9 +20,6 @@ if ( CLIENT ) then
 	SWEP.ViewModelFlip = false
 	SWEP.CSMuzzleFlashes	= true
 	SWEP.UseHands = true
-	surface.CreateFont("CSKillIcons", { font="csd", weight="500", size=ScreenScale(30),antialiasing=true,additive=true })
-	surface.CreateFont("CSSelectIcons", { font="csd", weight="500", size=ScreenScale(60),antialiasing=true,additive=true })
-
 end
 
 SWEP.Author			= "Counter-Strike"
@@ -230,24 +227,13 @@ function SWEP:PrimaryAttack()
 	
 
 
-	
-end
 
-function QuadLerp( frac, p1, p2 )
 
-    local y = (p1-p2) * (frac -1)^2 + p2
-    return y
 
-end
 
-function InverseLerp( pos, p1, p2 )
 
-	local range = 0
-	range = p2-p1
 
-	if range == 0 then return 1 end
 
-	return ((pos - p1)/range)
 
 end
 
@@ -255,7 +241,7 @@ function SWEP:GetRecoilShiftAmount()
 	local maxshift = 30
 	local minshift = 0
 
-	local shiftamt = ( QuadLerp( InverseLerp( self.KickBack, minshift, maxshift ), 0, 160000 ) )*(self.Primary.Recoil/1.5)/10000
+	local shiftamt = ( DR.QuadLerp( DR.InverseLerp( self.KickBack, minshift, maxshift ), 0, 160000 ) )*(self.Primary.Recoil/1.5)/10000
 	return shiftamt
 end
 

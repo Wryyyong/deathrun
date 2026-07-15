@@ -1,107 +1,147 @@
-include("sh_zone.lua")
+local DR = DR
 
-net.Receive("ZoneSendZones", function()
-	ZONE.zones = net.ReadTable()
+local ZoneSystem = DR.ZoneSystem
+local MapZones = ZoneSystem.MapZones
+
+local CvRenderZones = DR.ConVars.RenderZones
+
+local MatLine = Material("color.vmt")
+
+net.Receive("DeathrunSendZones",function()
+	table.CopyFromTo(net.ReadTable(),MapZones)
 end)
 
-local line_mat = Material("color.vmt")
-function ZONE:DrawCuboid( pos1, pos2, col, alt )
-	local pos1, pos2 = VectorMinMax( pos1, pos2 )
+local BaseBeamWidth = 2
+local BeamPointCache = {
+	Vector(),
+	Vector(),
+	Vector(),
+	Vector(),
+	Vector(),
+	Vector(),
+	Vector(),
+	Vector(),
+}
 
-	col = Color(col.r, col.g, col.b, col.a )
+function ZoneSystem.DrawCuboid(pos1,pos2,col,alt)
+	local posMin,posMax = DR.VectorMinMax(pos1,pos2)
 
-	local points = {}
-	points[1] = pos1
-	points[7] = pos2
+	local rangeX = posMax[1] - posMin[1]
+	local rangeY = posMax[2] - posMin[2]
 
-	points[2] = points[1] + ( Vector( pos2.x - pos1.x,0, 0) ) -- top level
-	points[3] = points[2] + ( Vector( 0 ,pos2.y - pos1.y, 0) )
-	points[4] = points[1] + ( Vector( 0 ,pos2.y - pos1.y, 0) )
+	local point1 = BeamPointCache[1]
+	local point2 = BeamPointCache[2]
+	local point3 = BeamPointCache[3]
+	local point4 = BeamPointCache[4]
+	local point5 = BeamPointCache[5]
+	local point6 = BeamPointCache[6]
+	local point7 = BeamPointCache[7]
+	local point8 = BeamPointCache[8]
 
-	points[5] = points[1] + Vector( 0, 0, pos2.z - pos1.z)
-	points[6] = points[5] + ( Vector( pos2.x - pos1.x,0, 0) )
-	points[7] = points[6] + ( Vector( 0 ,pos2.y - pos1.y, 0) )
-	points[8] = points[5] + ( Vector( 0 ,pos2.y - pos1.y, 0) )
+	point1:Set(posMin)
 
-	render.SetMaterial( line_mat )
+	-- top level
+	point2:SetUnpacked(rangeX,0,0)
+	point2:Add(posMin)
 
-	local width = 2
+	point3:SetUnpacked(0,rangeY,0)
+	point3:Add(point2)
 
-	render.DrawBeam( points[1], points[2], width, 1, 1, col )
-	render.DrawBeam( points[2], points[3], width, 1, 1, col )
-	render.DrawBeam( points[3], points[4], width, 1, 1, col )
-	render.DrawBeam( points[4], points[1], width, 1, 1, col ) -- top level
+	point4:SetUnpacked(0,rangeY,0)
+	point4:Add(posMin)
 
-	render.DrawBeam( points[5], points[6], width, 1, 1, col ) --bottom level
-	render.DrawBeam( points[6], points[7], width, 1, 1, col )
-	render.DrawBeam( points[7], points[8], width, 1, 1, col )
-	render.DrawBeam( points[8], points[5], width, 1, 1, col )
+	point5:SetUnpacked(0,0,posMax[3] - posMin[3])
+	point5:Add(posMin)
 
-	--Vertical connectors
-	render.DrawBeam( points[1], points[5], width, 1, 1, col )
-	render.DrawBeam( points[2], points[6], width, 1, 1, col )
-	render.DrawBeam( points[3], points[7], width, 1, 1, col )
-	render.DrawBeam( points[4], points[8], width, 1, 1, col )
+	point6:SetUnpacked(rangeX,0,0)
+	point6:Add(point5)
 
-	if alt then
+	point7:SetUnpacked(0,rangeY,0)
+	point7:Add(point6)
 
+	point8:SetUnpacked(0,rangeY,0)
+	point8:Add(point5)
 
-		width = width/2 * (1+math.floor(CurTime()*4)%2)
-		render.DrawBeam( points[1], points[3], width, 1, 1, col)
-		render.DrawBeam( points[2], points[4], width, 1, 1, col)
+	render.SetMaterial(MatLine)
 
-		render.DrawBeam( points[1], points[6], width, 1, 1, col)
-		render.DrawBeam( points[2], points[5], width, 1, 1, col)
+	render.DrawBeam(point1,point2,BaseBeamWidth,1,1,col)
+	render.DrawBeam(point2,point3,BaseBeamWidth,1,1,col)
+	render.DrawBeam(point3,point4,BaseBeamWidth,1,1,col)
+	render.DrawBeam(point4,point1,BaseBeamWidth,1,1,col) -- top level
+	render.DrawBeam(point5,point6,BaseBeamWidth,1,1,col) -- bottom level
+	render.DrawBeam(point6,point7,BaseBeamWidth,1,1,col)
+	render.DrawBeam(point7,point8,BaseBeamWidth,1,1,col)
+	render.DrawBeam(point8,point5,BaseBeamWidth,1,1,col)
 
-		render.DrawBeam( points[4], points[7], width, 1, 1, col)
-		render.DrawBeam( points[3], points[8], width, 1, 1, col)
+	-- Vertical connectors
+	render.DrawBeam(point1,point5,BaseBeamWidth,1,1,col)
+	render.DrawBeam(point2,point6,BaseBeamWidth,1,1,col)
+	render.DrawBeam(point3,point7,BaseBeamWidth,1,1,col)
+	render.DrawBeam(point4,point8,BaseBeamWidth,1,1,col)
 
-		render.DrawBeam( points[3], points[6], width, 1, 1, col)
-		render.DrawBeam( points[2], points[7], width, 1, 1, col)
+	if not alt then return end
 
-		render.DrawBeam( points[1], points[8], width, 1, 1, col)
-		render.DrawBeam( points[4], points[5], width, 1, 1, col)
+	local widthBoost = BaseBeamWidth * .5 * (1 + math.floor(CurTime() * 4) % 2)
 
-		render.DrawBeam( points[5], points[7], width, 1, 1, col)
-		render.DrawBeam( points[6], points[8], width, 1, 1, col)
-	end
-
+	render.DrawBeam(point1,point3,widthBoost,1,1,col)
+	render.DrawBeam(point2,point4,widthBoost,1,1,col)
+	render.DrawBeam(point1,point6,widthBoost,1,1,col)
+	render.DrawBeam(point2,point5,widthBoost,1,1,col)
+	render.DrawBeam(point4,point7,widthBoost,1,1,col)
+	render.DrawBeam(point3,point8,widthBoost,1,1,col)
+	render.DrawBeam(point3,point6,widthBoost,1,1,col)
+	render.DrawBeam(point2,point7,widthBoost,1,1,col)
+	render.DrawBeam(point1,point8,widthBoost,1,1,col)
+	render.DrawBeam(point4,point5,widthBoost,1,1,col)
+	render.DrawBeam(point5,point7,widthBoost,1,1,col)
+	render.DrawBeam(point6,point8,widthBoost,1,1,col)
 end
 
-CreateClientConVar("deathrun_zones_visibility","1",true, false)
+local RenderCache = Vector()
+local ColorCache = color_white:Copy()
+local MaxRenderDist = 1000 ^ 2
+local MinRenderDist = 400 ^ 2
 
-hook.Add("PostDrawTranslucentRenderables", "DeathrunZoneCuboidDrawing", function()
-	for name, z in pairs( ZONE.zones or {} ) do
-		if z.type then
-			local center = 0.5*(z.pos1 + z.pos2)
-			local dist = center:Distance( LocalPlayer():GetPos() )
-			if dist < 1000 then
-				if GetConVar("deathrun_zones_visibility"):GetBool() == true then
-					local tempcolor = table.Copy( z.color )
+hook.Add("PostDrawTranslucentRenderables","DeathrunZoneCuboidDrawing",function()
+	if not CvRenderZones:GetBool() then return end
 
-					local frac = math.Clamp( InverseLerp( dist, 1000, 400 ), 0,1)
-					tempcolor.a = frac*z.color.a
+	local localPly = LocalPlayer()
+	local pos = localPly:GetPos()
 
-					local alt = false
-					local ply = LocalPlayer()
+	local team = localPly:Team()
+	local isRunner = team == DR_TEAM_RUNNER
+	local isDeath = team == DR_TEAM_DEATH
 
-					if z.type == "deny_team_runner" and ply:Team() == TEAM_RUNNER then
-						alt = true
-					end
-					if z.type == "deny_team_death" and ply:Team() == TEAM_DEATH then
-						alt = true
-					end
-					if z.type == "deny" then
-						alt = true
-					end
+	for name,zone in pairs(MapZones) do
+		local type = zone.type
+		if not type then return end
 
-					ZONE:DrawCuboid( z.pos1, z.pos2, tempcolor, alt )
+		local pos1 = zone.pos1
+		local pos2 = zone.pos2
+		RenderCache:SetUnpacked(0,0,0)
+		RenderCache:Add(pos1)
+		RenderCache:Add(pos2)
+		RenderCache:Mul(.5)
 
-					--if string.sub( z.type, 1, 4 ) == "deny" then
-						--ZONE:DrawCuboid( z.pos1, z.pos2, tempcolor, true )
-					--end
-				end
-			end
-		end
+		local dist = pos:DistToSqr(RenderCache)
+		if dist >= MaxRenderDist then continue end
+
+		local color = zone.color
+		ColorCache:SetUnpacked(
+			color.r,
+			color.g,
+			color.b,
+			color.a * math.Clamp(DR.InverseLerp(dist,MaxRenderDist,MinRenderDist),0,1)
+		)
+
+		ZoneSystem.DrawCuboid(
+			pos1,
+			pos2,
+			ColorCache,
+
+				type == "deny"
+			or	type == "deny_team_runner" and isRunner
+			or	type == "deny_team_death" and isDeath
+		)
 	end
 end)

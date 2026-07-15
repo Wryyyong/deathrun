@@ -88,7 +88,7 @@ if SERVER then
 			--PrintTable( tr )
 			if not tr.HitWorld then
 				local dist = td.start:Distance( self:GetPos() )
-				local frac = InverseLerp( dist, 300, 0 )
+				local frac = DR.InverseLerp( dist, 300, 0 )
 
 				local di = DamageInfo()
 				di:SetDamage( 100 * frac )

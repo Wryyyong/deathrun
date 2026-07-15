@@ -1,245 +1,270 @@
-local PLAYER = FindMetaTable("Player")
+local DR = DR
 
-hook.Add("PlayerSpawn", "test", function( ply )
-	--print(ply, ply.Spectating)
-end)
+local RoundSystem = DR.RoundSystem
 
-function PLAYER:BeginSpectate()
-	--print(self:Nick(),"deathteam",self:Team(), TEAM_DEATH, "voluntary:", self.VoluntarySpec)
-	local avoided = (self:Team() == TEAM_DEATH and self.VoluntarySpec == true) and true or false
-	print( "Checking death avoid...", self:Nick(), avoided)
-	if avoided == true and (ROUND:GetCurrent() == ROUND_PREP or ROUND:GetCurrent() == ROUND_ACTIVE) and (#player.GetAllPlaying()) > 1 then
-		print("Punish death avoider..")
-		DR:PunishDeathAvoid( self, DR.DeathAvoidPunishment:GetInt() )
-		DR:ChatBroadcast("Player "..self:Nick().." will be punished for attempting to avoid being on the Death team!")
+local ColorTurq = DR.Colors.Turq
+
+local CvDeathAvoidPunishment = DR.ConVars.DeathAvoidPunishment
+
+local PlyMeta = FindMetaTable("Player")
+
+local CUSTOMOBS_ROAMING = 1
+local CUSTOMOBS_CHASE = 2
+local CUSTOMOBS_INEYE = 3
+
+function PlyMeta:Respawn()
+	self:KillSilent()
+	self:Spawn()
+end
+
+function PlyMeta:BeginSpectate()
+	local roundState = RoundSystem.GetCurrent()
+
+	if
+		self:Team() == DR_TEAM_DEATH
+	and	self.VoluntarySpec
+	and	(
+			roundState == DR_ROUND_PREP
+		or	roundState == DR_ROUND_ACTIVE
+		)
+	and	#DR.GetAllPlaying() > 1
+	then
+		DR.PunishDeathAvoid(self,CvDeathAvoidPunishment:GetInt())
+
+		DR.ChatBroadcast("Player " .. self:Nick() .. " will be punished for attempting to avoid being on the Death team!")
 	end
-
-	--self:StripWeapons()
-	--self:StripAmmo()
 
 	self.Spectating = true
-	--self.StaySpectating = false
 	self.ObsMode = 0
-
-	self:Spectate( OBS_MODE_IN_EYE )
-
-	--self:SetupHands( nil )
-
+	self:Spectate(OBS_MODE_IN_EYE)
 	self.VoluntarySpec = false
 
-	-- pointshop - unequip all the trails and shit when they go into spectator
-	if PS then
-		self:PS_PlayerDeath()
-	end
+	if not PS then return end
 
-end
-function PLAYER:EndSpectate() -- when you want to end spectating when he respawns
-	--self.StaySpectating = false
+	--- @diagnostic disable-next-line: undefined-method
+	self:PS_PlayerDeath()
 end
 
-function PLAYER:StopSpectate() -- when you want to end spectating immediately
-
+-- when you want to end spectating immediately
+function PlyMeta:StopSpectate()
 	self.Spectating = false
-	--self.StaySpectating = false
 
 	self:UnSpectate()
-	--self:Spectate( OBS_MODE_NONE )
-
 end
 
-function PLAYER:SetShouldStaySpectating( bool, noswitch ) -- set whether they should stay in spectator even when the round starts
-	print( bool == true and (self:Nick().." will stay as spectator.") or (self:Nick().." will not stay as spectator."))
+-- set whether they should stay in spectator even when the round starts
+--- @param bool boolean
+--- @param noSwitch boolean?
+function PlyMeta:SetShouldStaySpectating(bool,noSwitch)
 	self.StaySpectating = bool
-	--print( self.StaySpectating )
-	if bool == true and noswitch ~= true then 
-		self:SetTeam( TEAM_SPECTATOR ) 
-	end
+
+	if
+		not bool
+	or	noSwitch
+	then return end
+
+	self:SetTeam(DR_TEAM_SPECTATOR)
 end
 
-function PLAYER:ShouldStaySpectating() -- check if he should respawn
-	--self.StaySpectating = self.StaySpectating ~= nil and self.StaySpectating or false
-	if self.StaySpectating == nil then
-		self.StaySpectating = false
-	end
-	--print( self:Nick() == "Arizard" and "arizard "..tostring( self.StaySpectating ) )
-	return self.StaySpectating
+-- check if they should respawn
+--- @return boolean
+function PlyMeta:ShouldStaySpectating()
+	return self.StaySpectating or false
 end
 
-function PLAYER:GetSpectate()
+function PlyMeta:GetSpectate()
 	return self.Spectating
 end
 
-function PLAYER:ChangeSpectate()
+--- @enum (key) DeathrunSpectateCycle
+local SpectateCycle = {
+	[CUSTOMOBS_ROAMING] = OBS_MODE_ROAMING,
+	[CUSTOMOBS_CHASE] = OBS_MODE_CHASE,
+	[CUSTOMOBS_INEYE] = OBS_MODE_IN_EYE,
+}
+
+function PlyMeta:ChangeSpectate()
 	if not self:GetSpectate() then return end
 
-	if not self.ObsMode2 then self.ObsMode2 = 0 end
+	local newObs = next(SpectateCycle,self.ObsMode2)
 
-	self.ObsMode2 = self.ObsMode2 + 1
-	if self.ObsMode2 > 2 then
-		self.ObsMode2 = 0
+	if not newObs then
+		newObs = CUSTOMOBS_ROAMING
 	end
-	
 
+	self.ObsMode2 = newObs
 
-	if self.ObsMode2 == 0 then 
-		self:Spectate( OBS_MODE_ROAMING )
-		--because it's nicer
-	end
-	if self.ObsMode2 == 1 then self:Spectate( OBS_MODE_CHASE ) end
-	if self.ObsMode2 == 2 then self:Spectate( OBS_MODE_IN_EYE ) end
+	self:Spectate(SpectateCycle[newObs])
 
-	if self.ObsMode2 > 0 then
-		--this means we are spectating a player
-
-		local pool = {}
-		for k,self in ipairs(player.GetAll()) do
-			if self:Alive() and not self:GetSpectate() then
-				table.insert(pool, self)
-			end
-		end
-
-		--check if they don't already have a spectator target
+	if newObs > CUSTOMOBS_ROAMING then
+		-- check if they don't already have a spectator target
 		local target = self:GetObserverTarget()
 
 		if not target then
-			local tidx = math.random(#pool)
-			self:SpectateEntity( pool[tidx] ) -- iff they don't then give em one
-			self:SetupHands( pool[tidx] )
-		end
+			-- this means we are spectating a player
+			local pool = {}
 
+			for _,ply in player.Iterator() do
+				if
+					not ply:Alive()
+				or	ply:GetSpectate()
+				then continue end
+
+				pool[#pool + 1] = ply
+			end
+
+			local newTarget = pool[math.random(#pool)]
+
+			-- if they don't then give em one
+			self:SpectateEntity(newTarget)
+			self:SetupHands(newTarget)
+
+			return
+		end
 	end
 
-
-	self:SpecModify( 0 )
-	self:SetupHands( self:GetObserverTarget() )
-	
+	self:SpecModify(0)
+	self:SetupHands(self:GetObserverTarget())
 end
 
-function PLAYER:SpecModify( n )
-
-	self.SpecEntIdx = self.SpecEntIdx or 1
+function PlyMeta:SpecModify(num)
+	local idx = self.SpecEntIdx or 1
 
 	local pool = {}
-	for k,self in ipairs(player.GetAll()) do
-		if self:Alive() and not self:GetSpectate() then
-			table.insert(pool, self)
+
+	for _,ply in player.Iterator() do
+		if
+			not ply:Alive()
+		or	ply:GetSpectate()
+		then continue end
+
+		pool[#pool + 1] = ply
+	end
+
+	local plyCount = #pool
+
+	idx = idx + num
+
+	if idx > plyCount then
+		idx = 1
+	end
+
+	if idx < 1 then
+		idx = plyCount
+	end
+
+	self.SpecEntIdx = idx
+
+	local specEnt = pool[idx]
+
+	if
+		plyCount > 0
+	and	specEnt
+	then
+		self:SpectateEntity(specEnt)
+
+		local target = self:GetObserverTarget()
+
+		if target then
+			local pos = target:GetPos()
+			pos:Add(target:OBBCenter())
+
+			self:SetPos(target:EyePos() or pos)
+			self:SetEyeAngles(target:EyeAngles())
 		end
-	end
 
-	self.SpecEntIdx = self.SpecEntIdx + n
+		self:SetupHands(
+			self:GetObserverMode() == OBS_MODE_IN_EYE
+		and	specEnt
+		or	nil
+		)
 
-	if self.SpecEntIdx > #pool then
-		self.SpecEntIdx = 1
-	end
-	if self.SpecEntIdx < 1 then
-		self.SpecEntIdx = #pool
-	end
-
-	if #pool > 0 then
-		if pool[self.SpecEntIdx] then
-			self:SpectateEntity( pool[self.SpecEntIdx] )
-			
-			local target = self:GetObserverTarget()
-			if target then
-				self:SetPos( target:EyePos() or target:OBBCenter() + target:GetPos() )
-				self:SetEyeAngles( target:EyeAngles() )
-			end
-			
-			if self:GetObserverMode() == OBS_MODE_IN_EYE then
-				self:SetupHands( pool[self.SpecEntIdx] )
-			else
-				self:SetupHands( nil )
-			end
-
-		end
+		return
 	end
 
 	if self:GetObserverMode() ~= OBS_MODE_IN_EYE then
-		self:SetupHands( nil )
+		self:SetupHands(nil)
 	end
-
 end
 
-function PLAYER:SpecNext()
-	self:SpecModify( 1 )
-end
-function PLAYER:SpecPrev()
-	self:SpecModify( -1 )
+function PlyMeta:SpecNext()
+	self:SpecModify(1)
 end
 
-hook.Add("KeyPress", "DeathrunSpectateChangeObserverMode", function(self, key)
-	if self:GetSpectate() then
-		if key == IN_JUMP then
-			self:ChangeSpectate()
-		end
-		if key == IN_ATTACK then
-			-- cycle players forward
-			self:SpecNext()
-		end
-		if key == IN_ATTACK2 then
-			-- cycle players bacwards
-			self:SpecPrev()
-		end
+function PlyMeta:SpecPrev()
+	self:SpecModify(-1)
+end
+
+hook.Add("KeyPress","DeathrunSpectateChangeObserverMode",function(self,key)
+	if not self:GetSpectate() then return end
+
+	if key == IN_JUMP then
+		self:ChangeSpectate()
+	elseif key == IN_ATTACK then
+		-- cycle players forward
+		self:SpecNext()
+	elseif key == IN_ATTACK2 then
+		-- cycle players bacwards
+		self:SpecPrev()
 	end
 end)
 
-concommand.Add("deathrun_toggle_spectate", function(self)
-	if self:GetSpectate() == false then
-		self:BeginSpectate()
-		self:SetShouldStaySpectating( true )
-	else
-		self:EndSpectate()
-		self:SetShouldStaySpectating( false )
+concommand.Add("deathrun_toggle_spectate",function(ply)
+	local isNotSpectating = ply:GetSpectate()
+
+	if isNotSpectating then
+		ply:BeginSpectate()
 	end
+
+	ply:SetShouldStaySpectating(isNotSpectating)
 end)
 
-concommand.Add("deathrun_set_spectate", function(self, cmd, args)
+concommand.Add("deathrun_set_spectate",function(ply,_,args)
 	if tonumber(args[1]) == 1 then
-		self:KillSilent()
-		self:SetShouldStaySpectating( true, self:Team() == TEAM_DEATH and true or false )
-		self.VoluntarySpec = true
-		self:BeginSpectate()
+		ply:KillSilent()
+		ply:SetShouldStaySpectating(true,ply:Team() == DR_TEAM_DEATH)
+		ply.VoluntarySpec = true
+		ply:BeginSpectate()
 	else
-		self:SetShouldStaySpectating( false )
-		self:EndSpectate()
+		ply:SetShouldStaySpectating(false)
 
-		if ROUND:GetCurrent() == ROUND_WAITING then
-			self:KillSilent()
-			self:SetTeam( TEAM_RUNNER )
-			self:Spawn()
+		if RoundSystem.GetCurrent() == DR_ROUND_WAITING then
+			ply:SetTeam(DR_TEAM_RUNNER)
+			ply:Respawn()
 		end
 	end
 end)
 
-local lastmsg = ""
-function PLAYER:DeathrunChatPrint( msg )
+local LastMsg = ""
+
+function PlyMeta:DeathrunChatPrint(msg)
 	net.Start("DeathrunChatMessage")
-	net.WriteString( msg )
-	net.Send( self )
+		net.WriteString(msg)
+	net.Send(self)
 
-	local printmsg = "Server to "..self:Nick()..": "..msg.."\n"
+	local printMsg = "Server to " .. self:Nick() .. ": " .. msg .. "\n"
+	if printMsg == LastMsg then return end
 
-	if printmsg ~= lastmsg then
-		MsgC(DR.Colors.Turq, printmsg)
-		lastmsg = printmsg
-	end
+	MsgC(ColorTurq,printMsg)
+
+	LastMsg = printMsg
 end
 
-function DR:ChatBroadcast( msg )
-	--for k,v in ipairs(player.GetAll()) do
-		net.Start("DeathrunChatMessage")
-		net.WriteString( msg )
-		net.Broadcast()
-		MsgC(DR.Colors.Turq, "Server Broadcast: "..msg.."\n")
-	--end
+function DR.ChatBroadcast(msg)
+	net.Start("DeathrunChatMessage")
+		net.WriteString(msg)
+	net.Broadcast()
+
+	MsgC(ColorTurq,"Server Broadcast: " .. msg .. "\n")
 end
 
-timer.Create("MoveSpectatorsToCorrectTeam", 5, 0, function()
-	for k,ply in ipairs(player.GetAll()) do
-		if ply:Team() ~= TEAM_SPECTATOR then
-			if ply:ShouldStaySpectating() == true then
-				ply:SetTeam( TEAM_SPECTATOR )
-			end
-		end
+timer.Create("MoveSpectatorsToCorrectTeam",5,0,function()
+	for _,ply in player.Iterator() do
+		if
+			ply:Team() == DR_TEAM_SPECTATOR
+		or	not ply:ShouldStaySpectating()
+		then continue end
+
+		ply:SetTeam(DR_TEAM_SPECTATOR)
 	end
 end)

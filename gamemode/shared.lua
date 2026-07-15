@@ -1,308 +1,316 @@
-GM.Name 	= "Deathrun"
-GM.Author 	= "Arizard"
-GM.Email 	= ""
-GM.Website 	= "http://vhs7.tv"
+local DR = DR
 
-DR.TimeStamp = 1462083778
+local Colors = DR.Colors
+local RoundSystem = DR.RoundSystem
 
-function GM:Initialize()
+local ColorRunner = Colors.RunnerTeam
+local ColorDeath = Colors.DeathTeam
+local ColorGhost = Colors.GhostTeam
+local ColorSilver = Colors.Silver
 
-	self.BaseClass.Initialize( self )
-	
+sound.Add({
+	["name"] = "Deathrun.PlayerDeath",
+	["sound"] = {
+		"vo/npc/male01/myarm01.wav",
+		"vo/npc/male01/myarm02.wav",
+		"vo/npc/male01/mygut02.wav",
+		"vo/npc/male01/myleg01.wav",
+		"vo/npc/male01/myleg02.wav",
+		"vo/npc/male01/no01.wav",
+		"vo/npc/male01/no02.wav",
+		"vo/npc/male01/ohno.wav",
+		"vo/npc/male01/ow01.wav",
+		"vo/npc/male01/ow02.wav",
+		"vo/npc/male01/pain04.wav",
+		"vo/npc/male01/pain07.wav",
+		"vo/npc/male01/pain08.wav",
+		"vo/npc/male01/hacks02.wav",
+	},
+	["channel"] = CHAN_AUTO,
+	["level"] = 400,
+})
+
+sound.Add({
+	["name"] = "Deathrun.PlayerDrowning",
+	["sound"] = {
+		"player/pl_drown1.wav",
+		"player/pl_drown2.wav",
+		"player/pl_drown3.wav",
+	},
+	["channel"] = CHAN_AUTO,
+	["level"] = 400,
+})
+
+--- @type string[]
+local NotAmusedSounds = {}
+
+for idx = 1,40 do
+	local pad = string.format("%02d",idx)
+	local count = #NotAmusedSounds
+
+	NotAmusedSounds[count + 1] = "vo/npc/male01/answer" .. pad .. ".wav"
+	NotAmusedSounds[count + 2] = "vo/npc/female01/answer" .. pad .. ".wav"
 end
 
-local defaultFlags = FCVAR_SERVER_CAN_EXECUTE + FCVAR_REPLICATED + FCVAR_NOTIFY + FCVAR_ARCHIVE + FCVAR_CLIENTCMD_CAN_EXECUTE
-
-TEAM_GHOST = 5
-TEAM_RUNNER = 3
-TEAM_DEATH = 2
+sound.Add({
+	["name"] = "Deathrun.NotAmused",
+	["sound"] = NotAmusedSounds,
+	["channel"] = CHAN_VOICE,
+	["level"] = 300,
+})
 
 function GM:CreateTeams()
-	team.SetUp(TEAM_GHOST, "Ghosts", DR.Colors.GhostTeam, false)
-	team.SetUp(TEAM_RUNNER, "Runners", DR.Colors.RunnerTeam, false)
-	team.SetUp(TEAM_DEATH, "Deaths", DR.Colors.DeathTeam, false)
+	team.SetUp(DR_TEAM_RUNNER,"Runners",ColorRunner,false)
+	team.SetUp(DR_TEAM_DEATH,"Deaths",ColorDeath,false)
+	team.SetUp(DR_TEAM_GHOST,"Ghosts",ColorGhost,false)
 
-	team.SetSpawnPoint( TEAM_GHOST, "info_player_counterterrorist" )
-	team.SetSpawnPoint( TEAM_DEATH, "info_player_terrorist" )
-	team.SetSpawnPoint( TEAM_RUNNER, "info_player_counterterrorist" )
+	team.SetSpawnPoint(DR_TEAM_RUNNER,"info_player_counterterrorist")
+	team.SetSpawnPoint(DR_TEAM_DEATH,"info_player_terrorist")
+	team.SetSpawnPoint(DR_TEAM_GHOST,"info_player_counterterrorist")
 
-	team.SetColor( TEAM_SPECTATOR, DR.Colors.Silver )
+	team.SetColor(DR_TEAM_SPECTATOR,ColorSilver)
 end
 
-function player.GetAllPlaying()
-	local pool = {}
-	for k,ply in ipairs(player.GetAll()) do
-		if ply then
-			if ( ply:ShouldStaySpectating() == false ) then
-				table.insert(pool, ply)
-			end
-		end
+function DR.GetAllPlaying()
+	--- @type Player[]
+	local plyPool = {}
+
+	for _,ply in player.Iterator() do
+		if
+			not IsValid(ply)
+		or	ply:ShouldStaySpectating()
+		then continue end
+
+		plyPool[#plyPool + 1] = ply
 	end
-	return pool
+
+	return plyPool
 end
 
-hook.Add("SetupMove", "DeathrunDisableSpectatorSpacebar", function( ply, mv, cmd )
+hook.Add("SetupMove","DeathrunDisableSpectatorSpacebar",function(ply,data,cmd)
 	if ply:GetObserverMode() ~= OBS_MODE_NONE then
-		mv:SetButtons( bit.band( mv:GetButtons(), bit.bnot( IN_JUMP ) ) )
+		data:SetButtons(bit.band(data:GetButtons(),bit.bnot(IN_JUMP)))
 	end
 
-	if ply:Alive() then
-		if ROUND:GetCurrent() == ROUND_PREP then
-			--mv:SetButtons( bit.band( mv:GetButtons(), bit.bnot( IN_JUMP ) ) )
+	if
+		not (
+			ply:Alive()
+		and	RoundSystem.GetCurrent() == DR_ROUND_PREP
+		)
+	then return end
 
-			local block = hook.Call("DeathrunPreventPreptimeMovement") or true
+	local block = hook.Run("DeathrunPreventPreptimeMovement") or true
 
-			if block == true and ply:Team() == TEAM_RUNNER then -- block movement for runners
-				mv:SetSideSpeed( 0 )
-				mv:SetUpSpeed( 0 )
-				mv:SetForwardSpeed( 0 )
-			end
-		end
+	if
+		block
+	and	ply:Team() == DR_TEAM_RUNNER -- block movement for runners
+	then
+		data:SetSideSpeed(0)
+		data:SetUpSpeed(0)
+		data:SetForwardSpeed(0)
 	end
 end)
 
-function QuadLerp( frac, p1, p2 )
-
-    local y = (p1-p2) * (frac -1)^2 + p2
-    return y
-
+--- @param delta number
+--- @param from number
+--- @param to number
+function DR.QuadLerp(delta,from,to)
+	return (from - to) * (delta - 1) ^ 2 + to
 end
 
-function InverseLerp( pos, p1, p2 )
+--- @param delta number
+--- @param from number
+--- @param to number
+function DR.InverseLerp(delta,from,to)
+	local range = to - from
 
-	local range = 0
-	range = p2-p1
-
-	if range == 0 then return 1 end
-
-	return ((pos - p1)/range)
-
-end
-
-local function intToBool( i )
-	if tonumber(i) == 0 then
-		return false
-	else
-		return true
+	if range == 0 then
+		return 1
 	end
-end
 
-CreateConVar("deathrun_infinite_ammo", "1", defaultFlags, "Should ammo automatically replenish.")
-CreateConVar("deathrun_autojump_velocity_cap", 0, defaultFlags, "The amount to limit players speed to when they use autojump. For game balance. 0 = unlimited")
-CreateConVar("deathrun_allow_autojump", 1, defaultFlags, "Allows players to use autojump.")
-CreateConVar("deathrun_help_url", "https://github.com/Arizard/deathrun/blob/master/help.md", defaultFlags, "The URL to open when the player types !help.")
-
--- motd convars
-CreateConVar("deathrun_motd_enabled", "1", defaultFlags, "Enable the MOTD to display on all players when they join?")
-CreateConVar("deathrun_motd_title", "Deathrun Information", defaultFlags, "The title of the MOTD (i.e. Deathrun Information, !info)")
-CreateConVar("deathrun_motd_url", "http://arizard.github.io/deathruninfo.html", defaultFlags, "Sets the MOTD url (i.e. Deathrun Information, !info)")
-
--- unstuck convar
-CreateConVar("deathrun_unstuck_cooldown", "30", defaultFlags, "Set the cooldown timer for when a player uses !stuck or takes damage, forcing them to wait that time until their next !stuck command.")
-
-
-if SERVER then
-	concommand.Add("deathrun_internal_set_autojump", function(ply, cmd, args)
-		if args[1] then
-			ply.AutoJumpEnabled = intToBool( args[1] )
-			--print("Player "..ply:Nick().." set their autojump convar to "..tostring(ply.AutoJumpEnabled))
-		end
-	end)
-end
-
-if CLIENT then
-	CreateClientConVar("deathrun_autojump", 1, true, false)
-	cvars.AddChangeCallback("deathrun_autojump", function( name, old, new )
-		RunConsoleCommand("deathrun_internal_set_autojump", tonumber(new))
-		LocalPlayer().AutoJumpEnabled = intToBool( new )
-	end, "DeathrunAutoJumpConVarChange")
-	
-	RunConsoleCommand("deathrun_internal_set_autojump", GetConVar("deathrun_autojump"):GetInt())
-	timer.Create("DeathrunAutojumpSendToServer", 5, 0, function()
-		RunConsoleCommand("deathrun_internal_set_autojump", GetConVar("deathrun_autojump"):GetInt()) -- in case some trickery happens on the client we'll sync this right up. They can probably destroy the timer but whatever
-	end)
-
-	CreateClientConVar("deathrun_spectate_only", 0, true, false)
-	cvars.AddChangeCallback( "deathrun_spectate_only", function( name, old, new )
-		RunConsoleCommand( "deathrun_set_spectate", new )
-	end)
-
-	hook.Add("HUDPaint", "SendSpectateConVarInfo", function()
-		RunConsoleCommand( "deathrun_set_spectate", GetConVarNumber( "deathrun_spectate_only" ) )
-		if GetConVarNumber( "deathrun_spectate_only" ) == 1 then
-			DR:OpenForcedSpectatorMenu( [[You are currently in spectator mode. 
-				To play, click on one of the buttons below, 
-				or visit the spectator section of the settings menu by pressing F2.
-				\n\nWould you like to move back into the game?]] )
-		end
-		hook.Remove( "HUDPaint", "SendSpectateConVarInfo" )
-	end)
+	return (delta - from) / range
 end
 
 -- hull sizes
-
 DR.Hulls = {
-	HullMin = Vector( -16, -16, 0 ),
-	HullDuck = Vector( 16, 16, 43 ),
-	HullStand = Vector( 16, 16, 66 ),
-	ViewDuck = Vector( 0, 0, 41 ),
-	ViewStand = Vector( 0, 0, 64 )
+	["HullMin"] = Vector(-16,-16,0),
+	["HullDuck"] = Vector(16,16,43),
+	["HullStand"] = Vector(16,16,66),
+	["ViewDuck"] = Vector(0,0,41),
+	["ViewStand"] = Vector(0,0,64),
 }
 
-if CLIENT then
-	concommand.Add("deathrun_reload_hull_client", function()
-		DR:SetClientHullSizes()
-	end)
-	function DR:SetClientHullSizes()
-		LocalPlayer():SetHull( DR.Hulls.HullMin, DR.Hulls.HullStand )
-		LocalPlayer():SetHullDuck( DR.Hulls.HullMin, DR.Hulls.HullDuck ) -- quack quack
-		LocalPlayer():SetViewOffset( DR.Hulls.ViewStand )
-		LocalPlayer():SetViewOffsetDucked( DR.Hulls.ViewDuck ) -- quack
-	end
-end
+hook.Add("PlayerSpawn","HullSizes",function(ply)
+	ply:SetHull(DR.Hulls.HullMin,DR.Hulls.HullStand)
+	ply:SetHullDuck(DR.Hulls.HullMin,DR.Hulls.HullDuck) -- quack quack
 
-hook.Add("PlayerSpawn", "HullSizes", function( ply )
-	ply:SetHull( DR.Hulls.HullMin, DR.Hulls.HullStand )
-	ply:SetHullDuck( DR.Hulls.HullMin, DR.Hulls.HullDuck ) -- quack quack
-	ply:SetViewOffset( DR.Hulls.ViewStand )
-	ply:SetViewOffsetDucked( DR.Hulls.ViewDuck ) -- quack
+	ply:SetViewOffset(DR.Hulls.ViewStand)
+	ply:SetViewOffsetDucked(DR.Hulls.ViewDuck) -- quack
 
-	ply:ConCommand( "deathrun_reload_hull_client" )
+	ply:ConCommand("deathrun_reload_hull_client")
 end)
 
-
 -- I uh... "borrowed" this from Gravious. I need it but I don't know why.
+-- fixes jump and duck stop
+local GroundForce = {}
+local VelocitySub = Vector(0,0,0)
 
-local lp, ft, ct, cap = LocalPlayer, FrameTime, CurTime
-local mc, mr, bn, ba, bo, gf = math.Clamp, math.Round, bit.bnot, bit.band, bit.bor, {}
-function GM:Move( ply, data )
+--- @param ply Player
+--- @param data CMoveData
+function GM:Move(ply,data)
+	if not IsValid(ply) then return end
 
-	-- fixes jump and duck stop
-	local og = ply:IsFlagSet( FL_ONGROUND )
-	if og and not gf[ ply ] then
-		gf[ ply ] = 0
-	elseif og and gf[ ply ] then
-		gf[ ply ] = gf[ ply ] + 1
-		if gf[ ply ] > 4 then
-			ply:SetDuckSpeed( 0.4 )
-			ply:SetUnDuckSpeed( 0.2 )
+	local plyGroundForce = GroundForce[ply]
+	local isOnGround = ply:OnGround()
+
+	if isOnGround then
+		if plyGroundForce then
+			plyGroundForce = GroundForce[ply] + 1
+
+			if plyGroundForce > 4 then
+				ply:SetDuckSpeed(.4)
+				ply:SetUnDuckSpeed(.2)
+			end
+		else
+			plyGroundForce = 0
 		end
+
+		GroundForce[ply] = plyGroundForce
 	end
 
-	if og or not ply:Alive() then return end
-	
-	gf[ ply ] = 0
+	if
+		isOnGround
+	or	not ply:Alive()
+	then return end
+
+	GroundForce[ply] = 0
+
 	ply:SetDuckSpeed(0)
 	ply:SetUnDuckSpeed(0)
 
-	if not IsValid( ply ) then return end
-	if lp and ply ~= lp() then return end
-	
-	if ply:IsOnGround() or not ply:Alive() then return end
-	
+	if CLIENT and ply ~= LocalPlayer() then return end
+
+	local speedSide = data:GetSideSpeed()
+
+	if data:KeyDown(IN_MOVERIGHT) then
+		speedSide = speedSide + 500
+	end
+
+	if data:KeyDown(IN_MOVELEFT) then
+		speedSide = speedSide - 500
+	end
+
+	local velocity = data:GetVelocity()
 	local aim = data:GetMoveAngles()
-	local forward, right = aim:Forward(), aim:Right()
-	local fmove = data:GetForwardSpeed()
-	local smove = data:GetSideSpeed()
-	
-	if data:KeyDown( IN_MOVERIGHT ) then smove = smove + 500 end
-	if data:KeyDown( IN_MOVELEFT ) then smove = smove - 500 end
-	
-	forward.z, right.z = 0,0
-	forward:Normalize()
-	right:Normalize()
+	local aimForward = aim:Forward()
+	local aimRight = aim:Right()
 
-	local wishvel = forward * fmove + right * smove
-	wishvel.z = 0
+	aimForward[3] = 0
+	aimRight[3] = 0
 
-	local wishspeed = wishvel:Length()
-	if wishspeed > data:GetMaxSpeed() then
-		wishvel = wishvel * (data:GetMaxSpeed() / wishspeed)
-		wishspeed = data:GetMaxSpeed()
+	aimForward:Normalize()
+	aimRight:Normalize()
+
+	aimForward:Mul(data:GetForwardSpeed())
+	aimRight:Mul(speedSide)
+
+	aimForward:Add(aimRight)
+
+	-- TODO: Find a way to utilize LengthSqr instead
+	local speedWish = aimForward:Length()
+	local speedMax = data:GetMaxSpeed()
+
+	if speedWish > speedMax then
+		aimForward:Mul(speedMax / speedWish)
+
+		speedWish = speedMax
 	end
 
-	local wishspd = wishspeed
-	wishspd = mc( wishspd, 0, 30 )
+	speedWish = math.Clamp(speedWish,0,30)
+	aimForward:Normalize()
 
-	local wishdir = wishvel:GetNormal()
-	local current = data:GetVelocity():Dot( wishdir )
+	local speedAdd = speedWish - velocity:Dot(aimForward)
 
-	local addspeed = wishspd - current
-	if addspeed <= 0 then return end
+	if speedAdd <= 0 then return end
 
-	local accelspeed = 1000 * ft() * wishspeed
-	if accelspeed > addspeed then
-		accelspeed = addspeed
-	end
-	
-	local vel = data:GetVelocity()
-	vel = vel + (wishdir * accelspeed)
+	local speedAccel = 1000 * FrameTime() * speedWish
 
-	if ply.AutoJumpEnabled == true and GetConVar("deathrun_allow_autojump"):GetBool() == true and GetConVar("deathrun_autojump_velocity_cap"):GetFloat() ~= 0 then
-		ply.SpeedCap = GetConVar("deathrun_autojump_velocity_cap"):GetFloat()
-	else
-		ply.SpeedCap = 99999
+	if speedAccel > speedAdd then
+		speedAccel = speedAdd
 	end
 
-	
-	if ply.SpeedCap and vel:Length2D() > ply.SpeedCap and SERVER then
-		local diff = vel:Length2D() - ply.SpeedCap
-		vel:Sub( Vector( vel.x > 0 and diff or -diff, vel.y > 0 and diff or -diff, 0 ) )
+	aimForward:Mul(speedAccel)
+	velocity:Add(aimForward)
+
+	local velocityCap = DR.ConVars.AutoJump.VelocityCap:GetFloat()
+
+	ply.SpeedCap =
+		(ply.AutoJumpEnabled and DR.ConVars.AutoJump.Allow:GetBool() and velocityCap ~= 0)
+	and	velocityCap
+	or	99999
+
+	if SERVER then
+		local velocityLength2D = velocity:Length2D()
+
+		if velocityLength2D > ply.SpeedCap then
+			local diff = velocityLength2D - ply.SpeedCap
+
+			VelocitySub[1] = velocity[1] > 0 and diff or -diff
+			VelocitySub[2] = velocity[2] > 0 and diff or -diff
+
+			velocity:Sub(VelocitySub)
+		end
 	end
-	
-	data:SetVelocity( vel )
+
+	data:SetVelocity(velocity)
+
 	return false
 end
 
-
-local function AutoHop( ply, data )
-	
+hook.Add("SetupMove","AutoHop",function(ply,data)
 	if CLIENT then
-		LocalPlayer().AutoJumpEnabled = intToBool( GetConVar("deathrun_autojump"):GetInt() )
+		local localPly = LocalPlayer()
+
+		localPly.AutoJumpEnabled = DR.ConVars.AutoJump.Enabled:GetBool()
+
+		if ply ~= localPly then return end
 	end
 
-	if lp and ply ~= lp() then return end
-	if ply.AutoJumpEnabled == false or GetConVar("deathrun_allow_autojump"):GetBool() == false then return end
-	--print(ply.AutoJumpEnabled)
-	
-	local ButtonData = data:GetButtons()
-	if ba( ButtonData, IN_JUMP ) > 0 then
-		if ply:WaterLevel() < 2 and ply:GetMoveType() ~= MOVETYPE_LADDER and not ply:IsOnGround() then
-			data:SetButtons( ba( ButtonData, bn( IN_JUMP ) ) )
-		end
+	if
+		not (
+			ply.AutoJumpEnabled
+		and	DR.ConVars.AutoJump.Allow:GetBool()
+		)
+	then return end
+
+	local buttonData = data:GetButtons()
+
+	if
+		bit.band(buttonData,IN_JUMP) > 0
+	and	ply:WaterLevel() < 2
+	and	ply:GetMoveType() ~= MOVETYPE_LADDER
+	and	not ply:IsOnGround()
+	then
+		data:SetButtons(bit.band(buttonData,bit.bnot(IN_JUMP)))
 	end
-end
-hook.Add( "SetupMove", "AutoHop", AutoHop )
+end)
 
 -- get rid of some default hooks
-hook.Remove("PlayerTick", "TickWidgets")
+hook.Remove("PlayerTick","TickWidgets")
 
-function DR:GetAccessLevel( ply )
-	if not ply or not IsValid( ply ) then
-		return 100
-	end
-	local access = DR.Ranks[ ply:GetUserGroup() ] or 1
+local function GetAccessLevel(ply)
+	if not IsValid(ply) then return -1 end
 
-	local id64 = ply:SteamID64()
-	local id = ply:SteamID()
+	local access = DR.Ranks[ply:GetUserGroup()] or 1
+	local accessPly = DR.PlayerAccess[ply:SteamID64()] or DR.PlayerAccess[ply:SteamID()]
 
-	if DR.PlayerAccess[id] then
-		access = DR.PlayerAccess[id]
+	if accessPly then
+		access = accessPly
 	end
 
-	if DR.PlayerAccess[id64] then
-		access = DR.PlayerAccess[id64]
-	end
-	
 	return access or 1
 end
 
-function DR:CanAccessCommand( ply, cmd )
-	local access = DR:GetAccessLevel( ply )
-	local perm = DR.Permissions[ cmd ] or 99
-	if access >= perm then
-		return true
-	else
-		return false
-	end
+function DR.CanAccessCommand(ply,cmd)
+	return GetAccessLevel(ply) >= (DR.Permissions[cmd] or math.huge)
 end
