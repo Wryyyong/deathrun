@@ -1,9 +1,8 @@
-ROUND = {}
+ROUND = ROUND or {}
 
 -- Create round state constants
-ROUND_CURRENT = -1 -- default to -1
-ROUND_TABLE = {} -- heheh
-ROUND_STATES = {} -- heheh
+ROUND_CURRENT = ROUND_CURRENT or ROUND_WAITING -- default to 1
+ROUND_STATES = ROUND_STATES or {} -- heheh
 
 function ROUND.AddState(state,fOnEnter,fOnThink,fOnExit) -- constant int, and 3 functions
 	ROUND_STATES[state] = {
@@ -14,7 +13,7 @@ function ROUND.AddState(state,fOnEnter,fOnThink,fOnExit) -- constant int, and 3 
 end
 
 function ROUND.RoundThink(state)
-	local roundTbl = ROUND_TABLE[state]
+	local roundTbl = ROUND_STATES[state]
 	if not roundTbl then return end
 
 	roundTbl.OnThink()

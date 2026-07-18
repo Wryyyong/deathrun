@@ -21,6 +21,32 @@ local MatBlur = Material("pp/blurscreen")
 local function EmptyFunc()
 end
 
+local ShadowColorCache = {}
+
+--- @param color Color
+--- @return Color,Color
+local function GetShadowColors(color)
+	local alpha = color.a or 255
+
+	local alphaQuar = math.Round(alpha * .25)
+	local alphaHalf = math.Round(alpha * .5)
+
+	local shadowColorQuar = ShadowColorCache[alphaQuar]
+	local shadowColorHalf = ShadowColorCache[alphaHalf]
+
+	if not shadowColorQuar then
+		shadowColorQuar = Color(0,0,0,alphaQuar)
+		ShadowColorCache[alphaQuar] = shadowColorQuar
+	end
+
+	if not shadowColorHalf then
+		shadowColorHalf = Color(0,0,0,alphaHalf)
+		ShadowColorCache[alphaHalf] = shadowColorHalf
+	end
+
+	return shadowColorQuar,shadowColorHalf
+end
+
 --- @param textFunc fun(text: string | any,font: string?,x: number?, y: number?,color: Color?,xAlign: number?,yAlign: number?)
 --- @param text string
 --- @param font string?
@@ -29,27 +55,34 @@ end
 --- @param color Color?
 --- @param xAlign number?
 --- @param yAlign number?
---- @param layer number?
-local function ShadowTextBase(textFunc,text,font,x,y,color,xAlign,yAlign,layer)
-	layer = layer or 1
-	local layerLower = layer * 2
+--- @param dist number?
+local function ShadowTextBase(textFunc,text,font,x,y,color,xAlign,yAlign,dist)
+	x = x or 0
+	y = y or 0
+	color = color or color_white
+	dist = dist or 1
 
-	if layer ~= 0 then
+	if color.a <= 0 then return end
+
+	if dist ~= 0 then
+		local distLower = dist * 2
+		local shadowColorQuar,shadowColorHalf = GetShadowColors(color)
+
 		textFunc(
 			text,
 			font,
-			x + layerLower,
-			y + layerLower,
-			Color(0,0,0,color.a / 4),
+			x + distLower,
+			y + distLower,
+			shadowColorQuar,
 			xAlign,
 			yAlign
 		)
 		textFunc(
 			text,
 			font,
-			x + layer,
-			y + layer,
-			Color(0,0,0,color.a / 2),
+			x + dist,
+			y + dist,
+			shadowColorHalf,
 			xAlign,
 			yAlign
 		)
@@ -67,27 +100,27 @@ local function ShadowTextBase(textFunc,text,font,x,y,color,xAlign,yAlign,layer)
 end
 
 --- @param text string
---- @param font string
---- @param x number
---- @param y number
---- @param color Color
+--- @param font string?
+--- @param x number?
+--- @param y number?
+--- @param color Color?
 --- @param xAlign number?
 --- @param yAlign number?
---- @param layer number?
-function DR.ShadowText(text,font,x,y,color,xAlign,yAlign,layer)
-	ShadowTextBase(draw.DrawText,text,font,x,y,color,xAlign,nil,layer)
+--- @param dist number?
+function DR.ShadowText(text,font,x,y,color,xAlign,yAlign,dist)
+	ShadowTextBase(draw.DrawText,text,font,x,y,color,xAlign,nil,dist)
 end
 
 --- @param text string
---- @param font string
---- @param x number
---- @param y number
---- @param color Color
+--- @param font string?
+--- @param x number?
+--- @param y number?
+--- @param color Color?
 --- @param xAlign number?
 --- @param yAlign number?
---- @param layer number?
-function DR.ShadowTextSimple(text,font,x,y,color,xAlign,yAlign,layer)
-	ShadowTextBase(draw.SimpleText,text,font,x,y,color,xAlign,yAlign,layer)
+--- @param dist number?
+function DR.ShadowTextSimple(text,font,x,y,color,xAlign,yAlign,dist)
+	ShadowTextBase(draw.SimpleText,text,font,x,y,color,xAlign,yAlign,dist)
 end
 
 --[[------------------------------------
@@ -320,8 +353,8 @@ end
 --- @param x number?
 --- @param y number?
 function DR_Button:SetOffsets(x,y)
-	self.OffsetX = x
-	self.OffsetY = y
+	self.OffsetX = x or 0
+	self.OffsetY = y or 0
 end
 
 function DR_Button:SetSelected(bool)

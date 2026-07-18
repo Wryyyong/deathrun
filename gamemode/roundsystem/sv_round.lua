@@ -4,8 +4,8 @@ util.AddNetworkString("ROUND_STATE")
 
 -- send this each time round state changes so that the player can update themselves
 function ROUND.RoundSwitch(round) -- this can be used to switch or restart states
-	local roundTblOld = ROUND_TABLE[ROUND_CURRENT]
-	local roundTblNew = ROUND_TABLE[round]
+	local roundTblOld = ROUND_STATES[ROUND_CURRENT]
+	local roundTblNew = ROUND_STATES[round]
 	if not roundTblNew then return end
 
 	if roundTblOld then

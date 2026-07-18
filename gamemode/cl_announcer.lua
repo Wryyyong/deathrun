@@ -25,8 +25,8 @@ function DR:AddAnnouncement(ann)
 	table.insert(msgs,ann or "Blank Announcement")
 end
 
-local AnnouncementInterval = CreateClientConVar("deathrun_announcement_interval",60,true,false)
-local AnnouncementEnabled = CreateClientConVar("deathrun_enable_announcements",1,true,false)
+local AnnouncementInterval = CreateClientConVar("deathrun_announcement_interval",60,true,false,nil,0,600)
+local AnnouncementEnabled = CreateClientConVar("deathrun_enable_announcements",1,true,false,nil,0,1)
 local AnnouncementCounter = 1
 
 local function DoAnnouncements()

@@ -16,7 +16,7 @@ local function AdminAccess(ply) -- accounts for when ply = console (legacy)
 		--local access = DR.Ranks[ply:GetUserGroup()] or 1
 		return ply:IsSuperAdmin()
 	else
-		return true
+		return false
 	end
 end
 

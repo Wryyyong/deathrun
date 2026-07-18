@@ -179,16 +179,16 @@ function DR:NewScoreboardPlayer(ply,w,h)
 	av:SetPlayer(ply)
 	av.ply = ply
 	function av:PaintOver(w,h)
-		if IsValid(self.ply) then
-			if not self.ply:Alive() then
+		if IsValid(self.Player) then
+			if not self.Player:Alive() then
 				surface.SetDrawColor(Color(255,255,255,100))
 				surface.DrawRect(0,0,w,h)
 				draw.SimpleText("✖","Deathrun_Derma_Medium",w / 2,h / 2 - 1,DR.Colors.Alizarin,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
 			end
 		end
 
-		if self.ply:IsValid() then
-			if table.HasValue(LocalPlayer().mutelist or {},self.ply:SteamID()) then
+		if IsValid(self.Player) then
+			if table.HasValue(LocalPlayer().mutelist or {},self.Player:SteamID()) then
 				surface.SetMaterial(muteicon)
 				surface.SetDrawColor(Color(255,255,255,100))
 				surface.DrawRect(0,0,w,h)
