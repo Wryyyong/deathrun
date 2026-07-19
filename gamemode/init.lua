@@ -374,21 +374,21 @@ end
 concommand.Add("deathrun_toggle_mute",function(ply,cmd,args)
 	local id = args[1]
 	if not id then return end
-	ply.mutelist = ply.mutelist or {}
-	if table.HasValue(ply.mutelist,id) then
-		for k,v in ipairs(ply.mutelist) do
+	ply.MuteList = ply.MuteList or {}
+	if table.HasValue(ply.MuteList,id) then
+		for k,v in ipairs(ply.MuteList) do
 			if v == id then
-				table.remove(ply.mutelist,k)
+				table.remove(ply.MuteList,k)
 				ply:DeathrunChatPrint("Player was unmuted.")
 			end
 		end
 	else
-		table.insert(ply.mutelist,id)
+		table.insert(ply.MuteList,id)
 		ply:DeathrunChatPrint("Player was muted.")
 	end
 
 	net.Start("DeathrunSyncMutelist")
-	net.WriteTable(ply.mutelist)
+	net.WriteTable(ply.MuteList)
 	net.Send(ply)
 end)
 

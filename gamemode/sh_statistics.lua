@@ -216,7 +216,7 @@ if CLIENT then
 
 	Death Wins: ]] .. tostring(t[1]["death_wins"]) .. [[
 ]]
-		DR:ChatMessage(msg)
+		DR.ChatMessage(msg)
 	end)
 
 	-- display stats on a player's face

@@ -1,11 +1,13 @@
 -- thirdperson support -- from arizard_thirdperson.lua
-local ThirdpersonOn = CreateClientConVar("deathrun_thirdperson_enabled",0,true,false)
-local ThirdpersonX = CreateClientConVar("deathrun_thirdperson_offset_x",0,true,false)
-local ThirdpersonY = CreateClientConVar("deathrun_thirdperson_offset_y",0,true,false)
-local ThirdpersonZ = CreateClientConVar("deathrun_thirdperson_offset_z",0,true,false)
-local ThirdpersonPitch = CreateClientConVar("deathrun_thirdperson_offset_pitch",0,true,false)
-local ThirdpersonYaw = CreateClientConVar("deathrun_thirdperson_offset_yaw",0,true,false)
-local ThirdpersonRoll = CreateClientConVar("deathrun_thirdperson_offset_roll",0,true,false)
+local CvThirdpersonEnabled = CreateClientConVar("deathrun_thirdperson_enabled",0,true,false,nil,0,1)
+local CvThirdpersonOffsetX = CreateClientConVar("deathrun_thirdperson_offset_x",0,true,false,nil,-40,40)
+local CvThirdpersonOffsetY = CreateClientConVar("deathrun_thirdperson_offset_y",0,true,false,nil,-40,40)
+local CvThirdpersonOffsetZ = CreateClientConVar("deathrun_thirdperson_offset_z",0,true,false,nil,-75,75)
+local CvThirdpersonOffsetPitch = CreateClientConVar("deathrun_thirdperson_offset_pitch",0,true,false,nil,-75,75)
+local CvThirdpersonOffsetYaw = CreateClientConVar("deathrun_thirdperson_offset_yaw",0,true,false,nil,-75,75)
+local CvThirdpersonOffsetRoll = CreateClientConVar("deathrun_thirdperson_offset_roll",0,true,false,nil,-75,75)
+local CvThirdpersonOpacity = CreateClientConVar("deathrun_thirdperson_opacity",255,true,false,nil,5,255)
+local CvThirdpersonFadeDistance = CreateClientConVar("deathrun_teammate_fade_distance",75,true,false,nil,0,512)
 
 include("hexcolor.lua")
 include("config.lua")
@@ -26,108 +28,165 @@ include("sh_buttonclaiming.lua")
 include("cl_announcer.lua")
 include("sh_pointshopsupport.lua")
 include("sh_statistics.lua")
-concommand.Add("dr_test_menu",function()
-	local frame = vgui.Create("arizard_window")
+
+concommand.Add("deathrun_test_menu",function()
+	local frame = vgui.Create("Panel")
+
 	frame:SetSize(640,480)
 	frame:Center()
 	frame:MakePopup()
+
 	frame:SetTitle("Test Window Please Ignore")
 end)
 
-function DR:ChatMessage(msg)
-	chat.AddText(DR.Colors.Text.Clouds,"[",DR.Colors.Text.Turq,"DEATHRUN",DR.Colors.Text.Clouds,"] ",msg)
+function DR.ChatMessage(msg)
+	chat.AddText(
+		DR.Colors.Text.Clouds,
+		"[",
+		DR.Colors.Text.Turq,
+		"DEATHRUN",
+		DR.Colors.Text.Clouds,
+		"] ",
+		msg
+	)
 end
 
-net.Receive("DeathrunChatMessage",function(len,ply) DR:ChatMessage(net.ReadString()) end)
-LocalPlayer().mutelist = LocalPlayer().mutelist or {}
-net.Receive("DeathrunSyncMutelist",function(len,ply) LocalPlayer().mutelist = net.ReadTable() end)
+net.Receive("DeathrunChatMessage",function()
+	DR.ChatMessage(net.ReadString())
+end)
 
-local function CalcViewThirdPerson(ply,pos,ang,fov,nearz,farz)
-	if ThirdpersonOn:GetBool() == true and ply:Alive() and ply:Team() ~= TEAM_SPECTATOR then
-		local view = {}
-		local newpos = Vector(0,0,0)
-		local dist = 100 + ThirdpersonZ:GetFloat()
-		local tr = util.TraceHull({
-			start = pos,
-			endpos = pos + ang:Forward() * -dist + Vector(0,0,9) + ang:Right() * ThirdpersonX:GetFloat() + ang:Up() * ThirdpersonY:GetFloat(),
-			mins = Vector(-5,-5,-5),
-			maxs = Vector(5,5,5),
-			filter = player.GetAll(),
-			mask = MASK_SHOT_HULL
-		})
+LocalPlayer().MuteList = LocalPlayer().MuteList or {}
 
-		newpos = tr.HitPos
-		view.origin = newpos
-		local newang = ang
-		newang:RotateAroundAxis(ply:EyeAngles():Right(),ThirdpersonPitch:GetFloat())
-		newang:RotateAroundAxis(ply:EyeAngles():Up(),ThirdpersonYaw:GetFloat())
-		newang:RotateAroundAxis(ply:EyeAngles():Forward(),ThirdpersonRoll:GetFloat())
-		view.angles = newang
-		view.fov = fov
-		-- test for thirdperson scoped weapons
-		local wep = ply:GetActiveWeapon()
-		if wep then if wep.Scope then if wep:GetIronsights() == true then view.fov = wep.ScopedFOV or fov end end end
-		--print( tracedist )
-		return view
+net.Receive("DeathrunSyncMutelist",function()
+	LocalPlayer().MuteList = net.ReadTable()
+end)
+
+local PosEndOFfset = Vector(0,0,9)
+
+local TraceTable = {
+	["mins"] = Vector(-5,-5,-5),
+	["maxs"] = Vector(5,5,5),
+	["mask"] = MASK_SHOT_HULL,
+}
+
+local function ThirdpersonCheck(ply)
+	return
+		CvThirdpersonEnabled:GetBool()
+	and	ply:Alive()
+	and	ply:Team() ~= TEAM_SPECTATOR
+end
+
+function GM:CalcView(ply,pos,ang,fov,znear,zfar)
+	if not ThirdpersonCheck(ply) then return end
+
+	local angRight = ang:Right()
+	angRight:Mul(CvThirdpersonOffsetX:GetFloat())
+
+	local angUp = ang:Up()
+	angUp:Mul(CvThirdpersonOffsetY:GetFloat())
+
+	local posEnd = pos + ang:Forward()
+	posEnd:Mul(-(CvThirdpersonOffsetZ:GetFloat() + 100))
+	posEnd:Add(PosEndOFfset)
+	posEnd:Add(angRight)
+	posEnd:Add(angUp)
+
+	local eyeAngles = ply:EyeAngles()
+	ang:RotateAroundAxis(eyeAngles:Right(),CvThirdpersonOffsetPitch:GetFloat())
+	ang:RotateAroundAxis(eyeAngles:Up(),CvThirdpersonOffsetYaw:GetFloat())
+	ang:RotateAroundAxis(eyeAngles:Forward(),CvThirdpersonOffsetRoll:GetFloat())
+
+	-- test for thirdperson scoped weapons
+	local wep = ply:GetActiveWeapon()
+	local targetFov = fov
+
+	if
+		wep
+	and	wep.Scope
+	and	wep.ScopedFOV
+	and	wep:GetIronsights()
+	then
+		targetFov = wep.ScopedFOV
 	end
+
+	TraceTable.start = pos
+	TraceTable.endpos = posEnd
+	TraceTable.filter = player.GetAll()
+
+	return {
+		["origin"] = util.TraceHull(TraceTable).HitPos,
+		["angles"] = ang,
+		["fov"] = targetFov,
+		["znear"] = znear,
+		["zfar"] = zfar,
+		["drawviewer"] = true,
+	}
 end
 
-hook.Add("CalcView","deathrun_thirdperson_script",CalcViewThirdPerson)
-local function DrawLocalPlayerThirdPerson()
-	local ply = LocalPlayer()
-	if ThirdpersonOn:GetBool() == true and ply:Alive() and ply:Team() ~= TEAM_SPECTATOR then return true end
+function GM:ShouldDrawLocalPlayer()
+	return ThirdpersonCheck(LocalPlayer())
 end
 
-hook.Add("ShouldDrawLocalPlayer","deathrun_thirdperson_script",DrawLocalPlayerThirdPerson)
+local function ThirdpersonToggle()
+	CvThirdpersonEnabled:SetBool(not CvThirdpersonEnabled:GetBool())
+end
 
-concommand.Add("deathrun_toggle_thirdperson",function(ply)
-	if GetConVarNumber("deathrun_thirdperson_enabled") == 0 then
-		ply:ConCommand("deathrun_thirdperson_enabled 1")
+concommand.Add("deathrun_toggle_thirdperson",ThirdpersonToggle)
+
+function GM:CreateMove(cmd)
+	if not cmd:KeyDown(KEY_F8) then return end
+
+	ThirdpersonToggle()
+end
+
+function GM:PrePlayerDraw(ply)
+	local localPly = LocalPlayer()
+
+	if ply:GetRenderMode() ~= RENDERMODE_TRANSALPHA then
+		ply:SetRenderMode(RENDERMODE_TRANSALPHA)
+	end
+
+	local distFade = CvThirdpersonFadeDistance:GetFloat()
+	local distEye = localPly:EyePos():Distance(ply:EyePos())
+
+	local color = ply:GetColor()
+	local plyIsLocalPly = ply == localPly
+
+	if distEye < distFade and not plyIsLocalPly and ply:Team() == localPly:Team() then
+		color.a = Lerp(DR.InverseLerp(distEye,5,distFade),20,255)
+	elseif plyIsLocalPly then
+		color.a = CvThirdpersonOpacity:GetInt()
 	else
-		ply:ConCommand("deathrun_thirdperson_enabled 0")
+		color.a = 255
 	end
-end)
 
-hook.Add("CreateMove",'CheckClientsideKeyBinds',function()
-	local ply = LocalPlayer()
-	if input.WasKeyPressed(KEY_F8) then ply:ConCommand("deathrun_toggle_thirdperson") end
-end)
-
-CreateClientConVar("deathrun_teammate_fade_distance",75,true,false,nil,0,512)
-CreateClientConVar("deathrun_thirdperson_opacity",255,true,false,nil,5,255)
-hook.Add("PrePlayerDraw","TransparencyPlayers",function(ply)
-	if ply:GetRenderMode() ~= RENDERMODE_TRANSALPHA then ply:SetRenderMode(RENDERMODE_TRANSALPHA) end
-	local fadedistance = GetConVarNumber("deathrun_teammate_fade_distance") or 75
-	local eyedist = LocalPlayer():EyePos():Distance(ply:EyePos())
-	local col = ply:GetColor()
-	if eyedist < fadedistance and LocalPlayer() ~= ply then
-		local frac = DR.InverseLerp(eyedist,5,fadedistance)
-		col.a = Lerp(frac,20,255)
-		if ply:Team() ~= LocalPlayer():Team() then col.a = 255 end
-		ply:SetColor(col)
-	elseif LocalPlayer() == ply then
-		col.a = GetConVarNumber("deathrun_thirdperson_opacity") or 255
-		ply:SetColor(col)
-	else
-		col.a = 255
-		ply:SetColor(col)
-	end
-end)
+	ply:SetColor(color)
+end
 
 function GM:PreDrawViewModel(vm,ply,wep)
-	if LocalPlayer():GetObserverMode() == OBS_MODE_CHASE or LocalPlayer():GetObserverMode() == OBS_MODE_ROAMING then
+	local obsMode = LocalPlayer():GetObserverMode()
+
+	if self:PreDrawPlayerHands(_,_,ply) then
 		return true
 	elseif wep and wep.PreDrawViewModel then
 		return wep:PreDrawViewModel(vm,wep,ply,STUDIO_RENDER)
 	end
 end
 
-function GM:PreDrawPlayerHands(hands,vm,ply,wep)
-	if ply:GetObserverMode() == OBS_MODE_CHASE or ply:GetObserverMode() == OBS_MODE_ROAMING then return true end
+function GM:PreDrawPlayerHands(_,_,ply)
+	local obsMode = ply:GetObserverMode()
+
+	return
+		obsMode == OBS_MODE_CHASE
+	or	obsMode == OBS_MODE_ROAMING
 end
 
-function GM:PlayerFootstep(ply,pos,foot,sound,volume,filter)
-	if ply:Team() == TEAM_GHOST then return true end
+function GM:PlayerFootstep(ply)
+	return ply:Team() == TEAM_GHOST
 end
 
-concommand.Add("+menu",function() RunConsoleCommand("deathrun_dropweapon") end)
+--[[
+concommand.Add("+menu",function()
+	RunConsoleCommand("deathrun_dropweapon")
+end)
+--]]

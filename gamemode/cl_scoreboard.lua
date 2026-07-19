@@ -188,7 +188,7 @@ function DR:NewScoreboardPlayer(ply,w,h)
 		end
 
 		if IsValid(self.Player) then
-			if table.HasValue(LocalPlayer().mutelist or {},self.Player:SteamID()) then
+			if table.HasValue(LocalPlayer().MuteList or {},self.Player:SteamID()) then
 				surface.SetMaterial(muteicon)
 				surface.SetDrawColor(Color(255,255,255,100))
 				surface.DrawRect(0,0,w,h)
@@ -260,7 +260,7 @@ function DR:NewScoreboardPlayer(ply,w,h)
 			function copyID:DoClick()
 				if not IsValid(self.ply) then return end
 				SetClipboardText(self.ply:SteamID())
-				DR:ChatMessage(self.ply:Nick() .. "'s SteamID was copied to the clipboard!")
+				DR.ChatMessage(self.ply:Nick() .. "'s SteamID was copied to the clipboard!")
 			end
 
 			--http://steamcommunity.com/profiles/
@@ -278,7 +278,7 @@ function DR:NewScoreboardPlayer(ply,w,h)
 			function mute:DoClick()
 				if not IsValid(self.ply) then return end
 				RunConsoleCommand("deathrun_toggle_mute",self.ply:SteamID())
-				DR:ChatMessage("Toggled mute on " .. self.ply:Nick() .. "!")
+				DR.ChatMessage("Toggled mute on " .. self.ply:Nick() .. "!")
 			end
 		end
 
