@@ -1101,7 +1101,7 @@ function dirac(x,a)
 end
 
 net.Receive("DeathrunNotification",function()
-	DR:AddNotification(net.ReadString(),ScrW() - 32,ScrH() / 6,0,-.35,0,-.00025,10)
+	DR.AddNotification(net.ReadString(),ScrW() - 32,ScrH() / 6,0,-.35,0,-.00025,10)
 end)
 --]]
 
@@ -1115,7 +1115,7 @@ local ColorNotif = Color(0,255,0)
 --- @param ddx number
 --- @param ddy number
 --- @param dur number
-function DR:AddNotification(msg,x,y,dx,dy,ddx,ddy,dur)
+function DR.AddNotification(msg,x,y,dx,dy,ddx,ddy,dur)
 	msg = msg:Replace("%newline%","\n")
 
 	NotificationQueue[#NotificationQueue + 1] = setmetatable({
@@ -1140,7 +1140,7 @@ concommand.Add("deathrun_test_notification",function(_,_,args)
 		msg = msg .. args[idx] .. " "
 	end
 
-	DR:AddNotification(
+	DR.AddNotification(
 		msg,
 		ScrW() * .5,
 		ScrH() * .5,
@@ -1228,7 +1228,7 @@ local WinnerGapMh = WinnerGap + WinnerMh
 
 local ColorStalemate = HexColor("#303030")
 
-function DR:DrawWinners(winteam,tbl_mvps,x,y,stalemate)
+function DR.DrawWinners(winteam,tbl_mvps,x,y,stalemate)
 	local teamColor = stalemate and ColorStalemate or team.GetColor(winteam)
 
 	local xWidthHalf = x + WinnerWidth * .5
@@ -1621,7 +1621,7 @@ function GM:HUDPaint()
 
 	-- check if it's stalemate, and don't do the thing, zhu li!
 	if RoundEndData.Active then
-		DR:DrawWinners(
+		DR.DrawWinners(
 			RoundEndData.winteam,
 			RoundEndData.mvps,
 			scrW_Half - WinnerOffset,

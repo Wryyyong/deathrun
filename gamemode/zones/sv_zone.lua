@@ -122,96 +122,96 @@ end)
 -- add some concommands for creating zones
 concommand.Add("zone_create",function(ply,cmd,args)
 	-- e.g. zone_create endmap end
-	if DR:CanAccessCommand(ply,cmd) and #args == 2 then
+	if DR.CanAccessCommand(ply,cmd) and #args == 2 then
 		if ZONE:Create(args[1],Vector(0,0,0),Vector(0,0,0),Color(255,255,255),args[2],ply.LastZoneDenied == args[1]) then
 			ZONE:BroadcastZones()
-			DR:SafeChatPrint(ply,"Created zone '" .. args[1] .. "' of type '" .. args[2] .. "'")
+			DR.SafeChatPrint(ply,"Created zone '" .. args[1] .. "' of type '" .. args[2] .. "'")
 			ply.LastZoneDenied = nil
 		else
-			DR:SafeChatPrint(ply,"There already exists a zone named '" .. args[1] .. "'. Please delete it first!\nIf you wish to overwrite it run this command again")
+			DR.SafeChatPrint(ply,"There already exists a zone named '" .. args[1] .. "'. Please delete it first!\nIf you wish to overwrite it run this command again")
 			ply.LastZoneDenied = args[1]
 		end
 	end
 end)
 
-DR:AddChatCommand("createzone",function(ply,args) ply:ConCommand("zone_create " .. (args[1] or "") .. " " .. (args[2] or "")) end)
+DR.AddChatCommand("createzone",function(ply,args) ply:ConCommand("zone_create " .. (args[1] or "") .. " " .. (args[2] or "")) end)
 concommand.Add("zone_remove",function(ply,cmd,args)
 	-- e.g. zone_create endmap end
-	if DR:CanAccessCommand(ply,cmd) and #args == 1 then
+	if DR.CanAccessCommand(ply,cmd) and #args == 1 then
 		ZONE.zones[args[1]] = nil
 		ZONE:Save()
 		ZONE:BroadcastZones()
-		DR:SafeChatPrint(ply,"Deleted zone '" .. args[1] .. "'")
+		DR.SafeChatPrint(ply,"Deleted zone '" .. args[1] .. "'")
 	end
 end)
 
-DR:AddChatCommand("removezone",function(ply,args) ply:ConCommand("zone_remove " .. (args[1] or "")) end)
+DR.AddChatCommand("removezone",function(ply,args) ply:ConCommand("zone_remove " .. (args[1] or "")) end)
 concommand.Add("zone_setpos1",function(ply,cmd,args)
-	if DR:CanAccessCommand(ply,cmd) and #args == 2 then
+	if DR.CanAccessCommand(ply,cmd) and #args == 2 then
 		if args[2] == "eyetrace" and IsValid(ply) then
 			if ZONE.zones[args[1]] then
 				ZONE.zones[args[1]].pos1 = ply:GetEyeTrace().HitPos
 				ZONE:BroadcastZones()
 				ZONE:Save()
-				DR:SafeChatPrint(ply,args[1] .. ".pos1 set to " .. tostring(ZONE.zones[args[1]].pos1))
+				DR.SafeChatPrint(ply,args[1] .. ".pos1 set to " .. tostring(ZONE.zones[args[1]].pos1))
 			else
-				DR:SafeChatPrint(ply,"Zone does not exist.")
+				DR.SafeChatPrint(ply,"Zone does not exist.")
 			end
 		else
-			DR:SafeChatPrint(ply,"Please use eyetrace.")
+			DR.SafeChatPrint(ply,"Please use eyetrace.")
 		end
 	end
 end)
 
-DR:AddChatCommand("setzonepos1",function(ply,args) ply:ConCommand("zone_setpos1 " .. (args[1] or "") .. " " .. (args[2] or "")) end)
+DR.AddChatCommand("setzonepos1",function(ply,args) ply:ConCommand("zone_setpos1 " .. (args[1] or "") .. " " .. (args[2] or "")) end)
 concommand.Add("zone_setpos2",function(ply,cmd,args)
-	if DR:CanAccessCommand(ply,cmd) and #args == 2 then
+	if DR.CanAccessCommand(ply,cmd) and #args == 2 then
 		if args[2] == "eyetrace" and IsValid(ply) then
 			if ZONE.zones[args[1]] then
 				ZONE.zones[args[1]].pos2 = ply:GetEyeTrace().HitPos
 				ZONE:BroadcastZones()
 				ZONE:Save()
-				DR:SafeChatPrint(ply,args[1] .. ".pos2 set to " .. tostring(ZONE.zones[args[1]].pos2))
+				DR.SafeChatPrint(ply,args[1] .. ".pos2 set to " .. tostring(ZONE.zones[args[1]].pos2))
 			else
-				DR:SafeChatPrint(ply,"Zone does not exist.")
+				DR.SafeChatPrint(ply,"Zone does not exist.")
 			end
 		else
-			DR:SafeChatPrint(ply,"Please use eyetrace.")
+			DR.SafeChatPrint(ply,"Please use eyetrace.")
 		end
 	end
 end)
 
-DR:AddChatCommand("setzonepos2",function(ply,args) ply:ConCommand("zone_setpos2 " .. (args[1] or "") .. " " .. (args[2] or "")) end)
+DR.AddChatCommand("setzonepos2",function(ply,args) ply:ConCommand("zone_setpos2 " .. (args[1] or "") .. " " .. (args[2] or "")) end)
 concommand.Add("zone_setcolor",function(ply,cmd,args)
 	-- RGBA e.g. zone_setcolor endmap 255 0 0 255
-	if DR:CanAccessCommand(ply,cmd) and #args > 0 then
+	if DR.CanAccessCommand(ply,cmd) and #args > 0 then
 		if ZONE.zones[args[1]] then
 			ZONE.zones[args[1]].color = Color(tonumber(args[2]) or 255,tonumber(args[3]) or 255,tonumber(args[4]) or 255,tonumber(args[5]) or 255)
 			ZONE:BroadcastZones()
 			ZONE:Save()
-			DR:SafeChatPrint(ply,args[1] .. ".color set to " .. tostring(ZONE.zones[args[1]].color))
+			DR.SafeChatPrint(ply,args[1] .. ".color set to " .. tostring(ZONE.zones[args[1]].color))
 		else
-			DR:SafeChatPrint(ply,"Zone does not exist.")
+			DR.SafeChatPrint(ply,"Zone does not exist.")
 		end
 	end
 end)
 
-DR:AddChatCommand("setzonecolor",function(ply,args) ply:ConCommand("zone_setcolor " .. (args[1] or "") .. " " .. (args[2] or "") .. " " .. (args[3] or "") .. " " .. (args[4] or "") .. " " .. (args[5] or "")) end)
+DR.AddChatCommand("setzonecolor",function(ply,args) ply:ConCommand("zone_setcolor " .. (args[1] or "") .. " " .. (args[2] or "") .. " " .. (args[3] or "") .. " " .. (args[4] or "") .. " " .. (args[5] or "")) end)
 concommand.Add("zone_settype",function(ply,cmd,args)
 	-- e.g. zone_settype endmap end
-	if DR:CanAccessCommand(ply,cmd) and #args == 2 then
+	if DR.CanAccessCommand(ply,cmd) and #args == 2 then
 		if ZONE.zones[args[1]] then
 			ZONE.zones[args[1]].type = args[2]
 			ZONE:BroadcastZones()
 			ZONE:Save()
-			DR:SafeChatPrint(ply,args[1] .. ".type set to " .. tostring(ZONE.zones[args[1]].type))
+			DR.SafeChatPrint(ply,args[1] .. ".type set to " .. tostring(ZONE.zones[args[1]].type))
 		else
-			DR:SafeChatPrint(ply,"Zone does not exist.")
+			DR.SafeChatPrint(ply,"Zone does not exist.")
 		end
 	end
 end)
 
-DR:AddChatCommand("setzonetype",function(ply,args) ply:ConCommand("zone_settype " .. (args[1] or "") .. " " .. (args[2] or "") .. " ") end)
+DR.AddChatCommand("setzonetype",function(ply,args) ply:ConCommand("zone_settype " .. (args[1] or "") .. " " .. (args[2] or "") .. " ") end)
 -- timing and rewards
 local finishorder = {}
 local function resetFinishers()
@@ -280,7 +280,7 @@ hook.Add("DeathrunPlayerEnteredZone","DeathrunPlayerFinishMap",function(ply,name
 		end
 
 		local finishtime = CurTime() - ZONE.StartTime
-		DR:ChatBroadcast(ply:Nick() .. " has finished the map in " .. placetext .. " place with a time of " .. string.ToMinutesSecondsMilliseconds(finishtime) .. "!")
+		DR.ChatBroadcast(ply:Nick() .. " has finished the map in " .. placetext .. " place with a time of " .. string.ToMinutesSecondsMilliseconds(finishtime) .. "!")
 		ply.HasFinishedMap = true
 		if place == 1 then
 			for k,v in ipairs(team.GetPlayers(TEAM_DEATH)) do

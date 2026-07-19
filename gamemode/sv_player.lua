@@ -9,8 +9,8 @@ function PLAYER:BeginSpectate()
 	print("Checking death avoid...",self:Nick(),avoided)
 	if avoided == true and (ROUND.GetCurrent() == ROUND_PREP or ROUND.GetCurrent() == ROUND_ACTIVE) and #player.GetAllPlaying() > 1 then
 		print("Punish death avoider..")
-		DR:PunishDeathAvoid(self,DR.DeathAvoidPunishment:GetInt())
-		DR:ChatBroadcast("Player " .. self:Nick() .. " will be punished for attempting to avoid being on the Death team!")
+		DR.PunishDeathAvoid(self,DR.DeathAvoidPunishment:GetInt())
+		DR.ChatBroadcast("Player " .. self:Nick() .. " will be punished for attempting to avoid being on the Death team!")
 	end
 
 	--self:StripWeapons()
@@ -178,7 +178,7 @@ function PLAYER:DeathrunChatPrint(msg)
 	end
 end
 
-function DR:ChatBroadcast(msg)
+function DR.ChatBroadcast(msg)
 	--for k,v in ipairs(player.GetAll()) do
 	net.Start("DeathrunChatMessage")
 	net.WriteString(msg)

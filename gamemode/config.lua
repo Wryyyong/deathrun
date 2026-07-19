@@ -35,11 +35,11 @@ DR.Colors = {
 
 DR.DermaColors = {}
 DR.AirAccelerate = 1000 -- does nothing
-function DR:SetMainColor(col)
+function DR.SetMainColor(col)
 	DR.Colors.Turq = col
 end
 
-function DR:SetMainTextColor(col)
+function DR.SetMainTextColor(col)
 	DR.Colors.Text.Turq = col
 end
 
@@ -49,24 +49,24 @@ end
 
 	To change the appearance of the announcer ( [HELP] Messages ) use the following two functions ON THE CLIENT:
 
-	DR:SetAnnouncerName( STRING name ) -- sets the name, default is "HELP"
-	DR:SetAnnouncerColor( COLOR col ) -- sets the color of the announcer name, default is DR.Colors.Alizarin
-	DR:SetAnnouncerTable( TABLE tbl ) -- sets the table of messages that the announcer broadcasts into player's chats.
-	DR:GetAnnouncerTable( ) -- returns the table of messages that gets broadcasted so that you can make changes to it.
-	DR:AddAnnouncement( STRING announcement ) -- Adds an announcement to the table of announcements that are broadcast by the announcer.
+	DR.SetAnnouncerName( STRING name ) -- sets the name, default is "HELP"
+	DR.SetAnnouncerColor( COLOR col ) -- sets the color of the announcer name, default is DR.Colors.Alizarin
+	DR.SetAnnouncerTable( TABLE tbl ) -- sets the table of messages that the announcer broadcasts into player's chats.
+	DR.GetAnnouncerTable( ) -- returns the table of messages that gets broadcasted so that you can make changes to it.
+	DR.AddAnnouncement( STRING announcement ) -- Adds an announcement to the table of announcements that are broadcast by the announcer.
 
 ]]
 --[[
-	
+
 	MOTD
 
 	To change the MOTD behaviour, use the following functions ON THE CLIENT:
 
-	DR:SetMOTDEnabled( BOOLEAN enabled ) -- False to disable globally, True to enable globally (clients can still disable for themselves using F2 menu )
-	DR:SetMOTDTitle( STRING title ) -- Title of the MOTD Window
-	DR:SetMOTDSize( NUMBER w, NUMBER h ) -- Size of the MOTD window
-	DR:SetMOTDPage( STRING url ) -- the URL to open in the MOTD window, e.h. http://www.MyCommunityIsCool.com
-	
+	DR.SetMOTDEnabled( BOOLEAN enabled ) -- False to disable globally, True to enable globally (clients can still disable for themselves using F2 menu )
+	DR.SetMOTDTitle( STRING title ) -- Title of the MOTD Window
+	DR.SetMOTDSize( NUMBER w, NUMBER h ) -- Size of the MOTD window
+	DR.SetMOTDPage( STRING url ) -- the URL to open in the MOTD window, e.h. http://www.MyCommunityIsCool.com
+
 ]]
 -- don't touch this otherwise shit will hit the fan and your custom colors won't work
 hook.Add("InitPostEntity","DeathrunChangeColors",function() hook.Call("DeathrunChangeColors",nil,nil) end)

@@ -20,7 +20,7 @@ local function AdminAccess(ply) -- accounts for when ply = console (legacy)
 	end
 end
 
-function DR:GeneralAdminAccess(ply) -- legacy
+function DR.GeneralAdminAccess(ply) -- legacy
 	return AdminAccess(ply)
 end
 
@@ -32,7 +32,7 @@ local function DeathrunSafeChatPrint(ply,msg)
 	end
 end
 
-function DR:SafeChatPrint(ply,msg)
+function DR.SafeChatPrint(ply,msg)
 	DeathrunSafeChatPrint(ply,msg)
 end
 
@@ -41,7 +41,7 @@ concommand.Add("deathrun_respawn",function(ply,cmd,args)
 	if args[1] then
 		local targets = FindPlayersByName(args[1])
 		local cont = false
-		if DR:CanAccessCommand(ply,cmd) then
+		if DR.CanAccessCommand(ply,cmd) then
 			local players = ""
 			if #targets > 0 then
 				-- for k, targ in ipairs( targets ) do
@@ -61,7 +61,7 @@ concommand.Add("deathrun_respawn",function(ply,cmd,args)
 			DeathrunSafeChatPrint(ply,"You are not allowed to do that.")
 		end
 	elseif not args[1] then
-		if (DR:CanAccessCommand(ply,cmd) or ROUND.GetCurrent() == ROUND_WAITING) and ply:Team() ~= TEAM_SPECTATOR then
+		if (DR.CanAccessCommand(ply,cmd) or ROUND.GetCurrent() == ROUND_WAITING) and ply:Team() ~= TEAM_SPECTATOR then
 			ply:KillSilent()
 			ply:Spawn()
 			DeathrunSafeChatPrint(ply,"Respawned yourself.")
@@ -74,7 +74,7 @@ concommand.Add("deathrun_respawn",function(ply,cmd,args)
 end,nil,nil,FCVAR_SERVER_CAN_EXECUTE)
 
 concommand.Add("deathrun_cleanup",function(ply,cmd,args)
-	if DR:CanAccessCommand(ply,cmd) or ROUND.GetCurrent() == ROUND_WAITING then
+	if DR.CanAccessCommand(ply,cmd) or ROUND.GetCurrent() == ROUND_WAITING then
 		game.CleanUpMap()
 		DeathrunSafeChatPrint(ply,"Cleaned up the map and reset entities.")
 	else
@@ -109,16 +109,16 @@ end)
 
 -- chat commands
 DR.ChatCommands = {}
-function DR:GetChatCommandTable()
+function DR.GetChatCommandTable()
 	return DR.ChatCommands
 end
 
-function DR:AddChatCommand(cmd,func)
+function DR.AddChatCommand(cmd,func)
 	DR.ChatCommands[cmd] = func
 	print("Deathrun - Added chat command " .. cmd)
 end
 
-function DR:AddChatCommandAlias(cmd,cmd2)
+function DR.AddChatCommandAlias(cmd,cmd2)
 	DR.ChatCommands[cmd2] = DR.ChatCommands[cmd]
 	print("Deathrun - Added chat command alias " .. cmd .. " -> " .. cmd2)
 end
@@ -142,24 +142,24 @@ local function ProcessChat(ply,text,public)
 end
 
 hook.Add("PlayerSay","ProcessDeathrunChat",ProcessChat)
-DR:AddChatCommand("respawn",function(ply,args)
+DR.AddChatCommand("respawn",function(ply,args)
 	ply:ConCommand("deathrun_respawn " .. (args[1] or ""))
 	PrintTable(args)
 end)
 
-DR:AddChatCommandAlias("respawn","r")
-DR:AddChatCommand("cleanup",function(ply) ply:ConCommand("deathrun_cleanup") end)
-DR:AddChatCommand("crosshair",function(ply) ply:ConCommand("deathrun_open_crosshair_creator") end)
-DR:AddChatCommand("help",function(ply) ply:ConCommand("deathrun_open_help") end)
-DR:AddChatCommand("settings",function(ply) ply:ConCommand("deathrun_open_settings") end)
-DR:AddChatCommand("zones",function(ply) ply:ConCommand("deathrun_open_zone_editor") end)
-DR:AddChatCommand("info",function(ply) ply:ConCommand("deathrun_open_quickinfo") end)
-DR:AddChatCommand("1p",function(ply) ply:ConCommand("deathrun_thirdperson_enabled 0") end)
-DR:AddChatCommand("3p",function(ply) ply:ConCommand("deathrun_thirdperson_enabled 1") end)
-DR:AddChatCommand("thirdperson",function(ply) ply:ConCommand("deathrun_toggle_thirdperson") end)
-DR:AddChatCommand("stats",function(ply,args) ply:ConCommand("deathrun_get_stats " .. (args[1] or "")) end)
-DR:AddChatCommand("firstperson",function(ply) ply:ConCommand("deathrun_toggle_thirdperson") end)
-DR:AddChatCommand("spec",function(ply,args)
+DR.AddChatCommandAlias("respawn","r")
+DR.AddChatCommand("cleanup",function(ply) ply:ConCommand("deathrun_cleanup") end)
+DR.AddChatCommand("crosshair",function(ply) ply:ConCommand("deathrun_open_crosshair_creator") end)
+DR.AddChatCommand("help",function(ply) ply:ConCommand("deathrun_open_help") end)
+DR.AddChatCommand("settings",function(ply) ply:ConCommand("deathrun_open_settings") end)
+DR.AddChatCommand("zones",function(ply) ply:ConCommand("deathrun_open_zone_editor") end)
+DR.AddChatCommand("info",function(ply) ply:ConCommand("deathrun_open_quickinfo") end)
+DR.AddChatCommand("1p",function(ply) ply:ConCommand("deathrun_thirdperson_enabled 0") end)
+DR.AddChatCommand("3p",function(ply) ply:ConCommand("deathrun_thirdperson_enabled 1") end)
+DR.AddChatCommand("thirdperson",function(ply) ply:ConCommand("deathrun_toggle_thirdperson") end)
+DR.AddChatCommand("stats",function(ply,args) ply:ConCommand("deathrun_get_stats " .. (args[1] or "")) end)
+DR.AddChatCommand("firstperson",function(ply) ply:ConCommand("deathrun_toggle_thirdperson") end)
+DR.AddChatCommand("spec",function(ply,args)
 	--if args[1] == "!spec" then
 	if ply:ShouldStaySpectating() then
 		ply:ConCommand("deathrun_spectate_only 0")
@@ -173,7 +173,7 @@ end)
 local stuckers = {} -- mother stuckers
 hook.Add("EntityTakeDamage","unstuckblocker",function(ply) if ply:IsPlayer() then stuckers[ply:SteamID64()] = CurTime() end end)
 concommand.Add("deathrun_unstuck",function(ply,cmd,args)
-	if DR:CanAccessCommand(ply,cmd) and ply:Alive() and ply:GetObserverMode() == OBS_MODE_NONE and (stuckers[ply:SteamID64()] or 0) < CurTime() - GetConVar("deathrun_unstuck_cooldown"):GetInt() then
+	if DR.CanAccessCommand(ply,cmd) and ply:Alive() and ply:GetObserverMode() == OBS_MODE_NONE and (stuckers[ply:SteamID64()] or 0) < CurTime() - GetConVar("deathrun_unstuck_cooldown"):GetInt() then
 		local trace = {
 			start = ply:EyePos(),
 			endpos = ply:EyePos() + ply:GetAimVector() * 20,
@@ -186,25 +186,25 @@ concommand.Add("deathrun_unstuck",function(ply,cmd,args)
 		local tr = util.TraceHull(trace)
 		ply:SetPos(tr.HitPos - (ply:EyePos() - ply:GetPos()))
 		stuckers[ply:SteamID64()] = CurTime()
-		DR:ChatBroadcast(ply:Nick() .. " attempted to free themselves from the clutches of a bugged trap.")
+		DR.ChatBroadcast(ply:Nick() .. " attempted to free themselves from the clutches of a bugged trap.")
 	else
 		ply:DeathrunChatPrint("You can't use that right now.")
 	end
 end)
 
-DR:AddChatCommand("stuck",function(ply,args) ply:ConCommand("deathrun_unstuck") end)
-DR:AddChatCommandAlias("stuck","unstuck")
+DR.AddChatCommand("stuck",function(ply,args) ply:ConCommand("deathrun_unstuck") end)
+DR.AddChatCommandAlias("stuck","unstuck")
 concommand.Add("deathrun_punish",function(ply,cmd,args)
 	if args[1] then
 		args[2] = args[2] or 1
-		if DR:CanAccessCommand(ply,cmd) then
+		if DR.CanAccessCommand(ply,cmd) then
 			local targets = FindPlayersByName(args[1])
 			if #targets == 0 then
 				ply:DeathrunSafeChatPrint("No targets to punish.")
 			elseif #targets == 1 then
 				local t = targets[1]
-				DR:PunishDeathAvoid(t,tonumber(args[2]))
-				DeathrunSafeChatPrint(ply,"Punishing " .. tostring(t:Nick()) .. " for another " .. tostring(DR:GetDeathAvoid(t)) .. " rounds.")
+				DR.PunishDeathAvoid(t,tonumber(args[2]))
+				DeathrunSafeChatPrint(ply,"Punishing " .. tostring(t:Nick()) .. " for another " .. tostring(DR.GetDeathAvoid(t)) .. " rounds.")
 			elseif #targets > 1 then
 				ply:DeathrunSafeChatPrint("Too many targets to punish.")
 			end
@@ -212,7 +212,7 @@ concommand.Add("deathrun_punish",function(ply,cmd,args)
 	end
 end)
 
-DR:AddChatCommand("punish",function(ply,args)
+DR.AddChatCommand("punish",function(ply,args)
 	if not args[1] then return end
 	args[2] = args[2] or 1
 	ply:ConCommand("deathrun_punish " .. args[1] .. " " .. args[2])

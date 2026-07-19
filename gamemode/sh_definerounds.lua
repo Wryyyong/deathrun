@@ -59,8 +59,8 @@ local function checkdeathavoid(ply)
 	print("Checking for death avoid... " .. ply:Nick())
 	local avoided = (ply:Team() == TEAM_DEATH and ply:Alive()) and true or false
 	if avoided == true and (ROUND.GetCurrent() == ROUND_PREP or ROUND.GetCurrent() == ROUND_ACTIVE) and #player.GetAllPlaying() > 2 then
-		DR:PunishDeathAvoid(ply,GetConVarNumber("deathrun_death_avoid_punishment"))
-		DR:ChatBroadcast("Player " .. ply:Nick() .. " will be punished for attempting to avoid being on the Death team!")
+		DR.PunishDeathAvoid(ply,GetConVarNumber("deathrun_death_avoid_punishment"))
+		DR.ChatBroadcast("Player " .. ply:Nick() .. " will be punished for attempting to avoid being on the Death team!")
 	end
 end
 
@@ -69,7 +69,7 @@ hook.Add("PlayerInitialSpawn","DeathrunCleanupSinglePlayer",function(ply)
 	ROUND:SyncTimerPlayer(ply)
 	if #player.GetAll() <= 1 then
 		game.CleanUpMap()
-		DR:ChatBroadcast("Cleaned up the map.")
+		DR.ChatBroadcast("Cleaned up the map.")
 	end
 end)
 
@@ -146,7 +146,7 @@ ROUND.AddState(ROUND_PREP,function()
 		print("\nList of Death counters:")
 		PrintTable(orderedlist)
 		local timesLooped = 0
-		local punishmentpool = table.Copy(DR:GetOnlineBarredPlayers())
+		local punishmentpool = table.Copy(DR.GetOnlineBarredPlayers())
 		local orderedpool = table.Copy(orderedlist)
 		-- remove players from orderedpool and pool if they have been death 2 rounds in a row
 		for k,ply in ipairs(player.GetAllPlaying()) do
@@ -163,8 +163,8 @@ ROUND.AddState(ROUND_PREP,function()
 		while #deaths < deathsNeeded and timesLooped < 100 do
 			if #punishmentpool > 0 then
 				local ply = punishmentpool[#punishmentpool]
-				DR:PardonDeathAvoid(ply,1)
-				DR:ChatBroadcast("Player " .. ply:Nick() .. " is being punished for death avoidance! They have " .. tostring(DR:GetDeathAvoid(ply)) .. " Death rounds remaining.")
+				DR.PardonDeathAvoid(ply,1)
+				DR.ChatBroadcast("Player " .. ply:Nick() .. " is being punished for death avoidance! They have " .. tostring(DR.GetDeathAvoid(ply)) .. " Death rounds remaining.")
 				table.insert(deaths,punishmentpool[#punishmentpool]) -- add players to the deaths if they are being punishd for death avoid
 				table.RemoveByValue(pool,punishmentpool[#punishmentpool])
 				table.remove(punishmentpool,#punishmentpool)
@@ -243,14 +243,14 @@ ROUND.AddState(ROUND_ACTIVE,function()
 		ROUND:SetTimer(GetConVarNumber("deathrun_round_duration"))
 		timer.Create("DeathrunAutoslay",GetConVarNumber("deathrun_autoslay_delay") + 5,1,function()
 			for k,v in ipairs(player.GetAllPlaying()) do
-				local idletime = DR:CheckIdleTime(v)
+				local idletime = DR.CheckIdleTime(v)
 				print(v,idletime)
 				if idletime > GetConVarNumber("deathrun_autoslay_delay") then
 					net.Start("DeathrunSpectatorNotification")
 					net.Send(v)
 					if v:Team() == TEAM_DEATH then
-						DR:ChatBroadcast("Player " .. v:Nick() .. " went AFK during a Death round! They will be punished.")
-						DR:PunishDeathAvoid(v,GetConVarNumber("deathrun_death_avoid_punishment"))
+						DR.ChatBroadcast("Player " .. v:Nick() .. " went AFK during a Death round! They will be punished.")
+						DR.PunishDeathAvoid(v,GetConVarNumber("deathrun_death_avoid_punishment"))
 					end
 
 					v:ConCommand("deathrun_spectate_only 1")
@@ -294,11 +294,11 @@ ROUND.AddState(ROUND_OVER,function()
 	rounds_played = rounds_played + 1
 	if SERVER then
 		if not hook.Call("DeathrunShouldMapSwitch",nil,rounds_played) and rounds_played < GetConVarNumber("deathrun_round_limit") then
-			DR:ChatBroadcast("Round " .. tostring(rounds_played) .. " over. " .. tostring(GetConVarNumber("deathrun_round_limit") - rounds_played) .. " rounds to go!")
+			DR.ChatBroadcast("Round " .. tostring(rounds_played) .. " over. " .. tostring(GetConVarNumber("deathrun_round_limit") - rounds_played) .. " rounds to go!")
 			ROUND:SetTimer(GetConVarNumber("deathrun_finishtime_duration"))
 			timer.Simple(GetConVarNumber("deathrun_finishtime_duration"),function() ROUND.RoundSwitch(ROUND_PREP) end)
 		else
-			--DR:ChatBroadcast("Round limit reached. Initiating RTV...")
+			--DR.ChatBroadcast("Round limit reached. Initiating RTV...")
 			timer.Simple(3,function() if not hook.Call("DeathrunStartMapvote",nil,rounds_played) then MV:BeginMapVote() end end)
 		end
 	end
@@ -322,7 +322,7 @@ if SERVER then
 
 	function ROUND:FinishRound(winteam)
 		ROUND.RoundSwitch(ROUND_OVER)
-		DR:ChatBroadcast("Round over! " .. (winteam == WIN_RUNNER and team.GetName(TEAM_RUNNER) .. " win!" or winteam == WIN_DEATH and team.GetName(TEAM_DEATH) .. " win!" or "Stalemate! Unbelievable!"))
+		DR.ChatBroadcast("Round over! " .. (winteam == WIN_RUNNER and team.GetName(TEAM_RUNNER) .. " win!" or winteam == WIN_DEATH and team.GetName(TEAM_DEATH) .. " win!" or "Stalemate! Unbelievable!"))
 		--calculate MVPs
 		net.Start("DeathrunSendMVPs")
 		local mvps = {}

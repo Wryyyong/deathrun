@@ -13,7 +13,7 @@ local crosshair_convars = {
 	{"number","deathrun_crosshair_alpha",0,255,"Transparency"},
 }
 
-function DR:OpenCrosshairCreator()
+function DR.OpenCrosshairCreator()
 	local frame = vgui.Create("DR_Window")
 	frame:SetSize(640,480)
 	frame:Center()
@@ -145,8 +145,8 @@ function DR:OpenCrosshairCreator()
 	end
 end
 
-concommand.Add("deathrun_open_crosshair_creator",function() DR:OpenCrosshairCreator() end)
-function DR:OpenHelp()
+concommand.Add("deathrun_open_crosshair_creator",DR.OpenCrosshairCreator)
+function DR.OpenHelp()
 	local frame = vgui.Create("DR_Window")
 	frame:SetSize(ScrW(),ScrH())
 	frame:Center()
@@ -163,7 +163,7 @@ function DR:OpenHelp()
 	html:OpenURL(GetConVar("deathrun_help_url"):GetString())
 end
 
-concommand.Add("deathrun_open_help",function() DR:OpenHelp() end)
+concommand.Add("deathrun_open_help",DR.OpenHelp)
 local Settings = {
 	{"header","HUD Settings"},
 	{"number","deathrun_hud_theme",1,4,"HUD Theme"},
@@ -196,16 +196,16 @@ local Settings = {
 	{"number","deathrun_teammate_fade_distance",0,512,"Teammate fade distance."},
 }
 
-function DR:AddSetting(tbl)
+function DR.AddSetting(tbl)
 	table.insert(Settings,tbl)
 end
 
 --hook.Add("InitPostEntity", "AddTimestamp", function()
 --timer.Simple(1, function()
---DR:AddSetting( {"header", "Last Significant Update: "..os.date( "%H:%M:%S - %d/%m/%Y", DR.TimeStamp or os.time() )} )
+--DR.AddSetting( {"header", "Last Significant Update: "..os.date( "%H:%M:%S - %d/%m/%Y", DR.TimeStamp or os.time() )} )
 --end)
 --end)
-function DR:OpenSettings()
+function DR.OpenSettings()
 	local frame = vgui.Create("DR_Window")
 	frame:SetSize(480,640)
 	frame:Center()
@@ -339,8 +339,8 @@ function DR:OpenSettings()
 	dlist:Add(lbl)
 end
 
-concommand.Add("deathrun_open_settings",function() DR:OpenSettings() end)
-function DR:OpenZoneEditor()
+concommand.Add("deathrun_open_settings",DR.OpenSettings)
+function DR.OpenZoneEditor()
 	local frame = vgui.Create("DR_Window")
 	frame:SetSize(320,480)
 	frame:Center()
@@ -525,7 +525,7 @@ function DR:OpenZoneEditor()
 	end
 end
 
-concommand.Add("deathrun_open_zone_editor",function(ply,cmd) if DR:CanAccessCommand(ply,cmd) then DR:OpenZoneEditor() end end)
+concommand.Add("deathrun_open_zone_editor",function(ply,cmd) if DR.CanAccessCommand(ply,cmd) then DR.OpenZoneEditor() end end)
 local MOTDConVars = {}
 MOTDConVars.Enabled = GetConVar("deathrun_motd_enabled")
 MOTDConVars.Title = GetConVar("deathrun_motd_title")
@@ -535,34 +535,34 @@ DR.MOTDTitle = MOTDConVars.Title:GetString() or "Deathrun Information"
 DR.MOTDWidth = DR.MOTDWidth or ScrW() - 320
 DR.MOTDHeight = DR.MOTDHeight or ScrH() - 240
 DR.MOTDPage = MOTDConVars.URL:GetString() or "http://arizard.github.io/deathruninfo.html"
-function DR:SetMOTDEnabled(enabled)
-	print("DR:SetMOTDEnabled is deprecated! Instead please use the server convar deathrun_motd_enabled <0/1>")
+function DR.SetMOTDEnabled(enabled)
+	print("DR.SetMOTDEnabled is deprecated! Instead please use the server convar deathrun_motd_enabled <0/1>")
 	DR.MOTDEnabled = enabled
 end
 
-function DR:SetMOTDTitle(title)
+function DR.SetMOTDTitle(title)
 	DR.MOTDTitle = title
-	print("DR:SetMOTDTitle is deprecated! Instead please use the server convar deathrun_motd_title <string title>")
+	print("DR.SetMOTDTitle is deprecated! Instead please use the server convar deathrun_motd_title <string title>")
 end
 
-function DR:SetMOTDSize(w,h)
+function DR.SetMOTDSize(w,h)
 	DR.MOTDWidth = w
 	DR.MOTDHeight = h
 end
 
-function DR:SetMOTDPage(url)
-	print("DR:SetMOTDPage is deprecated! Instead please use the server convar deathrun_motd_url <string url>")
+function DR.SetMOTDPage(url)
+	print("DR.SetMOTDPage is deprecated! Instead please use the server convar deathrun_motd_url <string url>")
 	DR.MOTDPage = url
 end
 
-function DR:OpenQuickInfo()
+function DR.OpenQuickInfo()
 	local frame = vgui.Create("DR_Window")
 	frame:SetSize(DR.MOTDWidth,DR.MOTDHeight)
 	frame:Center()
 	frame:MakePopup()
 	frame:SetTitle(DR.MOTDTitle)
 	function frame:OnClose()
-		if ROUND.GetCurrent() == ROUND_WAITING then DR:OpenWaitingMenu() end
+		if ROUND.GetCurrent() == ROUND_WAITING then DR.OpenWaitingMenu() end
 	end
 
 	local lbl = vgui.Create("DLabel",frame)
@@ -585,16 +585,16 @@ function OpenSteamGroup()
 	end
 end
 
-concommand.Add("deathrun_open_quickinfo",function() DR:OpenQuickInfo() end)
-concommand.Add("deathrun_open_motd",function() DR:OpenQuickInfo() end)
+concommand.Add("deathrun_open_quickinfo",DR.OpenQuickInfo)
+concommand.Add("deathrun_open_motd",DR.OpenQuickInfo)
 infoOpened = infoOpened ~= nil and infoOpened or false -- needs to be global
 local ShowInfo = DR.ConVars.ShowInfo -- whether we see info on join
 hook.Add("HUDPaint","openquickinfo",function()
-	if infoOpened == false and ShowInfo:GetBool() == true and DR.MOTDEnabled == true then DR:OpenQuickInfo() end
+	if infoOpened == false and ShowInfo:GetBool() == true and DR.MOTDEnabled == true then DR.OpenQuickInfo() end
 	infoOpened = true -- only check once, then leave it
 end)
 
-function DR:GetWordWrapText(text,w,font)
+function DR.GetWordWrapText(text,w,font)
 	local displaytext = ""
 	local displayline = ""
 	local displayfont = font
@@ -621,7 +621,7 @@ function DR:GetWordWrapText(text,w,font)
 end
 
 -- waiting menu
-function DR:OpenWaitingMenu()
+function DR.OpenWaitingMenu()
 	local frame = vgui.Create("DR_Window")
 	frame:SetSize(600,270)
 	frame:Center()
@@ -644,13 +644,13 @@ function DR:OpenWaitingMenu()
 		\t\b !cleanup - Reset all traps on the map.\n
 		\t\b !help - View the help menu.\n\n
 		Enjoy, and have fun!]]
-		info = DR:GetWordWrapText(info,iw,"Deathrun_DefaultHUD_MediumLight")
+		info = DR.GetWordWrapText(info,iw,"Deathrun_DefaultHUD_MediumLight")
 		DR.ShadowText(info,"Deathrun_DefaultHUD_MediumLight",ix,iy,HexColor("#303030"),nil,nil,0)
 	end
 end
 
-concommand.Add("deathrun_open_waitingmenu",function() DR:OpenWaitingMenu() end)
-function DR:OpenForcedSpectatorMenu(msg)
+concommand.Add("deathrun_open_waitingmenu",DR.OpenWaitingMenu)
+function DR.OpenForcedSpectatorMenu(msg)
 	local frame = vgui.Create("DR_Window")
 	frame:SetSize(640,200)
 	frame:Center()
@@ -669,7 +669,7 @@ function DR:OpenForcedSpectatorMenu(msg)
 		Spectator section of the F2 menu.
 		\n\nWould you like to move back into to the game?]]
 		if msg then info = msg end
-		info = DR:GetWordWrapText(info,iw,"Deathrun_DefaultHUD_MediumLight")
+		info = DR.GetWordWrapText(info,iw,"Deathrun_DefaultHUD_MediumLight")
 		DR.ShadowText(info,"Deathrun_DefaultHUD_MediumLight",ix,iy,HexColor("#303030"),nil,nil,0)
 	end
 
@@ -691,5 +691,5 @@ function DR:OpenForcedSpectatorMenu(msg)
 	end
 end
 
-concommand.Add("deathrun_open_forcespectatormenu",function() DR:OpenForcedSpectatorMenu() end)
-net.Receive("DeathrunSpectatorNotification",function() DR:OpenForcedSpectatorMenu() end)
+concommand.Add("deathrun_open_forcespectatormenu",DR.OpenForcedSpectatorMenu)
+net.Receive("DeathrunSpectatorNotification",DR.OpenForcedSpectatorMenu)

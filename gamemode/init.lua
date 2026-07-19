@@ -100,10 +100,10 @@ hook.Add("PlayerInitialSpawn","DeathrunPlayerInitialSpawn",function(ply)
 	ply.FirstSpawn = true
 	ply:SetTeam(TEAM_SPECTATOR)
 	--ply:Spawn()
-	DR:ChatBroadcast(ply:Nick() .. " has joined the server.")
+	DR.ChatBroadcast(ply:Nick() .. " has joined the server.")
 end)
 
-hook.Add("PlayerDisconnected","DeathrunPlayerDisconnectMessage",function(ply) DR:ChatBroadcast(ply:Nick() .. " has left the server.") end)
+hook.Add("PlayerDisconnected","DeathrunPlayerDisconnectMessage",function(ply) DR.ChatBroadcast(ply:Nick() .. " has left the server.") end)
 local deathModel = DR.ConVars.DeathModel
 local dropWeaponsOnDeath = DR.ConVars.DropWeaponsOnDeath
 hook.Add("PlayerSpawn","DeathrunSetPlayerModels",function(ply)
@@ -269,7 +269,7 @@ function GM:PlayerDeath(ply,inflictor,attacker)
 	end
 
 	local msg = attackerName .. "\t" .. "✕" .. "\t" .. ply:Nick()
-	DR:DeathNotification(msg,1)
+	DR.DeathNotification(msg,1)
 	print(msg)
 end
 
@@ -280,7 +280,7 @@ end
 -- 		-- this is a speed hole
 -- 		-- it makes the code go faster
 -- 		if type(DR.KillList[1]) == "string" then
--- 			DR:DeathNotification( DR.KillList[1] )
+-- 			DR.DeathNotification( DR.KillList[1] )
 -- 			table.remove( DR.KillList, 1 )
 -- 		elseif type(DR.KillList[1]) == "table" then
 -- 			local ply = DR.KillList[1][1]
@@ -296,7 +296,7 @@ end
 -- 			else
 -- 				message = message.."!"
 -- 			end
--- 			DR:DeathNotification( message )
+-- 			DR.DeathNotification( message )
 -- 			table.remove( DR.KillList, 1 )
 -- 		end
 -- 		-- for i = 1, #DR.KillList do
@@ -315,11 +315,11 @@ end
 -- 		-- 	end
 -- 		-- end
 -- 		-- message = message .. (#DR.KillList == 1 and " was" or " were").." killed!"
--- 		-- DR:DeathNotification( message )
+-- 		-- DR.DeathNotification( message )
 -- 		-- DR.KillList = {}
 -- 	end
 -- end)
-function DR:DeathNotification(msg,mod)
+function DR.DeathNotification(msg,mod)
 	net.Start("DeathrunAddKillNote")
 	net.WriteString(msg or 'nil')
 	net.WriteInt(mod or 1,8)
@@ -456,11 +456,11 @@ end
 
 local stop_the_drop = {"weapon_fuckmeintheass","weapon_fuckmesilly2_fuckmybigblackass",}
 --"weapon_crowbar",
-function DR:CanPlayerDropWeapon(ply,class)
+function DR.CanPlayerDropWeapon(ply,class)
 	return not table.HasValue(stop_the_drop,class)
 end
 
-concommand.Add("deathrun_dropweapon",function(ply,cmd,args) if ply:Alive() and ply:GetActiveWeapon() ~= nil and IsValid(ply:GetActiveWeapon()) then if DR:CanPlayerDropWeapon(ply,ply:GetActiveWeapon():GetClass()) then ply:DropWeapon(ply:GetActiveWeapon()) end end end)
+concommand.Add("deathrun_dropweapon",function(ply,cmd,args) if ply:Alive() and ply:GetActiveWeapon() ~= nil and IsValid(ply:GetActiveWeapon()) then if DR.CanPlayerDropWeapon(ply,ply:GetActiveWeapon():GetClass()) then ply:DropWeapon(ply:GetActiveWeapon()) end end end)
 -- stop people whoring the weapons
 hook.Add("PlayerCanPickupWeapon","StopWeaponAbuseAustraliaSaysNo",function(ply,wep)
 	if ply:Team() == TEAM_GHOST then return false end
@@ -499,7 +499,7 @@ hook.Add("SetupMove","DeathrunIdleCheck",function(ply,mv)
 	ply.LastButtons = mv:GetButtons()
 end)
 
-function DR:CheckIdleTime(ply) -- return how long the player has been idle for
+function DR.CheckIdleTime(ply) -- return how long the player has been idle for
 	return 0 -- hotfix to prevent autokick after 22-02-2016 update
 	-- ply.LastActiveTime = ply.LastActiveTime or CurTime()
 	-- return CurTime() - ply.LastActiveTime
@@ -508,20 +508,20 @@ end
 local IdleTimer = DR.ConVars.IdleTimer
 timer.Create("CheckIdlePlayers",.95,0,function()
 	for k,ply in ipairs(player.GetAllPlaying()) do -- don't kick afk spectators or bots
-		--print( ply:Nick(), DR:CheckIdleTime( ply ) )
-		if math.floor(DR:CheckIdleTime(ply)) == math.floor(IdleTimer:GetInt() - 25) then ply:DeathrunChatPrint("If you do not move in 25 seconds, you will be moved to spec due to being idle.") end
-		if DR:CheckIdleTime(ply) > IdleTimer:GetInt() and ply:SteamID() ~= "BOT" and not ply:IsAdmin() and ply:GetObserverMode() == OBS_MODE_NONE then
+		--print( ply:Nick(), DR.CheckIdleTime( ply ) )
+		if math.floor(DR.CheckIdleTime(ply)) == math.floor(IdleTimer:GetInt() - 25) then ply:DeathrunChatPrint("If you do not move in 25 seconds, you will be moved to spec due to being idle.") end
+		if DR.CheckIdleTime(ply) > IdleTimer:GetInt() and ply:SteamID() ~= "BOT" and not ply:IsAdmin() and ply:GetObserverMode() == OBS_MODE_NONE then
 			ply:ConCommand("deathrun_spectate_only 1")
 			net.Start("DeathrunSpectatorNotification")
 			net.Send(ply)
-			DR:ChatBroadcast(ply:Nick() .. " was specced for being idle too long.")
+			DR.ChatBroadcast(ply:Nick() .. " was specced for being idle too long.")
 		end
 	end
 end)
 
 -- timer.Create("TestIdleCheck", 1, 0, function()
 -- 	for k, ply in ipairs(player.GetAll()) do
--- 		ply:DeathrunChatPrint( tostring(DR:CheckIdleTime( ply )).." seconds idle." )
+-- 		ply:DeathrunChatPrint( tostring(DR.CheckIdleTime( ply )).." seconds idle." )
 -- 	end
 -- end)
 -- Punish death avoiders
@@ -539,7 +539,7 @@ DR.BarredPlayers = util.JSONToTable(file.Read(deathbarred_path,"DATA")) or {
 
 --PrintTable( DR.BarredPlayers )
 --print("There are "..tostring(#DR.BarredPlayers).." players being punished for death avoidance.")
-function DR:SaveDeathAvoid()
+function DR.SaveDeathAvoid()
 	for k,v in pairs(DR.BarredPlayers) do -- remove all players with 0 rounds left
 		if v.rounds == 0 or v.lastpunish < os.time() - 1 * 24 * 60 * 60 then -- remove all players punished 24 hours ago
 			DR.BarredPlayers[k] = nil
@@ -550,9 +550,9 @@ function DR:SaveDeathAvoid()
 	--PrintTable( DR.BarredPlayers )
 end
 
-DR:SaveDeathAvoid()
-hook.Add("PostCleanupMap","SaveDeathAvoid",function() DR:SaveDeathAvoid() end)
-function DR:PunishDeathAvoid(ply,amt)
+DR.SaveDeathAvoid()
+hook.Add("PostCleanupMap","SaveDeathAvoid",function() DR.SaveDeathAvoid() end)
+function DR.PunishDeathAvoid(ply,amt)
 	local id = "id" .. tostring(ply:SteamID64())
 	DR.BarredPlayers[id] = DR.BarredPlayers[id] or {
 		rounds = 0, -- create the entry if it doesn't exist
@@ -562,20 +562,20 @@ function DR:PunishDeathAvoid(ply,amt)
 	DR.BarredPlayers[id].rounds = math.Clamp(DR.BarredPlayers[id].rounds + (amt or 1),0,99) -- add 1 rounds
 end
 
-function DR:GetDeathAvoid(ply) -- returns how many rounds they still need to serve as punishment
+function DR.GetDeathAvoid(ply) -- returns how many rounds they still need to serve as punishment
 	local id = "id" .. tostring(ply:SteamID64())
 	return DR.BarredPlayers[id] ~= nil and (DR.BarredPlayers[id].rounds or 0) or 0
 end
 
-function DR:GetOnlineBarredPlayers()
+function DR.GetOnlineBarredPlayers()
 	local plys = {}
 	for k,v in ipairs(player.GetAll()) do
-		if DR:GetDeathAvoid(v) > 0 and v:ShouldStaySpectating() == false then table.insert(plys,v) end
+		if DR.GetDeathAvoid(v) > 0 and v:ShouldStaySpectating() == false then table.insert(plys,v) end
 	end
 	return plys
 end
 
-function DR:PardonDeathAvoid(ply,amt)
+function DR.PardonDeathAvoid(ply,amt)
 	local id = "id" .. tostring(ply:SteamID64())
 	DR.BarredPlayers[id] = DR.BarredPlayers[id] or {
 		rounds = 0,
@@ -585,7 +585,7 @@ function DR:PardonDeathAvoid(ply,amt)
 	DR.BarredPlayers[id].rounds = math.Clamp(DR.BarredPlayers[id].rounds - (amt or 1),0,99)
 end
 
-concommand.Add("test_avoid",function(ply) DR:PunishDeathAvoid(ply,10) end)
+concommand.Add("test_avoid",function(ply) DR.PunishDeathAvoid(ply,10) end)
 -- drowning compatibility
 -- needs a timer to check for last time not submerged
 -- if it exceeds <drowntime> then start taking 10 damage per second
@@ -636,7 +636,7 @@ concommand.Add("deathrun_not_amused",function(ply)
 end)
 
 net.Receive("DeathrunForceSpectator",function(len,ply)
-	if DR:CanAccessCommand(ply,"deathrun_force_spectate") then
+	if DR.CanAccessCommand(ply,"deathrun_force_spectate") then
 		local targID = net.ReadString()
 		local targ = nil
 		for _,v in ipairs(player.GetAll()) do
@@ -653,7 +653,7 @@ net.Receive("DeathrunForceSpectator",function(len,ply)
 end)
 
 local removeSpeed = DR.ConVars.DisableDefaultDeathSpeed
-function DR:RemoveSpeedMods()
+function DR.RemoveSpeedMods()
 	if removeSpeed:GetBool() == true then
 		for k,v in ipairs(ents.FindByClass("player_speedmod")) do
 			SafeRemoveEntity(v)
@@ -661,5 +661,5 @@ function DR:RemoveSpeedMods()
 	end
 end
 
-hook.Add("PostCleanupMap","RemoveSpeedMods",function() DR:RemoveSpeedMods() end)
-hook.Add("InitPostEntity","RemoveSpeedMods",function() DR:RemoveSpeedMods() end)
+hook.Add("PostCleanupMap","RemoveSpeedMods",DR.RemoveSpeedMods)
+hook.Add("InitPostEntity","RemoveSpeedMods",DR.RemoveSpeedMods)

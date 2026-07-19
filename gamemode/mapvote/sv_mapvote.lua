@@ -23,7 +23,7 @@ end)
 
 --commands
 concommand.Add("mapvote_list_maps",function(ply,cmd,args)
-	if DR:CanAccessCommand(ply,cmd) then
+	if DR.CanAccessCommand(ply,cmd) then
 		net.Start("MapvoteSendAllMaps")
 		net.WriteTable({
 			maps = MV:GetGoodMaps(),
@@ -34,8 +34,8 @@ concommand.Add("mapvote_list_maps",function(ply,cmd,args)
 	end
 end)
 
-DR:AddChatCommand("nominate",function(ply) ply:ConCommand("mapvote_list_maps") end)
-DR:AddChatCommandAlias("nominate","maps")
+DR.AddChatCommand("nominate",function(ply) ply:ConCommand("mapvote_list_maps") end)
+DR.AddChatCommandAlias("nominate","maps")
 function MV:SyncMapList()
 	net.Start("MapvoteUpdateMapList")
 	net.WriteTable(MV.MapList)
@@ -145,10 +145,10 @@ function MV:FinishMapVote()
 	end
 
 	if win == "" then win = table.Random(MV.VotingMapsNoVotes) end
-	DR:ChatBroadcast("The next map will be " .. win .. ". Map will change in 5 seconds.")
+	DR.ChatBroadcast("The next map will be " .. win .. ". Map will change in 5 seconds.")
 	local nextmap = win
 	timer.Simple(5,function()
-		DR:ChatBroadcast("Changing to the next map...")
+		DR.ChatBroadcast("Changing to the next map...")
 		RunConsoleCommand("changelevel",nextmap)
 	end)
 end
@@ -160,9 +160,9 @@ timer.Create("MapvoteCountdownTimer",.2,0,function()
 	end
 end)
 
-concommand.Add("mapvote_begin_mapvote",function(ply,cmd,args) if DR:CanAccessCommand(ply,cmd) then if not hook.Call("DeathrunStartMapvote",nil,ROUND:GetRoundsPlayed()) then MV:BeginMapVote() end end end)
+concommand.Add("mapvote_begin_mapvote",function(ply,cmd,args) if DR.CanAccessCommand(ply,cmd) then if not hook.Call("DeathrunStartMapvote",nil,ROUND:GetRoundsPlayed()) then MV:BeginMapVote() end end end)
 concommand.Add("mapvote_vote",function(ply,cmd,args)
-	if DR:CanAccessCommand(ply,cmd) then
+	if DR.CanAccessCommand(ply,cmd) then
 		if MV.Active == false then return end
 		if args[1] and IsValid(ply) then
 			vot = args[1]
@@ -183,7 +183,7 @@ concommand.Add("mapvote_vote",function(ply,cmd,args)
 end)
 
 concommand.Add("mapvote_nominate_map",function(ply,cmd,args)
-	if DR:CanAccessCommand(ply,cmd) then
+	if DR.CanAccessCommand(ply,cmd) then
 		if args[1] then
 			nom = args[1]
 			--print(nom, game.GetMap())
@@ -205,7 +205,7 @@ concommand.Add("mapvote_nominate_map",function(ply,cmd,args)
 				end
 
 				ply.LastNom = CurTime()
-				DR:ChatBroadcast(ply:Nick() .. " has nominated " .. nom .. " for the mapvote!")
+				DR.ChatBroadcast(ply:Nick() .. " has nominated " .. nom .. " for the mapvote!")
 				net.Start("MapvoteSyncNominations")
 				net.WriteTable(MV.Nominations)
 				net.Broadcast()
@@ -216,14 +216,14 @@ concommand.Add("mapvote_nominate_map",function(ply,cmd,args)
 	end
 end)
 
-concommand.Add("mapvote_update_mapvote",function(ply,cmd,args) if DR:CanAccessCommand(ply,cmd) then MV:UpdateMapVote() end end)
+concommand.Add("mapvote_update_mapvote",function(ply,cmd,args) if DR.CanAccessCommand(ply,cmd) then MV:UpdateMapVote() end end)
 -- RTV Features
 local RTVRatio = CreateConVar("mapvote_rtv_ratio",.5,defaultFlags,"The ratio between votes and players in order to initiate a mapvote.")
 function MV:CheckRTV(suppress)
 	if MV.Active then return end
 	if not suppress then
 		if MV.LoadTime + 60 > CurTime() then
-			DR:ChatBroadcast("It is too early to call an RTV.")
+			DR.ChatBroadcast("It is too early to call an RTV.")
 			return
 		end
 	end
@@ -238,22 +238,22 @@ function MV:CheckRTV(suppress)
 	local ratio = votes / numplayers
 	if ratio > RTVRatio:GetFloat() then
 		if not hook.Call("DeathrunStartMapvote",nil,ROUND:GetRoundsPlayed()) then MV:BeginMapVote() end
-		DR:ChatBroadcast("RTV limit reached. Initiating mapvote.")
+		DR.ChatBroadcast("RTV limit reached. Initiating mapvote.")
 	else
 		local needed = math.ceil(RTVRatio:GetFloat() * numplayers) - votes + 1
-		if not suppress then DR:ChatBroadcast(tostring(needed) .. " more votes needed in order to change the map. Type !rtv to vote.") end
+		if not suppress then DR.ChatBroadcast(tostring(needed) .. " more votes needed in order to change the map. Type !rtv to vote.") end
 	end
 end
 
 concommand.Add("mapvote_rtv",function(ply,cmd,args)
-	if DR:CanAccessCommand(ply,cmd) then
+	if DR.CanAccessCommand(ply,cmd) then
 		local suppress = ply.WantsRTV
 		ply.WantsRTV = true
 		MV:CheckRTV(suppress)
 	end
 end)
 
-DR:AddChatCommand("rtv",function(ply) ply:ConCommand("mapvote_rtv") end)
+DR.AddChatCommand("rtv",function(ply) ply:ConCommand("mapvote_rtv") end)
 hook.Add("PlayerSay","CheckRTVChat",function(ply,text,pub)
 	local args = string.Split(text," ")
 	if #args == 1 then

@@ -95,7 +95,7 @@ if CLIENT then
 	cvars.AddChangeCallback("deathrun_spectate_only",function(name,old,new) RunConsoleCommand("deathrun_set_spectate",new) end)
 	hook.Add("HUDPaint","SendSpectateConVarInfo",function()
 		RunConsoleCommand("deathrun_set_spectate",GetConVarNumber("deathrun_spectate_only"))
-		if GetConVarNumber("deathrun_spectate_only") == 1 then DR:OpenForcedSpectatorMenu([[You are currently in spectator mode.
+		if GetConVarNumber("deathrun_spectate_only") == 1 then DR.OpenForcedSpectatorMenu([[You are currently in spectator mode.
 				To play, click on one of the buttons below,
 				or visit the spectator section of the settings menu by pressing F2.
 				\n\nWould you like to move back into the game?]]) end
@@ -113,13 +113,13 @@ DR.Hulls = {
 }
 
 if CLIENT then
-	concommand.Add("deathrun_reload_hull_client",function() DR:SetClientHullSizes() end)
-	function DR:SetClientHullSizes()
+	function DR.SetClientHullSizes()
 		LocalPlayer():SetHull(DR.Hulls.HullMin,DR.Hulls.HullStand)
 		LocalPlayer():SetHullDuck(DR.Hulls.HullMin,DR.Hulls.HullDuck) -- quack quack
 		LocalPlayer():SetViewOffset(DR.Hulls.ViewStand)
 		LocalPlayer():SetViewOffsetDucked(DR.Hulls.ViewDuck) -- quack
 	end
+	concommand.Add("deathrun_reload_hull_client",DR.SetClientHullSizes)
 end
 
 hook.Add("PlayerSpawn","HullSizes",function(ply)
@@ -207,7 +207,7 @@ end
 hook.Add("SetupMove","AutoHop",AutoHop)
 -- get rid of some default hooks
 hook.Remove("PlayerTick","TickWidgets")
-function DR:GetAccessLevel(ply)
+function DR.GetAccessLevel(ply)
 	if not ply or not IsValid(ply) then return 100 end
 	local access = DR.Ranks[ply:GetUserGroup()] or 1
 	local id64 = ply:SteamID64()
@@ -217,8 +217,8 @@ function DR:GetAccessLevel(ply)
 	return access or 1
 end
 
-function DR:CanAccessCommand(ply,cmd)
-	local access = DR:GetAccessLevel(ply)
+function DR.CanAccessCommand(ply,cmd)
+	local access = DR.GetAccessLevel(ply)
 	local perm = DR.Permissions[cmd] or 99
 	if access >= perm then
 		return true

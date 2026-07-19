@@ -35,7 +35,7 @@ if SERVER then
 				res = {}
 			else
 				for i = 1,#res do
-					res[i]["nickname"] = DR:SteamToNick(res[i]["sid64"])
+					res[i]["nickname"] = DR.SteamToNick(res[i]["sid64"])
 				end
 			end
 
@@ -71,7 +71,7 @@ if SERVER then
 		end
 	end)
 
-	function DR:SteamToNick(sid)
+	function DR.SteamToNick(sid)
 		local com = true
 		if string.find(sid,"STEAM_") ~= nil then com = false end
 		local nick = "UNKNOWN"
@@ -147,14 +147,14 @@ if SERVER then
 	end)
 
 	concommand.Add("stats_test",function(ply,cmd,args) PrintTable(sql.Query("SELECT * FROM deathrun_stats WHERE sid = '" .. ply:SteamID() .. "'")) end)
-	function DR:DisplayStats(ply) -- displays a player's stats in front of their face
+	function DR.DisplayStats(ply) -- displays a player's stats in front of their face
 		if IsValid(ply) then
 			local res = sql.Query("SELECT * FROM deathrun_stats WHERE sid = '" .. ply:SteamID() .. "'")
 			local res2 = sql.Query("SELECT sid, (runner_wins + death_wins) AS total_wins FROM deathrun_stats ORDER BY total_wins DESC LIMIT 1")
 			local highscoreName = ""
 			local highscore = 0
 			if res2 then
-				highscoreName = DR:SteamToNick(res2[1]["sid"])
+				highscoreName = DR.SteamToNick(res2[1]["sid"])
 				highscore = res2[1]["total_wins"]
 				--PrintTable( res2 )
 			end
@@ -176,8 +176,8 @@ if SERVER then
 		end
 	end
 
-	hook.Add("PlayerLoadout","DisplayStatsForPlayers",function(ply) if ply:Alive() and not ply:GetSpectate() then timer.Simple(.5,function() DR:DisplayStats(ply) end) end end)
-	concommand.Add("deathrun_display_stats",function(ply,cmd,args) DR:DisplayStats(ply) end)
+	hook.Add("PlayerLoadout","DisplayStatsForPlayers",function(ply) if ply:Alive() and not ply:GetSpectate() then timer.Simple(.5,function() DR.DisplayStats(ply) end) end end)
+	concommand.Add("deathrun_display_stats",DR.DisplayStats)
 	util.AddNetworkString("deathrun_send_stats")
 	util.AddNetworkString("deathrun_display_stats")
 	util.AddNetworkString("deathrun_send_map_records")
@@ -385,4 +385,4 @@ function Base64Decode(data)
 	end)
 end
 
-if SERVER then DR:AddChatCommand("records",function(ply,args) ply:ConCommand("deathrun_records_menu") end) end
+if SERVER then DR.AddChatCommand("records",function(ply,args) ply:ConCommand("deathrun_records_menu") end) end

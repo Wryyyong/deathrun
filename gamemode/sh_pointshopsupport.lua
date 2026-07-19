@@ -10,7 +10,7 @@ local CvKillReward = DR.ConVars.PointShop.KillReward
 local CvWinReward = DR.ConVars.PointShop.WinReward
 local CvRewardMessage = DR.ConVars.PointShop.RewardMessage
 if SERVER then
-	function DR:RewardPlayer(ply,amt,reason)
+	function DR.RewardPlayer(ply,amt,reason)
 		amt = amt or 0
 		if hasPointshop then
 			ply:PS_GivePoints(amt)
@@ -34,11 +34,11 @@ if SERVER then
 		end
 	end
 
-	hook.Add("DeathrunPlayerFinishMap","PointshopRewards",function(ply,zname,z,place) DR:RewardPlayer(ply,CvFinishReward:GetInt(),"finishing the map") end)
-	hook.Add("PlayerDeath","PointshopRewards",function(ply,inflictor,attacker) if attacker:IsPlayer() then if ply:Team() ~= attacker:Team() then DR:RewardPlayer(attacker,CvKillReward:GetInt(),"killing " .. ply:Nick()) end end end)
+	hook.Add("DeathrunPlayerFinishMap","PointshopRewards",function(ply,zname,z,place) DR.RewardPlayer(ply,CvFinishReward:GetInt(),"finishing the map") end)
+	hook.Add("PlayerDeath","PointshopRewards",function(ply,inflictor,attacker) if attacker:IsPlayer() then if ply:Team() ~= attacker:Team() then DR.RewardPlayer(attacker,CvKillReward:GetInt(),"killing " .. ply:Nick()) end end end)
 	hook.Add("DeathrunRoundWin","PointshopRewards",function(winner)
 		for k,v in ipairs(player.GetAllPlaying()) do
-			if v:Team() == winner then DR:RewardPlayer(v,CvWinReward:GetInt(),"winning the round") end
+			if v:Team() == winner then DR.RewardPlayer(v,CvWinReward:GetInt(),"winning the round") end
 		end
 	end)
 end

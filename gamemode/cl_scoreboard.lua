@@ -21,7 +21,7 @@ if IsValid(DR.ScoreboardPanel) then -- remove the scoreboard on autorefresh
 	DR.ScoreboardPanel:Remove()
 end
 
-function DR:CreateScoreboard()
+function DR.CreateScoreboard()
 	local scoreboard = DR.ScoreboardPanel
 	if not IsValid(DR.ScoreboardPanel) then
 		local scoreboard = vgui.Create("DPanel")
@@ -89,30 +89,30 @@ function DR:CreateScoreboard()
 
 	local small = GetConVar("deathrun_scoreboard_small"):GetBool()
 	dlist:Add(header)
-	dlist:Add(DR:NewScoreboardSpacer({"[Hint] Right Click to scroll and interact with scoreboard."},dlist:GetWide(),small and 24 or 32,DR.Colors.Turq))
-	dlist:Add(DR:NewScoreboardSpacer({tostring(#team.GetPlayers(TEAM_DEATH)) .. " players on Death Team"},dlist:GetWide(),small and 24 or 32,team.GetColor(TEAM_DEATH)))
+	dlist:Add(DR.NewScoreboardSpacer({"[Hint] Right Click to scroll and interact with scoreboard."},dlist:GetWide(),small and 24 or 32,DR.Colors.Turq))
+	dlist:Add(DR.NewScoreboardSpacer({tostring(#team.GetPlayers(TEAM_DEATH)) .. " players on Death Team"},dlist:GetWide(),small and 24 or 32,team.GetColor(TEAM_DEATH)))
 	for k,ply in ipairs(team.GetPlayers(TEAM_DEATH)) do
-		dlist:Add(DR:NewScoreboardPlayer(ply,dlist:GetWide(),small and 22 or 28))
+		dlist:Add(DR.NewScoreboardPlayer(ply,dlist:GetWide(),small and 22 or 28))
 	end
 
-	dlist:Add(DR:NewScoreboardSpacer({tostring(#team.GetPlayers(TEAM_RUNNER)) .. " players on Runner Team"},dlist:GetWide(),small and 24 or 32,team.GetColor(TEAM_RUNNER)))
+	dlist:Add(DR.NewScoreboardSpacer({tostring(#team.GetPlayers(TEAM_RUNNER)) .. " players on Runner Team"},dlist:GetWide(),small and 24 or 32,team.GetColor(TEAM_RUNNER)))
 	for k,ply in ipairs(team.GetPlayers(TEAM_RUNNER)) do
-		dlist:Add(DR:NewScoreboardPlayer(ply,dlist:GetWide(),small and 22 or 28))
+		dlist:Add(DR.NewScoreboardPlayer(ply,dlist:GetWide(),small and 22 or 28))
 	end
 
 	if GhostMode then -- GhostMode support
-		dlist:Add(DR:NewScoreboardSpacer({tostring(#team.GetPlayers(TEAM_GHOST)) .. " players in Ghost Mode"},dlist:GetWide(),small and 24 or 32,team.GetColor(TEAM_GHOST)))
+		dlist:Add(DR.NewScoreboardSpacer({tostring(#team.GetPlayers(TEAM_GHOST)) .. " players in Ghost Mode"},dlist:GetWide(),small and 24 or 32,team.GetColor(TEAM_GHOST)))
 		for k,ply in ipairs(team.GetPlayers(TEAM_GHOST)) do
-			dlist:Add(DR:NewScoreboardPlayer(ply,dlist:GetWide(),small and 22 or 28))
+			dlist:Add(DR.NewScoreboardPlayer(ply,dlist:GetWide(),small and 22 or 28))
 		end
 	end
 
-	dlist:Add(DR:NewScoreboardSpacer({tostring(#team.GetPlayers(TEAM_SPECTATOR)) .. " players Spectating"},dlist:GetWide(),small and 24 or 32,HexColor("#303030")))
+	dlist:Add(DR.NewScoreboardSpacer({tostring(#team.GetPlayers(TEAM_SPECTATOR)) .. " players Spectating"},dlist:GetWide(),small and 24 or 32,HexColor("#303030")))
 	for k,ply in ipairs(team.GetPlayers(TEAM_SPECTATOR)) do
-		dlist:Add(DR:NewScoreboardPlayer(ply,dlist:GetWide(),small and 22 or 28))
+		dlist:Add(DR.NewScoreboardPlayer(ply,dlist:GetWide(),small and 22 or 28))
 	end
 
-	local options = DR:NewScoreboardSpacer({""},dlist:GetWide(),24,HexColor("#303030"))
+	local options = DR.NewScoreboardSpacer({""},dlist:GetWide(),24,HexColor("#303030"))
 	local sizetog = vgui.Create("DR_AuToggle",options)
 	sizetog:SetConVar("deathrun_scoreboard_small")
 	sizetog:SetText("Small Text")
@@ -123,7 +123,7 @@ function DR:CreateScoreboard()
 	DR.ScoreboardIsOpen = true
 end
 
-function DR:NewScoreboardSpacer(tbl_cols,w,h,customColor) -- static columns
+function DR.NewScoreboardSpacer(tbl_cols,w,h,customColor) -- static columns
 	local panel = vgui.Create("DPanel")
 	panel:SetSize(w,h)
 	panel.tbl_cols = tbl_cols
@@ -154,7 +154,7 @@ function DR:NewScoreboardSpacer(tbl_cols,w,h,customColor) -- static columns
 end
 
 local muteicon = Material("icon16/sound_mute.png")
-function DR:NewScoreboardPlayer(ply,w,h)
+function DR.NewScoreboardPlayer(ply,w,h)
 	local t = ply:Team()
 	local tcol = team.GetColor(t)
 	local panel = vgui.Create("DPanel")
@@ -281,7 +281,7 @@ function DR:NewScoreboardPlayer(ply,w,h)
 			end
 		end
 
-		if DR:CanAccessCommand(LocalPlayer(),"deathrun_force_spectate") then
+		if DR.CanAccessCommand(LocalPlayer(),"deathrun_force_spectate") then
 			local specop = menu:AddOption("Force to Spectator") -- spectator options... SPEC OPS!
 			specop.ply = menu.ply
 			specop:SetIcon("icon16/status_offline.png")
@@ -410,28 +410,28 @@ function DR:NewScoreboardPlayer(ply,w,h)
 	return panel
 end
 
-function DR:DestroyScoreboard()
+function DR.DestroyScoreboard()
 	if IsValid(DR.ScoreboardPanel) then end
 	DR.ScoreboardIsOpen = false
 end
 
-DR:DestroyScoreboard()
+DR.DestroyScoreboard()
 function GM:ScoreboardHide()
-	DR:DestroyScoreboard()
+	DR.DestroyScoreboard()
 	DR.ScoreboardCloseTime = CurTime()
 end
 
 function GM:ScoreboardShow()
 	local should = hook.Call("DeathrunOpenScoreboard",nil) -- return false to suppress scoreboard opening
 	if should == false then return end
-	DR:CreateScoreboard()
+	DR.CreateScoreboard()
 	DR.ScoreboardOpenTime = CurTime()
 end
 
 hook.Add("CreateMove","DeathrunScoreboardPopup",function(cmd) if input.WasMousePressed(MOUSE_RIGHT) then if DR.ScoreboardIsOpen == true then DR.ScoreboardPanel:MakePopup() end end end)
 -- hall of fame/hall of lame
 DR.ScoreboardSpecials = {}
-function DR:SetScoreboardDisplay(sid,_icon,_col,_tag,_rank) -- leave nil to use defaults
+function DR.SetScoreboardDisplay(sid,_icon,_col,_tag,_rank) -- leave nil to use defaults
 	DR.ScoreboardSpecials[sid] = {
 		icon = _icon or nil,
 		col = _col or nil,
@@ -440,16 +440,16 @@ function DR:SetScoreboardDisplay(sid,_icon,_col,_tag,_rank) -- leave nil to use 
 	}
 end
 
-DR:SetScoreboardDisplay("STEAM_0:1:30288855","icon16/cup.png",Color(50,200,0),"Author",nil) -- arizard
-DR:SetScoreboardDisplay("STEAM_0:0:29351088","icon16/rainbow.png",Color(200,0,0),"Worst Player",nil) -- zelpa
-DR:SetScoreboardDisplay("STEAM_0:1:128126755","icon16/drink.png",Color(255,200,255),"Confirmed Grill",nil) -- krystal
-DR:SetScoreboardDisplay("STEAM_0:0:90710956","icon16/cup_error.png",HexColor("#009600"),"Associate",nil) -- tarkus
-DR:SetScoreboardDisplay("STEAM_0:1:147138529","icon16/anchor.png",HexColor("#a66bbe"),"MEME MASTER",nil) -- kaay
-DR:SetScoreboardDisplay("STEAM_0:1:64432636","icon16/map_go.png",HexColor("#99ff33"),"Playboy Bunny",nil) -- gamefresh
-DR:SetScoreboardDisplay("STEAM_0:1:89220979","icon16/joystick.png",HexColor("#8cfaef"),"Neko Nation",nil) -- fich
-DR:SetScoreboardDisplay("STEAM_0:0:71992617","icon16/tux.png",HexColor("#8cfaef"),tostring(math.random(100)) .. "% Unstable",nil) -- haina
-DR:SetScoreboardDisplay("STEAM_0:1:86065559","icon16/lightning.png",Color(255,18,18),"Little Kid",nil) -- josh
-DR:SetScoreboardDisplay("STEAM_0:0:56846935","icon16/money.png",HexColor("#ffc048"),"Scammer",nil) -- preck
+DR.SetScoreboardDisplay("STEAM_0:1:30288855","icon16/cup.png",Color(50,200,0),"Author",nil) -- arizard
+DR.SetScoreboardDisplay("STEAM_0:0:29351088","icon16/rainbow.png",Color(200,0,0),"Worst Player",nil) -- zelpa
+DR.SetScoreboardDisplay("STEAM_0:1:128126755","icon16/drink.png",Color(255,200,255),"Confirmed Grill",nil) -- krystal
+DR.SetScoreboardDisplay("STEAM_0:0:90710956","icon16/cup_error.png",HexColor("#009600"),"Associate",nil) -- tarkus
+DR.SetScoreboardDisplay("STEAM_0:1:147138529","icon16/anchor.png",HexColor("#a66bbe"),"MEME MASTER",nil) -- kaay
+DR.SetScoreboardDisplay("STEAM_0:1:64432636","icon16/map_go.png",HexColor("#99ff33"),"Playboy Bunny",nil) -- gamefresh
+DR.SetScoreboardDisplay("STEAM_0:1:89220979","icon16/joystick.png",HexColor("#8cfaef"),"Neko Nation",nil) -- fich
+DR.SetScoreboardDisplay("STEAM_0:0:71992617","icon16/tux.png",HexColor("#8cfaef"),tostring(math.random(100)) .. "% Unstable",nil) -- haina
+DR.SetScoreboardDisplay("STEAM_0:1:86065559","icon16/lightning.png",Color(255,18,18),"Little Kid",nil) -- josh
+DR.SetScoreboardDisplay("STEAM_0:0:56846935","icon16/money.png",HexColor("#ffc048"),"Scammer",nil) -- preck
 hook.Add("GetScoreboardNameColor","memes",function(ply)
 	-- do not remove or i kill u
 	local sid = ply:SteamID()

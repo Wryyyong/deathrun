@@ -8,19 +8,19 @@ local AnnouncementCounter = 1
 DR.AnnouncerName = DR.AnnouncerName or "HELP" -- incase the file refreshes
 DR.AnnouncerColor = DR.AnnouncerColor or TextColors.Alizarin
 
-function DR:SetAnnouncerName(name)
+function DR.SetAnnouncerName(name)
 	DR.AnnouncerName = name
 end
 
-function DR:SetAnnouncerColor(col)
+function DR.SetAnnouncerColor(col)
 	DR.AnnouncerColor = col
 end
 
-function DR:SetAnnouncerTable(tbl)
+function DR.SetAnnouncerTable(tbl)
 	msgs = tbl
 end
 
-function DR:GetAnnouncerTable()
+function DR.GetAnnouncerTable()
 	return msgs
 end
 
@@ -40,7 +40,7 @@ local AnnouncementMessages = {
 	"Disconnecting while on the Death team is not allowed and will be considered death avoidance. You will be forced to play extra rounds as Death.",
 }
 
-function DR:AddAnnouncement(ann)
+function DR.AddAnnouncement(ann)
 	table.insert(AnnouncementMessages,ann or "Blank Announcement")
 end
 
