@@ -2,55 +2,84 @@ if not file.Exists("deathrun","DATA") then -- creates a folder in data for the g
 	file.CreateDir("deathrun")
 end
 
---hexcolor
-AddCSLuaFile("hexcolor.lua")
-include("hexcolor.lua")
---fonts
-AddCSLuaFile("cl_fonts.lua")
---derma
-AddCSLuaFile("cl_derma.lua")
--- base
-AddCSLuaFile("cl_hud.lua")
-AddCSLuaFile("cl_init.lua")
-AddCSLuaFile("cl_menus.lua")
-AddCSLuaFile("shared.lua")
+-- init
 AddCSLuaFile("config.lua")
+AddCSLuaFile("shared.lua")
+
 include("config.lua")
 include("shared.lua")
+
+-- convars
+AddCSLuaFile("convars/sh_convars.lua")
+AddCSLuaFile("convars/cl_convars.lua")
+
+include("convars/sh_convars.lua")
+include("convars/sv_convars.lua")
+
+-- hexcolor
+AddCSLuaFile("hexcolor.lua")
+include("hexcolor.lua")
+
+-- fonts
+AddCSLuaFile("cl_fonts.lua")
+
+-- derma
+AddCSLuaFile("cl_derma.lua")
+
+-- base
+AddCSLuaFile("cl_hud.lua")
+AddCSLuaFile("cl_menus.lua")
+
 -- scoreboard
 AddCSLuaFile("cl_scoreboard.lua")
+
 -- commands
 include("sv_commands.lua")
+
 -- Round System
 AddCSLuaFile("roundsystem/sh_round.lua")
 AddCSLuaFile("roundsystem/cl_round.lua")
 AddCSLuaFile("sh_definerounds.lua")
+
 include("roundsystem/sh_round.lua")
 include("roundsystem/sv_round.lua")
 include("sh_definerounds.lua")
+
 -- zones
 AddCSLuaFile("zones/sh_zone.lua")
 AddCSLuaFile("zones/cl_zone.lua")
+
 include("zones/sh_zone.lua")
 include("zones/sv_zone.lua")
+
 -- map votes
 AddCSLuaFile("mapvote/sh_mapvote.lua")
 AddCSLuaFile("mapvote/cl_mapvote.lua")
+
 include("mapvote/sh_mapvote.lua")
 include("mapvote/sv_mapvote.lua")
---player
+
+-- player
 include("sv_player.lua")
---button claiming
-include("sh_buttonclaiming.lua")
+
+-- button claiming
 AddCSLuaFile("sh_buttonclaiming.lua")
+
+include("sh_buttonclaiming.lua")
+
 -- announcements
 AddCSLuaFile("cl_announcer.lua")
+
 -- pointshop support
-include("sh_pointshopsupport.lua")
 AddCSLuaFile("sh_pointshopsupport.lua")
+
+include("sh_pointshopsupport.lua")
+
 -- statistics
-include("sh_statistics.lua")
 AddCSLuaFile("sh_statistics.lua")
+
+include("sh_statistics.lua")
+
 util.AddNetworkString("DeathrunChatMessage")
 util.AddNetworkString("DeathrunSyncMutelist")
 util.AddNetworkString("DeathrunNotification")
@@ -72,9 +101,8 @@ hook.Add("PlayerInitialSpawn","DeathrunPlayerInitialSpawn",function(ply)
 end)
 
 hook.Add("PlayerDisconnected","DeathrunPlayerDisconnectMessage",function(ply) DR:ChatBroadcast(ply:Nick() .. " has left the server.") end)
-CreateConVar("deathrun_death_model","models/player/monk.mdl",defaultFlags,"The default model for the Deaths.")
-local deathModel = GetConVar("deathrun_death_model")
-local dropWeaponsOnDeath = CreateConVar("deathrun_drop_weapons_on_death",1,defaultFlags,"Should players drop weapons on death?")
+local deathModel = DR.ConVars.DeathModel
+local dropWeaponsOnDeath = DR.ConVars.DropWeaponsOnDeath
 hook.Add("PlayerSpawn","DeathrunSetPlayerModels",function(ply)
 	--if dropWeaponsOnDeath
 	if ply:Team() == TEAM_DEATH then
@@ -164,8 +192,6 @@ function GM:PlayerSpawn(ply)
 	return self.BaseClass:PlayerSpawn(ply)
 end
 
-CreateConVar("deathrun_death_sprint","650",defaultFlags,"Sprint speed for Death team.")
-CreateConVar("deathrun_starting_weapon","weapon_crowbar",defaultFlags,"Starting weapon for both teams.")
 function GM:PlayerLoadout(ply)
 	ply:StripWeapons()
 	ply:StripAmmo()
@@ -354,8 +380,8 @@ function GM:EntityTakeDamage(target,dmginfo)
 end
 
 -- player muting
-CreateConVar("deathrun_alltalk",1,defaultFlags,"Enable alltalk - 1 for enabled, 0 to stop living players from hearing dead players.")
-local alltalk = GetConVar("deathrun_alltalk")
+
+local alltalk = DR.ConVars.AllTalk
 function GM:PlayerCanHearPlayersVoice(listener,talker)
 	listener.mutelist = listener.mutelist or {}
 	if table.HasValue(listener.mutelist,talker:SteamID()) then
@@ -476,7 +502,7 @@ function DR:CheckIdleTime(ply) -- return how long the player has been idle for
 	-- return CurTime() - ply.LastActiveTime
 end
 
-local IdleTimer = CreateConVar("deathrun_idle_kick_time",60,defaultFlags,"How many seconds each to wait before speccing idle players.")
+local IdleTimer = DR.ConVars.IdleTimer
 timer.Create("CheckIdlePlayers",.95,0,function()
 	for k,ply in ipairs(player.GetAllPlaying()) do -- don't kick afk spectators or bots
 		--print( ply:Nick(), DR:CheckIdleTime( ply ) )
@@ -560,7 +586,7 @@ concommand.Add("test_avoid",function(ply) DR:PunishDeathAvoid(ply,10) end)
 -- drowning compatibility
 -- needs a timer to check for last time not submerged
 -- if it exceeds <drowntime> then start taking 10 damage per second
-CreateConVar("deathrun_drown_time","20",defaultFlags,"How long can a player stay submerged before drowning?")
+
 timer.Create("DeathrunDrowningStuff",.5,0,function()
 	for k,ply in ipairs(player.GetAll()) do
 		ply.LastOxygenTime = ply.LastOxygenTime or CurTime()
@@ -623,7 +649,7 @@ net.Receive("DeathrunForceSpectator",function(len,ply)
 	end
 end)
 
-local removeSpeed = CreateConVar("deathrun_disable_default_deathspeed",0,defaultFlags,"Removes the player_speedmod entities from maps to disable the default deathspeed.")
+local removeSpeed = DR.ConVars.DisableDefaultDeathSpeed
 function DR:RemoveSpeedMods()
 	if removeSpeed:GetBool() == true then
 		for k,v in ipairs(ents.FindByClass("player_speedmod")) do

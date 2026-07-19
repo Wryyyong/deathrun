@@ -9,16 +9,7 @@ ROUND_ENDING = ROUND_OVER
 WIN_STALEMATE = 1
 WIN_RUNNER = TEAM_RUNNER
 WIN_DEATH = TEAM_DEATH
-local defaultFlags = FCVAR_SERVER_CAN_EXECUTE + FCVAR_REPLICATED + FCVAR_NOTIFY + FCVAR_ARCHIVE
-RoundDuration = CreateConVar("deathrun_round_duration",60 * 5,defaultFlags,"How many seconds each round should last, not including preptime.")
-PrepDuration = CreateConVar("deathrun_preptime_duration",5,defaultFlags,"How many seconds preptime should go for.")
-FinishDuration = CreateConVar("deathrun_finishtime_duration",10,defaultFlags,"How many seconds to wait before starting a new round.")
-DeathRatio = CreateConVar("deathrun_death_ratio",.15,defaultFlags,"What fraction of players are Deaths.")
-RoundLimit = CreateConVar("deathrun_round_limit",6,defaultFlags,"How many rounds to play before changing the map.")
-DeathAvoidPunishment = CreateConVar("deathrun_death_avoid_punishment",1,defaultFlags,"How many round should a player sit out after they attempt to death avoid?")
-DeathMax = CreateConVar("deathrun_max_deaths",64,defaultFlags,"Maximum amount of players on the Death team at any given time.")
-CreateConVar("deathrun_autoslay_delay",90,defaultFlags,"How long to wait after a start of a round before slaying all the AFKs.")
-DR.DeathAvoidPunishment = DeathAvoidPunishment
+
 -- for the round timer
 -- have a shared ROUND_TIMER variable which continuously counts down each .2 second
 -- timer going every .2s updating ROUND_TIMER so we have a precision of 1/5th of a second ?????
@@ -115,8 +106,8 @@ ROUND.AddState(ROUND_PREP,function()
 
 	if SERVER then
 		game.CleanUpMap()
-		timer.Simple(PrepDuration:GetInt(),function() ROUND.RoundSwitch(ROUND_ACTIVE) end)
-		ROUND:SetTimer(PrepDuration:GetInt())
+		timer.Simple(DR.ConVars.PrepDuration:GetInt(),function() ROUND.RoundSwitch(ROUND_ACTIVE) end)
+		ROUND:SetTimer(DR.ConVars.PrepDuration:GetInt())
 		for k,ply in ipairs(player.GetAll()) do
 			if not ply:ShouldStaySpectating() then -- for some reason we need to do this otherwise people spawn as spec when they shouldnt!
 				ply:KillSilent()
@@ -129,10 +120,10 @@ ROUND.AddState(ROUND_PREP,function()
 
 		-- let's pick deaths at random, but ignore if they have been death the 2 previous rounds
 		local deaths = {}
-		local deathsNeeded = math.ceil(DeathRatio:GetFloat() * #player.GetAllPlaying())
+		local deathsNeeded = math.ceil(DR.ConVars.DeathRatio:GetFloat() * #player.GetAllPlaying())
 		local runners = {}
 		local pool = table.Copy(player.GetAllPlaying())
-		if deathsNeeded > DeathMax:GetInt() then deathsNeeded = DeathMax:GetInt() end
+		if deathsNeeded > DR.ConVars.DeathMax:GetInt() then deathsNeeded = DR.ConVars.DeathMax:GetInt() end
 		-- get a list of players, ordered by how many death rounds they have had, lowest to highest
 		local orderedlist = {}
 		local unorderedlist = table.Copy(player.GetAllPlaying())
@@ -364,7 +355,6 @@ if SERVER then
 	hook.Add("InitPostEntity","DeathrunInitialRoundState",function() ROUND.RoundSwitch(ROUND_WAITING) end)
 end
 
-CreateConVar("deathrun_finish_balloons","12",defaultFlags,"How many balloons to spawn when the player finishes the map?")
 hook.Add("DeathrunPlayerFinishMap","Balloons",function(ply)
 	if GetConVarNumber("deathrun_finish_balloons") > 0 then
 		for i = 1,GetConVarNumber("deathrun_finish_balloons") do

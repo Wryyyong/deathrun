@@ -1,5 +1,18 @@
 print("Loaded cl_menus.lua...")
-local crosshair_convars = {{"header","Crosshair Dimensions"},{"number","deathrun_crosshair_thickness",0,16,"Stroke Thickness"},{"number","deathrun_crosshair_gap",0,32,"Inner Gap"},{"number","deathrun_crosshair_size",0,32,"Stroke Length"},{"header","Crosshair Color"},{"number","deathrun_crosshair_red",0,255,"Red"},{"number","deathrun_crosshair_green",0,255,"Green"},{"number","deathrun_crosshair_blue",0,255,"Blue"},{"number","deathrun_crosshair_alpha",0,255,"Transparency"},}
+
+local crosshair_convars = {
+	{"header","Crosshair Dimensions"},
+	{"number","deathrun_crosshair_size",0,32,"Stroke Length"},
+	{"number","deathrun_crosshair_thickness",0,16,"Stroke Thickness"},
+	{"number","deathrun_crosshair_gap",0,32,"Inner Gap"},
+
+	{"header","Crosshair Color"},
+	{"number","deathrun_crosshair_red",0,255,"Red"},
+	{"number","deathrun_crosshair_green",0,255,"Green"},
+	{"number","deathrun_crosshair_blue",0,255,"Blue"},
+	{"number","deathrun_crosshair_alpha",0,255,"Transparency"},
+}
+
 function DR:OpenCrosshairCreator()
 	local frame = vgui.Create("DR_Window")
 	frame:SetSize(640,480)
@@ -151,10 +164,40 @@ function DR:OpenHelp()
 end
 
 concommand.Add("deathrun_open_help",function() DR:OpenHelp() end)
-local deathrun_settings = {{"header","HUD Settings"},{"number","deathrun_hud_theme",1,4,"HUD Theme"},{"number","deathrun_hud_position",1,9,"Position of the HUD (HP, Velocity, Time)"},{"number","deathrun_hud_ammo_position",1,9,"Position of the Ammo HUD"},{"number","deathrun_hud_alpha",0,255,"Transparency of the HUD background"},{"number","deathrun_targetid_fade_duration",0,10,"TargetID fade duration"},{"boolean","deathrun_zones_visibility","Toggle Zone Visibility"},{"boolean","deathrun_stats_visibility","Toggle the YOUR STATS popup"},{"header","Spectator Settings"},{"boolean","deathrun_spectate_only","Spectate-only mode"},{"header","Thirdperson Settings"},{"boolean","deathrun_thirdperson_enabled","Thirdperson mode"},{"number","deathrun_thirdperson_opacity",5,255,"Transparency of your playermodel in Thirdperson mode"},{"number","deathrun_thirdperson_offset_x",-40,40,"Thirdperson camera horizontal offset"},{"number","deathrun_thirdperson_offset_y",-40,40,"Thirdperson camera vertical offset"},{"number","deathrun_thirdperson_offset_z",-75,75,"Thirdperson camera forward-backward offset"},{"number","deathrun_thirdperson_offset_pitch",-75,75,"Thirdperson camera Pitch offset"},{"number","deathrun_thirdperson_offset_yaw",-75,75,"Thirdperson camera Yaw offset"},{"number","deathrun_thirdperson_offset_roll",-75,75,"Thirdperson camera Roll offset"},{"header","Other Settings"},{"boolean","deathrun_round_cues","Audible round cues at starts and ends of rounds"},{"boolean","deathrun_info_on_join","Show the info menu when joining the server"},{"boolean","deathrun_autojump","Autojump (Enabling this limits velocity depending on server settings.)"},{"boolean","deathrun_enable_announcements","Enable help messages"},{"number","deathrun_announcement_interval",0,600,"Seconds between help messages."},{"number","deathrun_teammate_fade_distance",0,512,"Teammate fade distance."}}
-DR.DeathrunSettings = deathrun_settings
+local Settings = {
+	{"header","HUD Settings"},
+	{"number","deathrun_hud_theme",1,4,"HUD Theme"},
+	{"number","deathrun_hud_main_pos",1,9,"Position of the HUD (HP, Velocity, Time)"},
+	{"number","deathrun_hud_ammo_pos",1,9,"Position of the Ammo HUD"},
+	{"number","deathrun_hud_alpha",0,255,"Transparency of the HUD background"},
+	{"number","deathrun_targetid_fade_duration",0,10,"TargetID fade duration"},
+	{"boolean","deathrun_zones_visibility","Toggle Zone Visibility"},
+	{"boolean","deathrun_stats_visibility","Toggle the YOUR STATS popup"},
+
+	{"header","Spectator Settings"},
+	{"boolean","deathrun_spectate_only","Spectate-only mode"},
+
+	{"header","ThirdPerson Settings"},
+	{"boolean","deathrun_thirdperson_enabled","Thirdperson mode"},
+	{"number","deathrun_thirdperson_opacity",5,255,"Transparency of your playermodel in Thirdperson mode"},
+	{"number","deathrun_thirdperson_offset_x",-40,40,"Thirdperson camera horizontal offset"},
+	{"number","deathrun_thirdperson_offset_y",-40,40,"Thirdperson camera vertical offset"},
+	{"number","deathrun_thirdperson_offset_z",-75,75,"Thirdperson camera forward-backward offset"},
+	{"number","deathrun_thirdperson_offset_pitch",-75,75,"Thirdperson camera Pitch offset"},
+	{"number","deathrun_thirdperson_offset_yaw",-75,75,"Thirdperson camera Yaw offset"},
+	{"number","deathrun_thirdperson_offset_roll",-75,75,"Thirdperson camera Roll offset"},
+
+	{"header","Other Settings"},
+	{"boolean","deathrun_round_cues","Audible round cues at starts and ends of rounds"},
+	{"boolean","deathrun_info_on_join","Show the info menu when joining the server"},
+	{"boolean","deathrun_autojump","Autojump (Enabling this limits velocity depending on server settings.)"},
+	{"boolean","deathrun_enable_announcements","Enable help messages"},
+	{"number","deathrun_announcement_interval",0,600,"Seconds between help messages."},
+	{"number","deathrun_teammate_fade_distance",0,512,"Teammate fade distance."},
+}
+
 function DR:AddSetting(tbl)
-	table.insert(DR.DeathrunSettings,tbl)
+	table.insert(Settings,tbl)
 end
 
 --hook.Add("InitPostEntity", "AddTimestamp", function()
@@ -209,7 +252,7 @@ function DR:OpenSettings()
 	lbl:SizeToContents()
 	lbl:SetWide(dlist:GetWide())
 	dlist:Add(lbl)
-	for k,v in pairs(deathrun_settings) do
+	for _,v in ipairs(Settings) do
 		local ty = v[1] -- convar type
 		if ty == "header" then
 			local pnl = vgui.Create("DPanel") -- spacer
@@ -545,7 +588,7 @@ end
 concommand.Add("deathrun_open_quickinfo",function() DR:OpenQuickInfo() end)
 concommand.Add("deathrun_open_motd",function() DR:OpenQuickInfo() end)
 infoOpened = infoOpened ~= nil and infoOpened or false -- needs to be global
-local ShowInfo = CreateClientConVar("deathrun_info_on_join",1,true,false) -- whether we see info on join
+local ShowInfo = DR.ConVars.ShowInfo -- whether we see info on join
 hook.Add("HUDPaint","openquickinfo",function()
 	if infoOpened == false and ShowInfo:GetBool() == true and DR.MOTDEnabled == true then DR:OpenQuickInfo() end
 	infoOpened = true -- only check once, then leave it

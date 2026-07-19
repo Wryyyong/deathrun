@@ -17,7 +17,6 @@ local function IsSupporting(ply)
 	return false
 end
 
-CreateClientConVar("deathrun_scoreboard_small",1,true,false)
 if IsValid(DR.ScoreboardPanel) then -- remove the scoreboard on autorefresh
 	DR.ScoreboardPanel:Remove()
 end

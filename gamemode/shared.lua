@@ -72,16 +72,6 @@ local function intToBool(i)
 	end
 end
 
-CreateConVar("deathrun_infinite_ammo","1",defaultFlags,"Should ammo automatically replenish.")
-CreateConVar("deathrun_autojump_velocity_cap",0,defaultFlags,"The amount to limit players speed to when they use autojump. For game balance. 0 = unlimited")
-CreateConVar("deathrun_allow_autojump",1,defaultFlags,"Allows players to use autojump.")
-CreateConVar("deathrun_help_url","https://github.com/Arizard/deathrun/blob/master/help.md",defaultFlags,"The URL to open when the player types !help.")
--- motd convars
-CreateConVar("deathrun_motd_enabled","1",defaultFlags,"Enable the MOTD to display on all players when they join?")
-CreateConVar("deathrun_motd_title","Deathrun Information",defaultFlags,"The title of the MOTD (i.e. Deathrun Information, !info)")
-CreateConVar("deathrun_motd_url","http://arizard.github.io/deathruninfo.html",defaultFlags,"Sets the MOTD url (i.e. Deathrun Information, !info)")
--- unstuck convar
-CreateConVar("deathrun_unstuck_cooldown","30",defaultFlags,"Set the cooldown timer for when a player uses !stuck or takes damage, forcing them to wait that time until their next !stuck command.")
 if SERVER then
 	concommand.Add("deathrun_internal_set_autojump",function(ply,cmd,args)
 		if args[1] then
@@ -92,7 +82,6 @@ if SERVER then
 end
 
 if CLIENT then
-	CreateClientConVar("deathrun_autojump",1,true,false)
 	cvars.AddChangeCallback("deathrun_autojump",function(name,old,new)
 		RunConsoleCommand("deathrun_internal_set_autojump",tonumber(new))
 		LocalPlayer().AutoJumpEnabled = intToBool(new)
@@ -103,7 +92,6 @@ if CLIENT then
 		RunConsoleCommand("deathrun_internal_set_autojump",GetConVar("deathrun_autojump"):GetInt()) -- in case some trickery happens on the client we'll sync this right up. They can probably destroy the timer but whatever
 	end)
 
-	CreateClientConVar("deathrun_spectate_only",0,true,false)
 	cvars.AddChangeCallback("deathrun_spectate_only",function(name,old,new) RunConsoleCommand("deathrun_set_spectate",new) end)
 	hook.Add("HUDPaint","SendSpectateConVarInfo",function()
 		RunConsoleCommand("deathrun_set_spectate",GetConVarNumber("deathrun_spectate_only"))

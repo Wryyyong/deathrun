@@ -21,25 +21,24 @@ local HUDPOS_RIGHT_TOP     = 3
 local HUDPOS_RIGHT_MIDDLE  = 6
 local HUDPOS_RIGHT_BOTTOM  = 9
 
--- local CrosshairStyle = CreateClientConVar("deathrun_crosshair_style", 1, true, false)
-local CvCrosshairThickness = CreateClientConVar("deathrun_crosshair_thickness",2,true,false,nil,0)
-local CvCrosshairGap = CreateClientConVar("deathrun_crosshair_gap",8,true,false,nil,0)
-local CvCrosshairSize = CreateClientConVar("deathrun_crosshair_size",8,true,false,nil,0)
-local CvCrosshairColorR = CreateClientConVar("deathrun_crosshair_red",255,true,false,nil,0,255)
-local CvCrosshairColorG = CreateClientConVar("deathrun_crosshair_green",255,true,false,nil,0,255)
-local CvCrosshairColorB = CreateClientConVar("deathrun_crosshair_blue",255,true,false,nil,0,255)
-local CvCrosshairColorA = CreateClientConVar("deathrun_crosshair_alpha",255,true,false,nil,0,255)
+local CvCrosshairThickness = DR.ConVars.Crosshair.Thickness
+local CvCrosshairGap = DR.ConVars.Crosshair.Gap
+local CvCrosshairSize = DR.ConVars.Crosshair.Size
+local CvCrosshairColorR = DR.ConVars.Crosshair.ColorR
+local CvCrosshairColorG = DR.ConVars.Crosshair.ColorG
+local CvCrosshairColorB = DR.ConVars.Crosshair.ColorB
+local CvCrosshairColorA = DR.ConVars.Crosshair.ColorA
 
 -- start and end cues
-local CvPlayRoundCues = CreateClientConVar("deathrun_round_cues",1,true,false,nil,0,1)
+local CvPlayRoundCues = DR.ConVars.RoundCues
 
 -- different themes
-local CvHudTheme = CreateClientConVar("deathrun_hud_theme",1,true,false,nil,1)
-local CvHudAlpha = CreateClientConVar("deathrun_hud_alpha",255,true,false,nil,0,255)
+local CvHudTheme = DR.ConVars.Hud.Theme
+local CvHudAlpha = DR.ConVars.Hud.Alpha
 
 -- convars to adjust hud positioning
-local CvHudMainPos = CreateClientConVar("deathrun_hud_position",HUDPOS_LEFT_BOTTOM,true,false,nil,HUDPOS_LEFT_TOP,HUDPOS_RIGHT_BOTTOM)
-local CvHudAmmoPos = CreateClientConVar("deathrun_hud_ammo_position",HUDPOS_RIGHT_BOTTOM,true,false,nil,HUDPOS_LEFT_TOP,HUDPOS_RIGHT_BOTTOM)
+local CvHudMainPos = DR.ConVars.Hud.PosMain
+local CvHudAmmoPos = DR.ConVars.Hud.PosAmmo
 
 local HideElements = {
 	["CHudAmmo"] = false,
@@ -378,7 +377,7 @@ DR.TargetIDName = ""
 DR.TargetIDColor = Color(255,255,255)
 
 local LastTargetCycle = CurTime()
-local CvHudTargetIdFadeTime = CreateClientConVar("deathrun_targetid_fade_duration",1,true,false,nil,0)
+local CvHudTargetIdFadeTime = DR.ConVars.Hud.TargetIdFadeTime
 
 function DR.DrawTargetID()
 	local localPly = LocalPlayer()
@@ -1482,7 +1481,7 @@ hook.Add("DeathrunBeginActive","ResetStartTime",function()
 	LocalPlayer().StartTime = CurTime()
 end)
 
-local CvVhs7Mode = CreateClientConVar("deathrun_vhs7",0,false,false,nil,0,1)
+local CvVhs7Mode = DR.ConVars.Hud.Vhs7Mode
 
 local function RenderVhs7Mode()
 	DrawSharpen(1.1,1.7)

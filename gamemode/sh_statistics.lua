@@ -227,7 +227,7 @@ if CLIENT then
 		born = 0
 	}
 
-	local statsvis = CreateClientConVar("deathrun_stats_visibility",1,true,false)
+	local statsvis = DR.ConVars.VisibleStats
 	local labels = {}
 	net.Receive("deathrun_display_stats",function()
 		if IsValid(LocalPlayer()) then

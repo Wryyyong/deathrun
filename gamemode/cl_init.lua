@@ -1,19 +1,21 @@
 -- thirdperson support -- from arizard_thirdperson.lua
-local CvThirdpersonEnabled = CreateClientConVar("deathrun_thirdperson_enabled",0,true,false,nil,0,1)
-local CvThirdpersonOffsetX = CreateClientConVar("deathrun_thirdperson_offset_x",0,true,false,nil,-40,40)
-local CvThirdpersonOffsetY = CreateClientConVar("deathrun_thirdperson_offset_y",0,true,false,nil,-40,40)
-local CvThirdpersonOffsetZ = CreateClientConVar("deathrun_thirdperson_offset_z",0,true,false,nil,-75,75)
-local CvThirdpersonOffsetPitch = CreateClientConVar("deathrun_thirdperson_offset_pitch",0,true,false,nil,-75,75)
-local CvThirdpersonOffsetYaw = CreateClientConVar("deathrun_thirdperson_offset_yaw",0,true,false,nil,-75,75)
-local CvThirdpersonOffsetRoll = CreateClientConVar("deathrun_thirdperson_offset_roll",0,true,false,nil,-75,75)
-local CvThirdpersonOpacity = CreateClientConVar("deathrun_thirdperson_opacity",255,true,false,nil,5,255)
-local CvThirdpersonFadeDistance = CreateClientConVar("deathrun_teammate_fade_distance",75,true,false,nil,0,512)
+local CvThirdpersonEnabled = DR.ConVars.ThirdPerson.Enabled
+local CvThirdpersonOffsetX = DR.ConVars.ThirdPerson.OffsetX
+local CvThirdpersonOffsetY = DR.ConVars.ThirdPerson.OffsetY
+local CvThirdpersonOffsetZ = DR.ConVars.ThirdPerson.OffsetZ
+local CvThirdpersonOffsetRoll = DR.ConVars.ThirdPerson.OffsetRoll
+local CvThirdpersonOffsetPitch = DR.ConVars.ThirdPerson.OffsetPitch
+local CvThirdpersonOffsetYaw = DR.ConVars.ThirdPerson.OffsetYaw
+local CvThirdpersonOpacity = DR.ConVars.ThirdPerson.Opacity
+local CvThirdpersonFadeDistance = DR.ConVars.ThirdPerson.FadeDistance
 
-include("hexcolor.lua")
 include("config.lua")
+include("shared.lua")
+include("convars/sh_convars.lua")
+include("convars/cl_convars.lua")
+include("hexcolor.lua")
 include("cl_fonts.lua")
 include("cl_derma.lua")
-include("shared.lua")
 include("cl_scoreboard.lua")
 include("mapvote/sh_mapvote.lua")
 include("mapvote/cl_mapvote.lua")

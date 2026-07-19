@@ -46,7 +46,6 @@ function ZONE:DrawCuboid(pos1,pos2,col,alt)
 	end
 end
 
-CreateClientConVar("deathrun_zones_visibility","1",true,false)
 hook.Add("PostDrawTranslucentRenderables","DeathrunZoneCuboidDrawing",function()
 	for name,z in pairs(ZONE.zones or {}) do
 		if z.type then
