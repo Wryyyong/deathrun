@@ -2,12 +2,14 @@ if not file.Exists("deathrun","DATA") then -- creates a folder in data for the g
 	file.CreateDir("deathrun")
 end
 
+-- hexcolor
+AddCSLuaFile("hexcolor.lua")
+include("hexcolor.lua")
+
 -- init
 AddCSLuaFile("config.lua")
-AddCSLuaFile("shared.lua")
 
 include("config.lua")
-include("shared.lua")
 
 -- convars
 AddCSLuaFile("convars/sh_convars.lua")
@@ -16,9 +18,10 @@ AddCSLuaFile("convars/cl_convars.lua")
 include("convars/sh_convars.lua")
 include("convars/sv_convars.lua")
 
--- hexcolor
-AddCSLuaFile("hexcolor.lua")
-include("hexcolor.lua")
+-- init
+AddCSLuaFile("shared.lua")
+
+include("shared.lua")
 
 -- fonts
 AddCSLuaFile("cl_fonts.lua")

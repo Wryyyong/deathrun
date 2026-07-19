@@ -44,24 +44,24 @@ hook.Add("SetupMove","DeathrunDisableSpectatorSpacebar",function(ply,mv,cmd)
 	end
 end)
 
---- @param frac number
---- @param p1 number
---- @param p2 number
-function DR.QuadLerp(frac,p1,p2)
-	return (p1 - p2) * (frac - 1) ^ 2 + p2
+--- @param delta number
+--- @param from number
+--- @param to number
+function DR.QuadLerp(delta,from,to)
+	return (from - to) * (delta - 1) ^ 2 + to
 end
 
---- @param pos number
---- @param p1 number
---- @param p2 number
-function DR.InverseLerp(pos,p1,p2)
-	local range = p2 - p1
+--- @param delta number
+--- @param from number
+--- @param to number
+function DR.InverseLerp(delta,from,to)
+	local range = to - from
 
 	if range == 0 then
 		return 1
 	end
 
-	return (pos - p1) / range
+	return (delta - from) / range
 end
 
 local function intToBool(i)

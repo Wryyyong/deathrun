@@ -256,15 +256,6 @@ ThirdPerson.OffsetZ = CreateConVar(
 	75
 )
 
-ThirdPerson.OffsetRoll = CreateConVar(
-	"deathrun_thirdperson_offset_roll",
-	0,
-	DefaultFlags,
-	nil,
-	-75,
-	75
-)
-
 ThirdPerson.OffsetPitch = CreateConVar(
 	"deathrun_thirdperson_offset_pitch",
 	0,
@@ -276,6 +267,15 @@ ThirdPerson.OffsetPitch = CreateConVar(
 
 ThirdPerson.OffsetYaw = CreateConVar(
 	"deathrun_thirdperson_offset_yaw",
+	0,
+	DefaultFlags,
+	nil,
+	-75,
+	75
+)
+
+ThirdPerson.OffsetRoll = CreateConVar(
+	"deathrun_thirdperson_offset_roll",
 	0,
 	DefaultFlags,
 	nil,

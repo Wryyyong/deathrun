@@ -1,19 +1,8 @@
--- thirdperson support -- from arizard_thirdperson.lua
-local CvThirdpersonEnabled = DR.ConVars.ThirdPerson.Enabled
-local CvThirdpersonOffsetX = DR.ConVars.ThirdPerson.OffsetX
-local CvThirdpersonOffsetY = DR.ConVars.ThirdPerson.OffsetY
-local CvThirdpersonOffsetZ = DR.ConVars.ThirdPerson.OffsetZ
-local CvThirdpersonOffsetRoll = DR.ConVars.ThirdPerson.OffsetRoll
-local CvThirdpersonOffsetPitch = DR.ConVars.ThirdPerson.OffsetPitch
-local CvThirdpersonOffsetYaw = DR.ConVars.ThirdPerson.OffsetYaw
-local CvThirdpersonOpacity = DR.ConVars.ThirdPerson.Opacity
-local CvThirdpersonFadeDistance = DR.ConVars.ThirdPerson.FadeDistance
-
+include("hexcolor.lua")
 include("config.lua")
-include("shared.lua")
 include("convars/sh_convars.lua")
 include("convars/cl_convars.lua")
-include("hexcolor.lua")
+include("shared.lua")
 include("cl_fonts.lua")
 include("cl_derma.lua")
 include("cl_scoreboard.lua")
@@ -30,6 +19,16 @@ include("sh_buttonclaiming.lua")
 include("cl_announcer.lua")
 include("sh_pointshopsupport.lua")
 include("sh_statistics.lua")
+
+local CvThirdPerson_Enabled = DR.ConVars.ThirdPerson.Enabled
+local CvThirdPerson_OffsetX = DR.ConVars.ThirdPerson.OffsetX
+local CvThirdPerson_OffsetY = DR.ConVars.ThirdPerson.OffsetY
+local CvThirdPerson_OffsetZ = DR.ConVars.ThirdPerson.OffsetZ
+local CvThirdPerson_OffsetPitch = DR.ConVars.ThirdPerson.OffsetPitch
+local CvThirdPerson_OffsetYaw = DR.ConVars.ThirdPerson.OffsetYaw
+local CvThirdPerson_OffsetRoll = DR.ConVars.ThirdPerson.OffsetRoll
+local CvThirdPerson_Opacity = DR.ConVars.ThirdPerson.Opacity
+local CvThirdPerson_FadeDistance = DR.ConVars.ThirdPerson.FadeDistance
 
 concommand.Add("deathrun_test_menu",function()
 	local frame = vgui.Create("Panel")
@@ -63,7 +62,14 @@ net.Receive("DeathrunSyncMutelist",function()
 	LocalPlayer().MuteList = net.ReadTable()
 end)
 
-local PosEndOFfset = Vector(0,0,9)
+local function ThirdpersonCheck(ply)
+	return
+		CvThirdPerson_Enabled:GetBool()
+	and	ply:Alive()
+	and	ply:Team() ~= TEAM_SPECTATOR
+end
+
+local PosEndOffset = Vector(0,0,9)
 
 local TraceTable = {
 	["mins"] = Vector(-5,-5,-5),
@@ -71,32 +77,31 @@ local TraceTable = {
 	["mask"] = MASK_SHOT_HULL,
 }
 
-local function ThirdpersonCheck(ply)
-	return
-		CvThirdpersonEnabled:GetBool()
-	and	ply:Alive()
-	and	ply:Team() ~= TEAM_SPECTATOR
-end
+local CalcViewTable = {
+	["drawviewer"] = true,
+}
 
 function GM:CalcView(ply,pos,ang,fov,znear,zfar)
 	if not ThirdpersonCheck(ply) then return end
 
 	local angRight = ang:Right()
-	angRight:Mul(CvThirdpersonOffsetX:GetFloat())
+	angRight:Mul(CvThirdPerson_OffsetX:GetFloat())
 
 	local angUp = ang:Up()
-	angUp:Mul(CvThirdpersonOffsetY:GetFloat())
+	angUp:Mul(CvThirdPerson_OffsetY:GetFloat())
 
-	local posEnd = pos + ang:Forward()
-	posEnd:Mul(-(CvThirdpersonOffsetZ:GetFloat() + 100))
-	posEnd:Add(PosEndOFfset)
+	local angForward = ang:Forward()
+	angForward:Mul(-(CvThirdPerson_OffsetZ:GetFloat() + 100))
+
+	local posEnd = pos + PosEndOffset
 	posEnd:Add(angRight)
 	posEnd:Add(angUp)
+	posEnd:Add(angForward)
 
 	local eyeAngles = ply:EyeAngles()
-	ang:RotateAroundAxis(eyeAngles:Right(),CvThirdpersonOffsetPitch:GetFloat())
-	ang:RotateAroundAxis(eyeAngles:Up(),CvThirdpersonOffsetYaw:GetFloat())
-	ang:RotateAroundAxis(eyeAngles:Forward(),CvThirdpersonOffsetRoll:GetFloat())
+	ang:RotateAroundAxis(eyeAngles:Right(),CvThirdPerson_OffsetPitch:GetFloat())
+	ang:RotateAroundAxis(eyeAngles:Up(),CvThirdPerson_OffsetYaw:GetFloat())
+	ang:RotateAroundAxis(eyeAngles:Forward(),CvThirdPerson_OffsetRoll:GetFloat())
 
 	-- test for thirdperson scoped weapons
 	local wep = ply:GetActiveWeapon()
@@ -115,14 +120,13 @@ function GM:CalcView(ply,pos,ang,fov,znear,zfar)
 	TraceTable.endpos = posEnd
 	TraceTable.filter = player.GetAll()
 
-	return {
-		["origin"] = util.TraceHull(TraceTable).HitPos,
-		["angles"] = ang,
-		["fov"] = targetFov,
-		["znear"] = znear,
-		["zfar"] = zfar,
-		["drawviewer"] = true,
-	}
+	CalcViewTable.origin = util.TraceHull(TraceTable).HitPos
+	CalcViewTable.angles = ang
+	CalcViewTable.fov = targetFov
+	CalcViewTable.znear = znear
+	CalcViewTable.zfar = zfar
+
+	return CalcViewTable
 end
 
 function GM:ShouldDrawLocalPlayer()
@@ -130,13 +134,13 @@ function GM:ShouldDrawLocalPlayer()
 end
 
 local function ThirdpersonToggle()
-	CvThirdpersonEnabled:SetBool(not CvThirdpersonEnabled:GetBool())
+	CvThirdPerson_Enabled:SetBool(not CvThirdPerson_Enabled:GetBool())
 end
 
 concommand.Add("deathrun_toggle_thirdperson",ThirdpersonToggle)
 
-function GM:CreateMove(cmd)
-	if not cmd:KeyDown(KEY_F8) then return end
+function GM:CreateMove()
+	if not input.WasKeyPressed(KEY_F8) then return end
 
 	ThirdpersonToggle()
 end
@@ -148,26 +152,30 @@ function GM:PrePlayerDraw(ply)
 		ply:SetRenderMode(RENDERMODE_TRANSALPHA)
 	end
 
-	local distFade = CvThirdpersonFadeDistance:GetFloat()
-	local distEye = localPly:EyePos():Distance(ply:EyePos())
-
 	local color = ply:GetColor()
-	local plyIsLocalPly = ply == localPly
+	local newAlpha = 255
 
-	if distEye < distFade and not plyIsLocalPly and ply:Team() == localPly:Team() then
-		color.a = Lerp(DR.InverseLerp(distEye,5,distFade),20,255)
-	elseif plyIsLocalPly then
-		color.a = CvThirdpersonOpacity:GetInt()
-	else
-		color.a = 255
+	if ply == localPly then
+		newAlpha = CvThirdPerson_Opacity:GetInt()
+	elseif ply:Team() == localPly:Team() then
+		local distFade = CvThirdPerson_FadeDistance:GetFloat()
+		local distEye = localPly:EyePos():Distance(ply:EyePos())
+
+		if distEye < distFade then
+			newAlpha = Lerp(
+				DR.InverseLerp(distEye,5,distFade),
+				20,
+				255
+			)
+		end
 	end
+
+	color.a = newAlpha
 
 	ply:SetColor(color)
 end
 
 function GM:PreDrawViewModel(vm,ply,wep)
-	local obsMode = LocalPlayer():GetObserverMode()
-
 	if self:PreDrawPlayerHands(_,_,ply) then
 		return true
 	elseif wep and wep.PreDrawViewModel then
@@ -186,9 +194,3 @@ end
 function GM:PlayerFootstep(ply)
 	return ply:Team() == TEAM_GHOST
 end
-
---[[
-concommand.Add("+menu",function()
-	RunConsoleCommand("deathrun_dropweapon")
-end)
---]]
