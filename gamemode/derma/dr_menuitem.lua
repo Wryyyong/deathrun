@@ -1,4 +1,4 @@
-local ColorsText = DR.Colors.Text
+local Colors = DR.Colors
 
 --- @class DR_MenuItemBase : DLabel
 --- @field Parent DR_MenuList
@@ -9,7 +9,7 @@ local DR_MenuItemBase = {
 function DR_MenuItemBase:Init()
 	self.Parent = self:GetParent()
 
-	self.TextColor = ColorsText.Grey3
+	self.TextColor = Colors.Grey
 
 	self:RefreshSettings()
 end
@@ -25,7 +25,7 @@ end
 local DR_MenuImportant = {}
 
 function DR_MenuImportant:Init()
-	self.TextColor = ColorsText.Turq
+	self.TextColor = Colors.Turq
 
 	self:RefreshSettings()
 end

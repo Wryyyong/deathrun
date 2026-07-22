@@ -2,7 +2,6 @@ print("Loading cl_hud.lua")
 
 local DR = DR
 local Colors = DR.Colors
-local ColorsText = Colors.Text
 
 local HUDTHEME_DEFAULT = 1
 local HUDTHEME_DEFAULTTIMER = 2
@@ -623,7 +622,7 @@ function DR.DrawPlayerHUD(x,y,alpha)
 		"Deathrun_DefaultHUD_Small",
 		x + 114, -- 228 * .5
 		y + 8, -- 16 * .5
-		ColorsText.Clouds,
+		Colors.Clouds,
 		TEXT_ALIGN_CENTER,
 		TEXT_ALIGN_CENTER,
 		1
@@ -728,7 +727,7 @@ function DR.DrawPlayerHUD(x,y,alpha)
 		"Deathrun_DefaultHUD_Medium",
 		xText,
 		yHpText,
-		ColorsText.Clouds,
+		Colors.Clouds,
 		TEXT_ALIGN_CENTER,
 		TEXT_ALIGN_CENTER,
 		1
@@ -738,7 +737,7 @@ function DR.DrawPlayerHUD(x,y,alpha)
 		"Deathrun_DefaultHUD_Large",
 		xBarLarge,
 		yHpText,
-		ColorsText.Clouds,
+		Colors.Clouds,
 		TEXT_ALIGN_LEFT,
 		TEXT_ALIGN_CENTER,
 		1
@@ -814,7 +813,7 @@ function DR.DrawPlayerHUD(x,y,alpha)
 		"Deathrun_DefaultHUD_Medium",
 		xText,
 		yVelText,
-		ColorsText.Clouds,
+		Colors.Clouds,
 		TEXT_ALIGN_CENTER,
 		TEXT_ALIGN_CENTER,
 		1
@@ -824,7 +823,7 @@ function DR.DrawPlayerHUD(x,y,alpha)
 		"Deathrun_DefaultHUD_Large",
 		xBarLarge,
 		yVelText,
-		ColorsText.Clouds,
+		Colors.Clouds,
 		TEXT_ALIGN_LEFT,
 		TEXT_ALIGN_CENTER,
 		1
@@ -880,7 +879,7 @@ function DR.DrawPlayerHUD(x,y,alpha)
 		"Deathrun_DefaultHUD_Medium",
 		xText,
 		yTimeText,
-		ColorsText.Clouds,
+		Colors.Clouds,
 		TEXT_ALIGN_CENTER,
 		TEXT_ALIGN_CENTER,
 		1
@@ -890,7 +889,7 @@ function DR.DrawPlayerHUD(x,y,alpha)
 		"Deathrun_DefaultHUD_Large",
 		xBarLarge,
 		yTimeText,
-		ColorsText.Clouds,
+		Colors.Clouds,
 		TEXT_ALIGN_LEFT,
 		TEXT_ALIGN_CENTER,
 		1
@@ -987,7 +986,7 @@ function DR.DrawPlayerHUDAmmo(x,y,alpha)
 		"Deathrun_DefaultHUD_Large",
 		x + 224,
 		y + textPosSharedMinusOne,
-		ColorsText.Clouds,
+		Colors.Clouds,
 		TEXT_ALIGN_RIGHT,
 		TEXT_ALIGN_CENTER,
 		1
@@ -1046,7 +1045,7 @@ function DR.DrawPlayerHUDAmmo(x,y,alpha)
 		"Deathrun_DefaultHUD_Medium",
 		x + textPosShared,
 		y + textPosShared,
-		ColorsText.Clouds,
+		Colors.Clouds,
 		TEXT_ALIGN_CENTER,
 		TEXT_ALIGN_CENTER,
 		1
@@ -1058,7 +1057,7 @@ function DR.DrawPlayerHUDAmmo(x,y,alpha)
 			"Deathrun_DefaultHUD_Large",
 			xBar + 192,
 			y + textPosSharedMinusOne,
-			ColorsText.Clouds,
+			Colors.Clouds,
 			TEXT_ALIGN_RIGHT,
 			TEXT_ALIGN_CENTER,
 			1
@@ -1236,7 +1235,7 @@ local WinnerMhHalfMinusOne = WinnerMhHalf - 1
 
 local WinnerGapMh = WinnerGap + WinnerMh
 
-local ColorStalemate = HexColor("#303030")
+local ColorStalemate = Colors.Grey
 
 function DR.DrawWinners(winteam,tbl_mvps,x,y,stalemate)
 	local teamColor = stalemate and ColorStalemate or team.GetColor(winteam)
@@ -1256,7 +1255,7 @@ function DR.DrawWinners(winteam,tbl_mvps,x,y,stalemate)
 		"Deathrun_DefaultHUD_ExtraLarge",
 		xWidthHalf,
 		y + WinnerHeightHalf,
-		ColorsText.Clouds,
+		Colors.Clouds,
 		TEXT_ALIGN_CENTER,
 		TEXT_ALIGN_CENTER,
 		1
@@ -1308,7 +1307,7 @@ function DR.DrawWinners(winteam,tbl_mvps,x,y,stalemate)
 			"Deathrun_DefaultHUD_Medium",
 			xWidthHalf,
 			offsetY + WinnerMhHalfMinusOne,
-			ColorsText.Clouds,
+			Colors.Clouds,
 			TEXT_ALIGN_CENTER,
 			TEXT_ALIGN_CENTER,
 			1
@@ -1380,6 +1379,9 @@ function Avatar:Think()
 	self.Visible = newVal
 end
 
+local ColorDarkGrey = Colors.DarkGrey:Copy()
+local ColorLightGrey = Colors.LightGrey:Copy()
+
 function DR.DrawPlayerHUDMainSass(x,y,alpha)
 	-- dimensions:
 	-- 228 x 108
@@ -1390,19 +1392,21 @@ function DR.DrawPlayerHUDMainSass(x,y,alpha)
 	local amul = alpha / 255
 	surface.SetDrawColor(255,0,0)
 	-- surface.DrawOutlinedRect( x,y,w,h )
-	surface.SetDrawColor(HexColor("#101010",alpha))
+	ColorDarkGrey.a = alpha
+	surface.SetDrawColor(ColorDarkGrey)
 	-- size of avatar: 46x46
 	-- size of container: 48x48
-	draw.RoundedBox(2,x + 8,y + h * .5 - 24,48,48,HexColor("#101010",alpha))
+	draw.RoundedBox(2,x + 8,y + h * .5 - 24,48,48,ColorDarkGrey)
 	-- hp bar
 	-- width 228 - 16 - 48
 	-- height 20
-	draw.RoundedBox(2,x + 8 + 48,y + h * .5 - 10,228 - 16 - 48,20,HexColor("#101010",alpha))
-	surface.SetDrawColor(HexColor("#909090",alpha * .5))
+	ColorLightGrey.a = alpha * .5
+	draw.RoundedBox(2,x + 8 + 48,y + h * .5 - 10,228 - 16 - 48,20,ColorDarkGrey)
+	surface.SetDrawColor(ColorLightGrey)
 	surface.DrawRect(x + 8 + 48,y + h * .5 - 10 + 2,228 - 16 - 48 - 2,16)
 	-- velocity
-	draw.RoundedBox(2,x + 8 + 48,y + h * .5 + 8,228 - 16 - 48,10,HexColor("#101010",alpha))
-	surface.SetDrawColor(HexColor("#909090",alpha * .5))
+	draw.RoundedBox(2,x + 8 + 48,y + h * .5 + 8,228 - 16 - 48,10,ColorDarkGrey)
+	surface.SetDrawColor(ColorLightGrey)
 	surface.DrawRect(x + 8 + 48,y + h * .5 + 8 + 2,228 - 16 - 48 - 2,6)
 	local maxvel = 1500 -- yeah fuck yall
 	local curvel = math.Round(math.Clamp(ply:GetVelocity():Length2D(),0,maxvel))
@@ -1428,7 +1432,7 @@ function DR.DrawPlayerHUDMainSass(x,y,alpha)
 		teamtext = ply:Nick()
 	end
 
-	DR.ShadowTextSimple(teamtext .. " - " .. string.ToMinutesSeconds(math.Clamp(ROUND:GetTimer(),0,99999)),"Deathrun_SassHUD_Small",x + 8,y + h * .5 + 24,Color(255,255,255,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,2)
+	DR.ShadowTextSimple(teamtext .. " - " .. string.ToMinutesSeconds(math.Clamp(ROUND:GetTimer(),0,99999)),"Deathrun_SassHUD_Small",x + 8,y + h * .5 + 24,color_white,TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,2)
 	-- position avatar
 	local avx,avy = Avatar:GetPos()
 	if avx ~= x + 9 or avy ~= y + h * .5 - 24 + 1 then Avatar:SetPos(x + 9,y + h * .5 - 23) end

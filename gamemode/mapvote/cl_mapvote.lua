@@ -22,7 +22,7 @@ function MV:NewDermaRow(tbl_cols,w,h,customColor,customColor2,doclick)
 	function panel:Paint(w,h)
 		surface.SetDrawColor(customColor or DR.Colors.Turq)
 		surface.DrawRect(0,0,w,h)
-		--surface.SetDrawColor( customColor ~= nil and HexColor("#303030",80) or Color(0,0,0,0) )
+		--surface.SetDrawColor( customColor ~= nil and DR.Colors.Grey or color_black )
 		surface.DrawRect(0,0,w,h)
 	end
 
@@ -120,7 +120,7 @@ function MV:RepopulateMapList()
 		--dlist:Add( MV:NewDermaRow({"Click on a map to see options!"}, dlist:GetParent():GetParent():GetWide()-4, 24 ) )
 		for i = 1,#maps do
 			if maps[i] ~= game.GetMap() then
-				local mapderma = MV:NewDermaRow({maps[i] or "Error.",MV:IsMapNominated(maps[i]) and "[NOMINATED]" or ""},dlist:GetParent():GetParent():GetWide() - 8,24,DR.Colors.Clouds,MV:IsMapNominated(maps[i]) and DR.Colors.Turq or HexColor("#303030"),function(self)
+				local mapderma = MV:NewDermaRow({maps[i] or "Error.",MV:IsMapNominated(maps[i]) and "[NOMINATED]" or ""},dlist:GetParent():GetParent():GetWide() - 8,24,DR.Colors.Clouds,MV:IsMapNominated(maps[i]) and DR.Colors.Turq or DR.Colors.Grey,function(self)
 					local map = self:GetParent().mapname
 					local menu = vgui.Create("DMenu")
 					local nominate = menu:AddOption("Nominate Map")

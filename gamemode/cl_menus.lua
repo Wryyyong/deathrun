@@ -167,7 +167,7 @@ function DR.OpenZoneEditor()
 	-- edit zones
 	local lbl = vgui.Create("DLabel")
 	lbl:SetFont("Deathrun_Derma_Small")
-	lbl:SetTextColor(DR.Colors.Text.Turq)
+	lbl:SetTextColor(DR.Colors.Turq)
 	lbl:SetText("Modify Zone")
 	lbl:SizeToContents()
 	lbl:SetWide(list:GetWide())
@@ -196,7 +196,7 @@ function DR.OpenZoneEditor()
 				local info = {"Zone Name: " .. self.dd:GetValue(),"Zone Type: " .. zone.type,"Pos1: " .. tostring(zone.pos1),"Pos2: " .. tostring(zone.pos2),"Color:" .. " " .. tostring(col.r) .. " " .. tostring(col.g) .. " " .. tostring(col.b) .. " " .. tostring(col.a)}
 				for i = 1,#info do
 					local k = i - 1
-					draw.SimpleText(info[i],"Deathrun_Derma_ExtraSmall",0,14 * k,HexColor("#303030"))
+					draw.SimpleText(info[i],"Deathrun_Derma_ExtraSmall",0,14 * k,DR.Colors.Grey)
 				end
 			end
 		end
@@ -334,7 +334,7 @@ function DR.OpenWaitingMenu()
 		\t\b !help - View the help menu.\n\n
 		Enjoy, and have fun!]]
 		info = DR.GetWordWrapText(info,iw,"Deathrun_DefaultHUD_MediumLight")
-		DR.ShadowText(info,"Deathrun_DefaultHUD_MediumLight",ix,iy,HexColor("#303030"),nil,nil,0)
+		DR.ShadowText(info,"Deathrun_DefaultHUD_MediumLight",ix,iy,DR.Colors.Grey,nil,nil,0)
 	end
 end
 
@@ -350,7 +350,7 @@ function DR.OpenForcedSpectatorMenu(msg)
 	panel:SetPos(4,32)
 	function panel:Paint(w,h)
 		local x,y = 0,0
-		surface.SetDrawColor(DR.Colors.Text.Clouds)
+		surface.SetDrawColor(DR.Colors.Clouds)
 		surface.DrawRect(x,y,w,h)
 		local ix,iy,iw,ih = x + 8,y + 8,w - 16,h - 16
 		local info = [[You have been moved to the Spectator team for being AFK.
@@ -360,7 +360,7 @@ function DR.OpenForcedSpectatorMenu(msg)
 		if msg then info = msg end
 
 		info = DR.GetWordWrapText(info,iw,"Deathrun_DefaultHUD_MediumLight")
-		DR.ShadowText(info,"Deathrun_DefaultHUD_MediumLight",ix,iy,HexColor("#303030"),nil,nil,0)
+		DR.ShadowText(info,"Deathrun_DefaultHUD_MediumLight",ix,iy,DR.Colors.Grey,nil,nil,0)
 	end
 
 	local cont = vgui.Create("DR_Button",panel)

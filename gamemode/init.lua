@@ -2,10 +2,6 @@ if not file.Exists("deathrun","DATA") then -- creates a folder in data for the g
 	file.CreateDir("deathrun")
 end
 
--- hexcolor
-AddCSLuaFile("hexcolor.lua")
-include("hexcolor.lua")
-
 -- init
 AddCSLuaFile("config.lua")
 

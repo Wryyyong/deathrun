@@ -1,4 +1,4 @@
-local DermaColors = DR.DermaColors
+local DermaColors = DR.Colors.Derma
 
 --- @class DR_MultiPanelSpacer : DPanel
 local DR_MultiPanelSpacer = {}

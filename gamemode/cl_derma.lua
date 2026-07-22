@@ -1,15 +1,3 @@
-local DermaColors = DR.DermaColors
-DermaColors.Bad = HexColor("#e74c3c")
-DermaColors.BadDark = HexColor("#c0392b")
-DermaColors.Good = HexColor("#2ecc71")
-DermaColors.GoodDark = HexColor("#27ae60")
-DermaColors.NeutralHigh = HexColor("#ecf0f1")
-DermaColors.NeutralMed = HexColor("#bdc3c7")
-DermaColors.NeutralLow = HexColor("#95a5a6")
-DermaColors.NeutralDark = HexColor("#7f8c8d")
-DermaColors.Turq = DR.Colors.Turq
-DermaColors.TurqDark = HexColor("#d35400")
-
 for _,panelName in ipairs({
 	-- Panel
 	"autoggle",

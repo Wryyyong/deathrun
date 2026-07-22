@@ -1,12 +1,12 @@
 local DR = DR
-local TextColors = DR.Colors.Text
+local Colors = DR.Colors
 
 local CvAnnouncements_Enabled = DR.ConVars.Announcements.Enabled
 local CvAnnouncements_Interval = DR.ConVars.Announcements.Interval
 local AnnouncementCounter = 1
 
 DR.AnnouncerName = DR.AnnouncerName or "HELP" -- incase the file refreshes
-DR.AnnouncerColor = DR.AnnouncerColor or TextColors.Alizarin
+DR.AnnouncerColor = DR.AnnouncerColor or Colors.Alizarin
 
 function DR.SetAnnouncerName(name)
 	DR.AnnouncerName = name
@@ -47,7 +47,7 @@ end
 local function DoAnnouncements()
 	if not CvAnnouncements_Enabled:GetBool() then return end
 
-	chat.AddText(TextColors.Clouds,"[",DR.AnnouncerColor,DR.AnnouncerName,TextColors.Clouds,"] " .. AnnouncementMessages[AnnouncementCounter])
+	chat.AddText(Colors.Clouds,"[",DR.AnnouncerColor,DR.AnnouncerName,Colors.Clouds,"] " .. AnnouncementMessages[AnnouncementCounter])
 	AnnouncementCounter = AnnouncementCounter + 1
 
 	if AnnouncementCounter > #AnnouncementMessages then

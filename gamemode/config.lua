@@ -1,78 +1,47 @@
 print("Loading Config...")
 DR = DR or {}
 print("Creating global table DR...")
+
 DR.Colors = {
-	GhostTeam = HexColor("#ffcc00"),
-	DeathTeam = HexColor("#F26C4F"),
-	RunnerTeam = HexColor("#3A89C9"),
-	Clouds = HexColor("#E9F2F9"),
-	Silver = HexColor("#bdc3c7"),
-	Concrete = HexColor("#95a5a6"),
-	Alizarin = HexColor("#e74c3c"),
-	Peter = HexColor("#3498db"),
-	Turq = HexColor("#1abc9c"),
-	DarkBlue = HexColor("#1B325F"),
-	LightBlue = HexColor("#9CC4E4"),
-	Sunflower = HexColor("#f1c40f"),
-	Orange = HexColor("#f39c12"),
-	Text = {
-		GhostTeam = HexColor("#ffcc00"),
-		DeathTeam = HexColor("#F26C4F"),
-		RunnerTeam = HexColor("#3A89C9"),
-		Clouds = HexColor("#E9F2F9"),
-		Silver = HexColor("#bdc3c7"),
-		Concrete = HexColor("#95a5a6"),
-		Alizarin = HexColor("#e74c3c"),
-		Peter = HexColor("#3498db"),
-		Turq = HexColor("#1abc9c"),
-		DarkBlue = HexColor("#1B325F"),
-		LightBlue = HexColor("#9CC4E4"),
-		Sunflower = HexColor("#f1c40f"),
-		Orange = HexColor("#f39c12"),
-		Grey3 = HexColor("#303030")
-	}
+	["GhostTeam"] = Color(255,204,0),
+	["DeathTeam"] = Color(242,108,79),
+	["RunnerTeam"] = Color(58,137,201),
+	["Clouds"] = Color(233,242,249),
+	["Silver"] = Color(189,195,199),
+	["Concrete"] = Color(149,165,166),
+	["Alizarin"] = Color(231,76,60),
+	["Peter"] = Color(52,152,219),
+	["Turq"] = Color(26,188,156),
+	["TurqDark"] = Color(211,84,0),
+	["DarkBlue"] = Color(27,50,95),
+	["LightBlue"] = Color(156,196,228),
+	["Sunflower"] = Color(241,196,15),
+	["Orange"] = Color(243,156,18),
+	["Grey"] = Color(48,48,48),
+	["LightGrey"] = Color(144,144,144),
+	["DarkGrey"] = Color(16,16,16),
+
+	["Derma"] = {
+		["Bad"] = Color(231,76,60),
+		["BadDark"] = Color(192,57,43),
+		["Good"] = Color(46,204,113),
+		["GoodDark"] = Color(39,174,96),
+		["NeutralHigh"] = Color(236,240,241),
+		["NeutralMed"] = Color(189,195,199),
+		["NeutralLow"] = Color(149,165,166),
+		["NeutralDark"] = Color(127,140,141),
+	},
 }
 
-DR.DermaColors = {}
-DR.AirAccelerate = 1000 -- does nothing
-function DR.SetMainColor(col)
-	DR.Colors.Turq = col
-end
-
-function DR.SetMainTextColor(col)
-	DR.Colors.Text.Turq = col
-end
-
---[[
-
-	ANNOUNCER
-
-	To change the appearance of the announcer ( [HELP] Messages ) use the following two functions ON THE CLIENT:
-
-	DR.SetAnnouncerName( STRING name ) -- sets the name, default is "HELP"
-	DR.SetAnnouncerColor( COLOR col ) -- sets the color of the announcer name, default is DR.Colors.Alizarin
-	DR.SetAnnouncerTable( TABLE tbl ) -- sets the table of messages that the announcer broadcasts into player's chats.
-	DR.GetAnnouncerTable( ) -- returns the table of messages that gets broadcasted so that you can make changes to it.
-	DR.AddAnnouncement( STRING announcement ) -- Adds an announcement to the table of announcements that are broadcast by the announcer.
-
-]]
---[[
-
-	MOTD
-
-	To change the MOTD behaviour, use the following functions ON THE CLIENT:
-
-	DR.SetMOTDEnabled( BOOLEAN enabled ) -- False to disable globally, True to enable globally (clients can still disable for themselves using F2 menu )
-	DR.SetMOTDTitle( STRING title ) -- Title of the MOTD Window
-	DR.SetMOTDSize( NUMBER w, NUMBER h ) -- Size of the MOTD window
-	DR.SetMOTDPage( STRING url ) -- the URL to open in the MOTD window, e.h. http://www.MyCommunityIsCool.com
-
-]]
 -- don't touch this otherwise shit will hit the fan and your custom colors won't work
-hook.Add("InitPostEntity","DeathrunChangeColors",function() hook.Call("DeathrunChangeColors",nil,nil) end)
+hook.Add("InitPostEntity","DeathrunChangeColors",function()
+	hook.Run("DeathrunChangeColors")
+end)
+
 -- 1 = user, 2 = moderator, 3 = admin
 -- 2 will inherit from 1, 3 will inherit from 2
 -- to access a command, player must have access level >= permission level
+
 DR.Ranks = {}
 DR.Ranks["user"] = 1 -- access levels
 DR.Ranks["regular"] = 1 -- ranks are case sensitive, Admin /= admin
@@ -84,9 +53,11 @@ DR.Ranks["owner"] = 3
 DR.Ranks["atari"] = 2
 DR.Ranks["commodore 64"] = 3
 DR.Ranks["sega dreamcast"] = 3
+
 DR.PlayerAccess = {}
 DR.PlayerAccess["gamefresh_steamid"] = 2
 DR.PlayerAccess["bobbis_steamid"] = 3
+
 DR.Permissions = {
 	["deathrun_respawn"] = 3, -- permission levels
 	["deathrun_cleanup"] = 3,

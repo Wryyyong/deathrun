@@ -1,6 +1,6 @@
 local Iterator = ipairs({})
 
-local DermaColors = DR.DermaColors
+local DermaColors = DR.Colors.Derma
 
 --- @class DR_MultiPanel : Panel
 --- @field Tabs table<integer,string>

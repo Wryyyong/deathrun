@@ -284,11 +284,11 @@ if CLIENT then
 			surface.DrawRect(x,y,w,80)
 			DR.ShadowTextSimple("STATS","Deathrun_3D2D_Large",0,y,DR.Colors.Clouds,TEXT_ALIGN_CENTER,TEXT_ALIGN_TOP,2)
 			for i = 1,#labels do
-				DR.ShadowTextSimple(labels[i],"Deathrun_3D2D_Small",x + 20,y + 100 + 70 * (i - 1),DR.Colors.Text.Grey3,TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,0)
+				DR.ShadowTextSimple(labels[i],"Deathrun_3D2D_Small",x + 20,y + 100 + 70 * (i - 1),DR.Colors.Grey3,TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,0)
 			end
 
 			for i = 1,#stats3d.data do
-				DR.ShadowTextSimple(tostring(stats3d.data[i]),"Deathrun_3D2D_Small",x + w - 20,y + 100 + 70 * (i - 1),DR.Colors.Text.Turq,TEXT_ALIGN_RIGHT,TEXT_ALIGN_TOP,0)
+				DR.ShadowTextSimple(tostring(stats3d.data[i]),"Deathrun_3D2D_Small",x + w - 20,y + 100 + 70 * (i - 1),DR.Colors.Turq,TEXT_ALIGN_RIGHT,TEXT_ALIGN_TOP,0)
 			end
 
 			-- close stencil
@@ -322,19 +322,19 @@ if CLIENT then
 						local k = i - 1
 						if i <= #DR.MapRecordsCache then
 							local v = DR.MapRecordsCache[i]
-							DR.ShadowTextSimple(tostring(i) .. ". " .. string.sub(v["nickname"] or "",1,24),"Deathrun_3D2D_Large",-700,-150 + 100 * k,DR.Colors.Text.Clouds,TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,2)
-							DR.ShadowTextSimple(string.ToMinutesSecondsMilliseconds(v["seconds"] or "0"),"Deathrun_3D2D_Large",700,-150 + 100 * k,DR.Colors.Text.Turq,TEXT_ALIGN_RIGHT,TEXT_ALIGN_TOP,2)
+							DR.ShadowTextSimple(tostring(i) .. ". " .. string.sub(v["nickname"] or "",1,24),"Deathrun_3D2D_Large",-700,-150 + 100 * k,DR.Colors.Clouds,TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,2)
+							DR.ShadowTextSimple(string.ToMinutesSecondsMilliseconds(v["seconds"] or "0"),"Deathrun_3D2D_Large",700,-150 + 100 * k,DR.Colors.Turq,TEXT_ALIGN_RIGHT,TEXT_ALIGN_TOP,2)
 							surface.SetDrawColor(DR.Colors.Turq)
 							surface.DrawRect(-700,-150 + 100 * k + 80,1400,2)
 						elseif i == #DR.MapRecordsCache + 2 and DR.MapPBCache ~= 0 then
-							DR.ShadowTextSimple("Personal Best","Deathrun_3D2D_Large",-700,-150 + 100 * k,DR.Colors.Text.Clouds,TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,2)
-							DR.ShadowTextSimple(string.ToMinutesSecondsMilliseconds(DR.MapPBCache or 0),"Deathrun_3D2D_Large",700,-150 + 100 * k,DR.Colors.Text.Turq,TEXT_ALIGN_RIGHT,TEXT_ALIGN_TOP,2)
+							DR.ShadowTextSimple("Personal Best","Deathrun_3D2D_Large",-700,-150 + 100 * k,DR.Colors.Clouds,TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,2)
+							DR.ShadowTextSimple(string.ToMinutesSecondsMilliseconds(DR.MapPBCache or 0),"Deathrun_3D2D_Large",700,-150 + 100 * k,DR.Colors.Turq,TEXT_ALIGN_RIGHT,TEXT_ALIGN_TOP,2)
 							surface.SetDrawColor(DR.Colors.Turq)
 							surface.DrawRect(-700,-150 + 100 * k + 80,1400,2)
 						end
 					end
 				else
-					DR.ShadowTextSimple("No records yet!","Deathrun_3D2D_Large",0,-200,DR.Colors.Text.Clouds,TEXT_ALIGN_CENTER,TEXT_ALIGN_TOP,2)
+					DR.ShadowTextSimple("No records yet!","Deathrun_3D2D_Large",0,-200,DR.Colors.Clouds,TEXT_ALIGN_CENTER,TEXT_ALIGN_TOP,2)
 				end
 
 				cam.End3D2D()

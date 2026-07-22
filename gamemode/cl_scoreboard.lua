@@ -66,7 +66,7 @@ function DR.CreateScoreboard()
 	header:SetSize(dlist:GetWide(),48)
 	header.counter = .5
 	function header:Paint(w,h)
-		surface.SetDrawColor(DR.Colors.Turq or HexColor("#303030"))
+		surface.SetDrawColor(DR.Colors.Turq or DR.Colors.Grey)
 		surface.DrawRect(0,0,w,h)
 		surface.SetDrawColor(255,255,255,155 * (1 - math.pow((math.sin(CurTime()) + 1) * .5,.1)))
 		surface.DrawRect(0,0,w,h)
@@ -80,10 +80,10 @@ function DR.CreateScoreboard()
 		fw = fw + 64 -- 64 pixel gap
 		if self.counter > 1 then self.counter = 0 end
 		if fw > self:GetWide() then
-			DR.ShadowTextSimple(GetHostName(),"Deathrun_Derma_Large",4 + fw - self.counter * fw,h * .5 - 2,DR.Colors.Text.Clouds,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER,1)
-			DR.ShadowTextSimple(GetHostName(),"Deathrun_Derma_Large",4 - self.counter * fw,h * .5 - 2,DR.Colors.Text.Clouds,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER,1)
+			DR.ShadowTextSimple(GetHostName(),"Deathrun_Derma_Large",4 + fw - self.counter * fw,h * .5 - 2,DR.Colors.Clouds,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER,1)
+			DR.ShadowTextSimple(GetHostName(),"Deathrun_Derma_Large",4 - self.counter * fw,h * .5 - 2,DR.Colors.Clouds,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER,1)
 		else
-			DR.ShadowTextSimple(GetHostName(),"Deathrun_Derma_Large",w * .5,h * .5 - 2,DR.Colors.Text.Clouds,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1)
+			DR.ShadowTextSimple(GetHostName(),"Deathrun_Derma_Large",w * .5,h * .5 - 2,DR.Colors.Clouds,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1)
 		end
 	end
 
@@ -107,12 +107,12 @@ function DR.CreateScoreboard()
 		end
 	end
 
-	dlist:Add(DR.NewScoreboardSpacer({tostring(#team.GetPlayers(TEAM_SPECTATOR)) .. " players Spectating"},dlist:GetWide(),small and 24 or 32,HexColor("#303030")))
+	dlist:Add(DR.NewScoreboardSpacer({tostring(#team.GetPlayers(TEAM_SPECTATOR)) .. " players Spectating"},dlist:GetWide(),small and 24 or 32,DR.Colors.Grey))
 	for k,ply in ipairs(team.GetPlayers(TEAM_SPECTATOR)) do
 		dlist:Add(DR.NewScoreboardPlayer(ply,dlist:GetWide(),small and 22 or 28))
 	end
 
-	local options = DR.NewScoreboardSpacer({""},dlist:GetWide(),24,HexColor("#303030"))
+	local options = DR.NewScoreboardSpacer({""},dlist:GetWide(),24,DR.Colors.Grey)
 	local sizetog = vgui.Create("DR_AuToggle",options)
 	sizetog:SetConVar("deathrun_scoreboard_small")
 	sizetog:SetText("Small Text")
@@ -129,7 +129,7 @@ function DR.NewScoreboardSpacer(tbl_cols,w,h,customColor) -- static columns
 	panel.tbl_cols = tbl_cols
 	panel.customColor = customColor
 	function panel:Paint(w,h)
-		surface.SetDrawColor(DR.Colors.Clouds or HexColor("#303030"))
+		surface.SetDrawColor(DR.Colors.Clouds or DR.Colors.Grey)
 		surface.DrawRect(0,0,w,h)
 		w = w - 8
 	end
@@ -440,16 +440,19 @@ function DR.SetScoreboardDisplay(sid,_icon,_col,_tag,_rank) -- leave nil to use 
 	}
 end
 
+local ColorCyan = Color(140,250,239)
+
 DR.SetScoreboardDisplay("STEAM_0:1:30288855","icon16/cup.png",Color(50,200,0),"Author",nil) -- arizard
 DR.SetScoreboardDisplay("STEAM_0:0:29351088","icon16/rainbow.png",Color(200,0,0),"Worst Player",nil) -- zelpa
 DR.SetScoreboardDisplay("STEAM_0:1:128126755","icon16/drink.png",Color(255,200,255),"Confirmed Grill",nil) -- krystal
-DR.SetScoreboardDisplay("STEAM_0:0:90710956","icon16/cup_error.png",HexColor("#009600"),"Associate",nil) -- tarkus
-DR.SetScoreboardDisplay("STEAM_0:1:147138529","icon16/anchor.png",HexColor("#a66bbe"),"MEME MASTER",nil) -- kaay
-DR.SetScoreboardDisplay("STEAM_0:1:64432636","icon16/map_go.png",HexColor("#99ff33"),"Playboy Bunny",nil) -- gamefresh
-DR.SetScoreboardDisplay("STEAM_0:1:89220979","icon16/joystick.png",HexColor("#8cfaef"),"Neko Nation",nil) -- fich
-DR.SetScoreboardDisplay("STEAM_0:0:71992617","icon16/tux.png",HexColor("#8cfaef"),tostring(math.random(100)) .. "% Unstable",nil) -- haina
+DR.SetScoreboardDisplay("STEAM_0:0:90710956","icon16/cup_error.png",Color(0,150,0),"Associate",nil) -- tarkus
+DR.SetScoreboardDisplay("STEAM_0:1:147138529","icon16/anchor.png",Color(166,107,190),"MEME MASTER",nil) -- kaay
+DR.SetScoreboardDisplay("STEAM_0:1:64432636","icon16/map_go.png",Color(153,255,51),"Playboy Bunny",nil) -- gamefresh
+DR.SetScoreboardDisplay("STEAM_0:1:89220979","icon16/joystick.png",ColorCyan,"Neko Nation",nil) -- fich
+DR.SetScoreboardDisplay("STEAM_0:0:71992617","icon16/tux.png",ColorCyan,tostring(math.random(100)) .. "% Unstable",nil) -- haina
 DR.SetScoreboardDisplay("STEAM_0:1:86065559","icon16/lightning.png",Color(255,18,18),"Little Kid",nil) -- josh
-DR.SetScoreboardDisplay("STEAM_0:0:56846935","icon16/money.png",HexColor("#ffc048"),"Scammer",nil) -- preck
+DR.SetScoreboardDisplay("STEAM_0:0:56846935","icon16/money.png",Color(255,192,72),"Scammer",nil) -- preck
+
 hook.Add("GetScoreboardNameColor","memes",function(ply)
 	-- do not remove or i kill u
 	local sid = ply:SteamID()
@@ -463,11 +466,11 @@ hook.Add("GetScoreboardNameColor","memes",function(ply)
 
 	--Added colours for the usual usergroups
 	--if ply:GetUserGroup() == "moderator" then
-	--return HexColor("#0ca917")
+	--return Color(12,169,23)
 	--elseif ply:GetUserGroup() == "admin" then
-	--return HexColor("#e16600")
+	--return Color(225,102,0)
 	--elseif ply:GetUserGroup() == "superadmin" then
-	--return HexColor("#8cfaef")
+	--return ColorCyan
 	--end
 	if data then if data.col then return data.col end end
 end)

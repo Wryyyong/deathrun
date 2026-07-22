@@ -1,4 +1,3 @@
-include("hexcolor.lua")
 include("config.lua")
 include("convars/sh_convars.lua")
 include("convars/cl_convars.lua")
@@ -42,11 +41,11 @@ end)
 
 function DR.ChatMessage(msg)
 	chat.AddText(
-		DR.Colors.Text.Clouds,
+		DR.Colors.Clouds,
 		"[",
-		DR.Colors.Text.Turq,
+		DR.Colors.Turq,
 		"DEATHRUN",
-		DR.Colors.Text.Clouds,
+		DR.Colors.Clouds,
 		"] ",
 		msg
 	)

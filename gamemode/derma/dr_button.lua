@@ -1,4 +1,4 @@
-local DermaColors = DR.DermaColors
+local DermaColors = DR.Colors.Derma
 
 --- @class DR_Button : DButton
 --- @field Parent Panel

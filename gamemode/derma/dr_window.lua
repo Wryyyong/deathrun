@@ -2,7 +2,7 @@ local Colors = DR.Colors
 local ColorClouds = Colors.Clouds
 local ColorTurq = Colors.Turq
 
-local DermaColors = DR.DermaColors
+local DermaColors = DR.Colors.Derma
 
 local MatBlur = Material("pp/blurscreen")
 
