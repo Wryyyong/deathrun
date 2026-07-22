@@ -29,6 +29,10 @@ AddCSLuaFile("cl_fonts.lua")
 -- derma
 AddCSLuaFile("cl_derma.lua")
 
+for _,fileName in ipairs(file.Find("gamemodes/deathrun/gamemode/derma/dr_*.lua","GAME")) do
+	AddCSLuaFile("derma/" .. fileName)
+end
+
 -- base
 AddCSLuaFile("cl_hud.lua")
 AddCSLuaFile("cl_menus.lua")

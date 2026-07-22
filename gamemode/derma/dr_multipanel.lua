@@ -30,8 +30,6 @@ function DR_MultiPanel:Init()
 	self.Spacer = self:Add("DR_MultiPanelSpacer")
 	self.NavLeft = self:Add("DR_NavButtonLeft")
 	self.NavRight = self:Add("DR_NavButtonRight")
-
-	self:InvalidateLayout()
 end
 
 function DR_MultiPanel:ShowArrows(bool)
@@ -58,7 +56,12 @@ function DR_MultiPanel:SetTabDisabled(idx,bool)
 	self.Buttons[self.Tabs[idx]]:SetDisabled(bool)
 end
 
-DR_MultiPanel.SetColors = DR_Button.SetColors
+--- @param colorUp Color
+--- @param colorHover Color
+function DR_MultiPanel:SetColors(colorUp,colorHover)
+	self.ColorUp = colorUp
+	self.ColorHover = colorHover
+end
 
 function DR_MultiPanel:AddTab(name)
 	local tabs = self.Tabs

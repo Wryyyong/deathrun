@@ -1,5 +1,5 @@
 include("sh_zone.lua")
-net.Receive("ZoneSendZones",function() ZONE.zones = net.ReadTable() end)
+net.Receive("ZoneSendZones",function() ZONE.MapZones = net.ReadTable() end)
 local line_mat = Material("color.vmt")
 function ZONE:DrawCuboid(pos1,pos2,col,alt)
 	local pos1,pos2 = VectorMinMax(pos1,pos2)
@@ -47,7 +47,7 @@ function ZONE:DrawCuboid(pos1,pos2,col,alt)
 end
 
 hook.Add("PostDrawTranslucentRenderables","DeathrunZoneCuboidDrawing",function()
-	for name,z in pairs(ZONE.zones or {}) do
+	for name,z in pairs(ZONE.MapZones or {}) do
 		if z.type then
 			local center = .5 * (z.pos1 + z.pos2)
 			local dist = center:Distance(LocalPlayer():GetPos())

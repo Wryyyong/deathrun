@@ -18,6 +18,7 @@ end
 
 function DR_AuToggle:SetText(text)
 	self.Text = text
+	self:SizeToContents()
 end
 
 function DR_AuToggle.SetTextColor(self,color)

@@ -15,8 +15,8 @@ if SERVER then
 	local endmap = nil
 	local function findendmap()
 		--PrintTable( ZONE.zones )
-		if ZONE.zones then
-			for k,v in pairs(ZONE.zones) do
+		if ZONE.MapZones then
+			for k,v in pairs(ZONE.MapZones) do
 				print(v.type)
 				if v.type == "end" then endmap = v end
 			end
@@ -227,7 +227,7 @@ if CLIENT then
 		born = 0
 	}
 
-	local statsvis = DR.ConVars.VisibleStats
+	local statsvis = DR.ConVars.RenderYourStats
 	local labels = {}
 	net.Receive("deathrun_display_stats",function()
 		if IsValid(LocalPlayer()) then

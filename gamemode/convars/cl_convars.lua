@@ -4,7 +4,7 @@ local DefaultFlags =
 	FCVAR_NONE -- cleaner diffs for version control
 +	FCVAR_ARCHIVE
 
-ConVars.ShowZones = CreateConVar(
+ConVars.RenderZones = CreateConVar(
 	"deathrun_zones_visibility",
 	1,
 	DefaultFlags,
@@ -13,7 +13,7 @@ ConVars.ShowZones = CreateConVar(
 	1
 )
 
-ConVars.RoundCues = CreateConVar(
+ConVars.PlayRoundCues = CreateConVar(
 	"deathrun_round_cues",
 	1,
 	DefaultFlags,
@@ -40,9 +40,9 @@ ConVars.SmallScoreboard = CreateConVar(
 	1
 )
 
-ConVars.VisibleStats = CreateConVar(
+ConVars.RenderYourStats = CreateConVar(
 	"deathrun_stats_visibility",
-	1,
+	0,
 	DefaultFlags,
 	nil,
 	0,
@@ -165,7 +165,7 @@ ConVars.Hud = Hud
 
 Hud.Theme = CreateConVar(
 	"deathrun_hud_theme",
-	1,
+	2,
 	DefaultFlags,
 	nil,
 	1
@@ -200,7 +200,7 @@ Hud.PosAmmo = CreateConVar(
 
 Hud.TargetIdFadeTime = CreateConVar(
 	"deathrun_targetid_fade_duration",
-	1,
+	.25,
 	DefaultFlags,
 	nil,
 	0,

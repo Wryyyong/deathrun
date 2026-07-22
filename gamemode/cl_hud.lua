@@ -21,6 +21,8 @@ local HUDPOS_RIGHT_TOP     = 3
 local HUDPOS_RIGHT_MIDDLE  = 6
 local HUDPOS_RIGHT_BOTTOM  = 9
 
+local CvThirdPerson_Enabled = DR.ConVars.ThirdPerson.Enabled
+
 local CvCrosshairThickness = DR.ConVars.Crosshair.Thickness
 local CvCrosshairGap = DR.ConVars.Crosshair.Gap
 local CvCrosshairSize = DR.ConVars.Crosshair.Size
@@ -30,7 +32,7 @@ local CvCrosshairColorB = DR.ConVars.Crosshair.ColorB
 local CvCrosshairColorA = DR.ConVars.Crosshair.ColorA
 
 -- start and end cues
-local CvPlayRoundCues = DR.ConVars.RoundCues
+local CvPlayRoundCues = DR.ConVars.PlayRoundCues
 
 -- different themes
 local CvHudTheme = DR.ConVars.Hud.Theme
@@ -277,6 +279,9 @@ local Vaporwave_Scale = Vector(0,0,0)
 --- @param width integer
 --- @param height integer
 local function UpdateScreenSize(_,_,width,height)
+	DR.ScreenWidth = width
+	DR.ScreenHeight = height
+
 	local widthHalf = width * .5
 	local heightHalf = height * .5
 
@@ -334,18 +339,23 @@ hook.Add("OnScreenSizeChanged","Deathrun_UpdateHudPositions",UpdateScreenSize)
 UpdateScreenSize(nil,nil,ScrW(),ScrH())
 
 function DR.DrawCrosshair(x,y)
-	local thick = CvCrosshairThickness:GetInt()
+	local thick = CvCrosshairThickness:GetFloat()
 	local thickHalf = thick * .5
 	local thickModX = x - thickHalf
 	local thickModY = y - thickHalf
 
-	local gap = CvCrosshairGap:GetInt()
+	local gap = CvCrosshairGap:GetFloat()
 	local gapHalf = gap * .5
 
-	local size = CvCrosshairSize:GetInt()
+	local size = CvCrosshairSize:GetFloat()
 	local sizeMod = size + gapHalf
 
-	surface.SetDrawColor(CvCrosshairColorR:GetInt(),CvCrosshairColorG:GetInt(),CvCrosshairColorB:GetInt(),CvCrosshairColorA:GetInt())
+	surface.SetDrawColor(
+		CvCrosshairColorR:GetInt(),
+		CvCrosshairColorG:GetInt(),
+		CvCrosshairColorB:GetInt(),
+		CvCrosshairColorA:GetInt()
+	)
 	surface.DrawRect(
 		thickModX,
 		y - sizeMod,
@@ -727,7 +737,7 @@ function DR.DrawPlayerHUD(x,y,alpha)
 		hpCur,
 		"Deathrun_DefaultHUD_Large",
 		xBarLarge,
-		yHpText - 1,
+		yHpText,
 		ColorsText.Clouds,
 		TEXT_ALIGN_LEFT,
 		TEXT_ALIGN_CENTER,
@@ -813,7 +823,7 @@ function DR.DrawPlayerHUD(x,y,alpha)
 		velStr,
 		"Deathrun_DefaultHUD_Large",
 		xBarLarge,
-		yVelText - 1,
+		yVelText,
 		ColorsText.Clouds,
 		TEXT_ALIGN_LEFT,
 		TEXT_ALIGN_CENTER,
@@ -879,7 +889,7 @@ function DR.DrawPlayerHUD(x,y,alpha)
 		string.ToMinutesSecondsMilliseconds(CurTime() - (ply.StartTime or 0)),
 		"Deathrun_DefaultHUD_Large",
 		xBarLarge,
-		yTimeText - 1,
+		yTimeText,
 		ColorsText.Clouds,
 		TEXT_ALIGN_LEFT,
 		TEXT_ALIGN_CENTER,
@@ -1565,6 +1575,7 @@ local HudDrawFunctions = {
 	[HUDTHEME_SASS]         = CreateHudMetaTable(DR.DrawPlayerHUDMainSass,DR.DrawPlayerHUDAmmoSass),
 	[HUDTHEME_CLASSIC]      = CreateHudMetaTable(DR.DrawPlayerHUDClassic),
 }
+DR.HudDrawFunctions = HudDrawFunctions
 
 -- make it easy to add new HUDs
 --- @param hudFuncMain HudDrawFunc? health, velocity
@@ -1575,7 +1586,6 @@ end
 
 local TWO_THIRDS = 2 / 3
 local WinnerOffset = 628 * .5
-local CvThirdpersonMode = GetConVar("deathrun_thirdperson_enabled")
 
 function GM:HUDPaint()
 	local curTime = CurTime()
@@ -1592,7 +1602,7 @@ function GM:HUDPaint()
 	local x,y
 
 	-- draw crosshair and account for thirdperson mode
-	if CvThirdpersonMode:GetBool() then
+	if CvThirdPerson_Enabled:GetBool() then
 		local hitPos = LocalPlayer():GetEyeTrace().HitPos:ToScreen()
 
 		x = hitPos.x

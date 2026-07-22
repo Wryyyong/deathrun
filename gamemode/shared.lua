@@ -3,6 +3,7 @@ GM.Author = "Arizard"
 GM.Email = ""
 GM.Website = "http://vhs7.tv"
 DR.TimeStamp = 1462083778
+DR.TimeStampFormatted = os.date("%Y-%m-%d %H:%M:%S",DR.TimeStamp)
 
 function DR.EmptyFunction()
 end

@@ -16,32 +16,69 @@ local DR_Window = {
 	["BgAlpha"] = 25,
 	["BgColor"] = ColorClouds,
 	["FgColor"] = ColorTurq,
-	["InnerWindowClass"] = "DR_InnerWindow",
+
+	["OnClose"] = DR.EmptyFunction,
 }
 
 function DR_Window:Init()
-	self.CloseButton = self:Add("DR_CloseButton")
-	self.InnerWindow = self:Add(self.InnerWindowClass)
-
 	self:SetSize(self.Width,self.Height)
 	self:Center()
 	self:ShowCloseButton(false)
 
 	self.lblTitle:SetVisible(false)
+
+	self:SetupCloseButton()
+	self:SetupInnerWindow()
 end
 
-DR_Window.OnClose = DR.EmptyFunction
+function DR_Window:SetupCloseButton()
+	local closeButton = self.CloseButton
+
+	if closeButton then
+		closeButton:Remove()
+		self.CloseButton = nil
+	end
+
+	self.CloseButton = self:Add("DR_CloseButton")
+end
+
+function DR_Window:SetupInnerWindow()
+	local innerWindow = self.InnerWindow
+
+	if innerWindow then
+		innerWindow:Remove()
+		self.InnerWindow = nil
+	end
+
+	self.InnerWindow = self:Add("DR_InnerWindow")
+end
 
 function DR_Window:PerformLayout()
 	local width,height = self:GetSize()
 
 	local closeButton = self.CloseButton
-	closeButton:SetSize(20,20)
-	closeButton:SetPos(width - 24,4) -- 20 - 4
+	if IsValid(closeButton) then
+		closeButton:SetSize(
+			20,
+			20
+		)
+		closeButton:SetPos(
+			width - 24,
+			4 -- 20 - 4
+		)
+	end
 
 	local innerWindow = self.InnerWindow
-	innerWindow:SetSize(width,height - 36) -- 28 - 8
-	innerWindow:SetPos(0,28)
+	if IsValid(innerWindow) then
+		innerWindow:SetSize(
+			width,
+			height - 36 -- 28 - 8
+		)
+		innerWindow:SetPos(
+			0,
+			28
+		)
+	end
 end
 
 function DR_Window:Paint(width,height)

@@ -17,6 +17,10 @@ local DR_Button = {
 	["TextFunction"] = DR.ShadowTextSimple,
 	["ColorUp"] = DermaColors.NeutralDark,
 	["ColorHover"] = DermaColors.NeutralLow,
+
+	["Paint"] = DR.EmptyFunction,
+	["DoClick"] = DR.EmptyFunction,
+	["SetColors"] = DR_MultiPanel.SetColors,
 }
 
 function DR_Button:Init()
@@ -30,8 +34,6 @@ end
 function DR_Button:PerformLayout()
 	self.SubButton:SetSize(self:GetSize())
 end
-
-DR_Button.Paint = DR.EmptyFunction
 
 function DR_Button:PaintOver(width,height)
 	self:PaintShapes(width,height)
@@ -93,15 +95,6 @@ end
 function DR_Button:SetText(text)
 	self.Text = text
 end
-
---- @param colorUp Color
---- @param colorHover Color
-function DR_Button:SetColors(colorUp,colorHover)
-	self.ColorUp = colorUp
-	self.ColorHover = colorHover
-end
-
-DR_Button.DoClick = DR.EmptyFunction
 
 function DR_Button:OnMousePressed(keyCode)
 	if self.Disabled then return end

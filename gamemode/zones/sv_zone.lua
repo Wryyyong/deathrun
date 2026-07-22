@@ -14,18 +14,18 @@ function ZONE:Load()
 	if not file.Exists(path,"DATA") then file.Write(path,"{}") end
 	local json = file.Read(path,"DATA")
 	local tab = util.JSONToTable(json) or {}
-	self.zones = table.Copy(tab)
+	self.MapZones = table.Copy(tab)
 	print("Zones were loaded.")
 end
 
 ZONE:Load()
 function ZONE:Create(name,pos1,pos2,color,type,force)
-	if not istable(self.zones[name]) or next(self.zones[name]) == nil or force then -- empty table
-		self.zones[name] = {}
-		self.zones[name].pos1 = pos1
-		self.zones[name].pos2 = pos2
-		self.zones[name].color = color
-		self.zones[name].type = type
+	if not istable(self.MapZones[name]) or next(self.MapZones[name]) == nil or force then -- empty table
+		self.MapZones[name] = {}
+		self.MapZones[name].pos1 = pos1
+		self.MapZones[name].pos2 = pos2
+		self.MapZones[name].color = color
+		self.MapZones[name].type = type
 		self:Save()
 		return true
 	end
@@ -33,7 +33,7 @@ function ZONE:Create(name,pos1,pos2,color,type,force)
 end
 
 function ZONE:ZoneData(name)
-	return self.zones[name] or false
+	return self.MapZones[name] or false
 end
 
 function ZONE:GetPlayerInZone(name)
@@ -42,12 +42,12 @@ end
 
 function ZONE:GetPlayerInZoneType(ply,t)
 	for k,v in pairs(ply.InZones or {}) do
-		if self.zones[k] and v == true then
+		if self.MapZones[k] and v == true then
 			if type(t) == "string" then
-				if self.zones[k].type == t then return true end
+				if self.MapZones[k].type == t then return true end
 			elseif type(t) == "table" then
 				for _,j in ipairs(t) do
-					if self.zones[k].type == j then return true end
+					if self.MapZones[k].type == j then return true end
 				end
 			end
 		end
@@ -66,7 +66,7 @@ end
 
 function ZONE:Tick() -- cycle through zones and check for players
 	if skipcount == skip then
-		for name,z in pairs(self.zones) do
+		for name,z in pairs(self.MapZones) do
 			if z.type then
 				local border = Vector(20,20,20)
 				local posmin,posmax = VectorMinMax(z.pos1,z.pos2)
@@ -104,13 +104,13 @@ hook.Add("Tick","ZoneTick",function() ZONE:Tick() end)
 util.AddNetworkString("ZoneSendZones")
 function ZONE:SendZones(ply)
 	net.Start("ZoneSendZones")
-	net.WriteTable(self.zones)
+	net.WriteTable(self.MapZones)
 	net.Send(ply)
 end
 
 function ZONE:BroadcastZones()
 	net.Start("ZoneSendZones")
-	net.WriteTable(self.zones)
+	net.WriteTable(self.MapZones)
 	net.Broadcast()
 end
 
@@ -138,7 +138,7 @@ DR.AddChatCommand("createzone",function(ply,args) ply:ConCommand("zone_create " 
 concommand.Add("zone_remove",function(ply,cmd,args)
 	-- e.g. zone_create endmap end
 	if DR.CanAccessCommand(ply,cmd) and #args == 1 then
-		ZONE.zones[args[1]] = nil
+		ZONE.MapZones[args[1]] = nil
 		ZONE:Save()
 		ZONE:BroadcastZones()
 		DR.SafeChatPrint(ply,"Deleted zone '" .. args[1] .. "'")
@@ -149,11 +149,11 @@ DR.AddChatCommand("removezone",function(ply,args) ply:ConCommand("zone_remove " 
 concommand.Add("zone_setpos1",function(ply,cmd,args)
 	if DR.CanAccessCommand(ply,cmd) and #args == 2 then
 		if args[2] == "eyetrace" and IsValid(ply) then
-			if ZONE.zones[args[1]] then
-				ZONE.zones[args[1]].pos1 = ply:GetEyeTrace().HitPos
+			if ZONE.MapZones[args[1]] then
+				ZONE.MapZones[args[1]].pos1 = ply:GetEyeTrace().HitPos
 				ZONE:BroadcastZones()
 				ZONE:Save()
-				DR.SafeChatPrint(ply,args[1] .. ".pos1 set to " .. tostring(ZONE.zones[args[1]].pos1))
+				DR.SafeChatPrint(ply,args[1] .. ".pos1 set to " .. tostring(ZONE.MapZones[args[1]].pos1))
 			else
 				DR.SafeChatPrint(ply,"Zone does not exist.")
 			end
@@ -167,11 +167,11 @@ DR.AddChatCommand("setzonepos1",function(ply,args) ply:ConCommand("zone_setpos1 
 concommand.Add("zone_setpos2",function(ply,cmd,args)
 	if DR.CanAccessCommand(ply,cmd) and #args == 2 then
 		if args[2] == "eyetrace" and IsValid(ply) then
-			if ZONE.zones[args[1]] then
-				ZONE.zones[args[1]].pos2 = ply:GetEyeTrace().HitPos
+			if ZONE.MapZones[args[1]] then
+				ZONE.MapZones[args[1]].pos2 = ply:GetEyeTrace().HitPos
 				ZONE:BroadcastZones()
 				ZONE:Save()
-				DR.SafeChatPrint(ply,args[1] .. ".pos2 set to " .. tostring(ZONE.zones[args[1]].pos2))
+				DR.SafeChatPrint(ply,args[1] .. ".pos2 set to " .. tostring(ZONE.MapZones[args[1]].pos2))
 			else
 				DR.SafeChatPrint(ply,"Zone does not exist.")
 			end
@@ -185,11 +185,11 @@ DR.AddChatCommand("setzonepos2",function(ply,args) ply:ConCommand("zone_setpos2 
 concommand.Add("zone_setcolor",function(ply,cmd,args)
 	-- RGBA e.g. zone_setcolor endmap 255 0 0 255
 	if DR.CanAccessCommand(ply,cmd) and #args > 0 then
-		if ZONE.zones[args[1]] then
-			ZONE.zones[args[1]].color = Color(tonumber(args[2]) or 255,tonumber(args[3]) or 255,tonumber(args[4]) or 255,tonumber(args[5]) or 255)
+		if ZONE.MapZones[args[1]] then
+			ZONE.MapZones[args[1]].color = Color(tonumber(args[2]) or 255,tonumber(args[3]) or 255,tonumber(args[4]) or 255,tonumber(args[5]) or 255)
 			ZONE:BroadcastZones()
 			ZONE:Save()
-			DR.SafeChatPrint(ply,args[1] .. ".color set to " .. tostring(ZONE.zones[args[1]].color))
+			DR.SafeChatPrint(ply,args[1] .. ".color set to " .. tostring(ZONE.MapZones[args[1]].color))
 		else
 			DR.SafeChatPrint(ply,"Zone does not exist.")
 		end
@@ -200,11 +200,11 @@ DR.AddChatCommand("setzonecolor",function(ply,args) ply:ConCommand("zone_setcolo
 concommand.Add("zone_settype",function(ply,cmd,args)
 	-- e.g. zone_settype endmap end
 	if DR.CanAccessCommand(ply,cmd) and #args == 2 then
-		if ZONE.zones[args[1]] then
-			ZONE.zones[args[1]].type = args[2]
+		if ZONE.MapZones[args[1]] then
+			ZONE.MapZones[args[1]].type = args[2]
 			ZONE:BroadcastZones()
 			ZONE:Save()
-			DR.SafeChatPrint(ply,args[1] .. ".type set to " .. tostring(ZONE.zones[args[1]].type))
+			DR.SafeChatPrint(ply,args[1] .. ".type set to " .. tostring(ZONE.MapZones[args[1]].type))
 		else
 			DR.SafeChatPrint(ply,"Zone does not exist.")
 		end

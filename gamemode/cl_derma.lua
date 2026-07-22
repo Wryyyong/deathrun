@@ -13,25 +13,53 @@ DermaColors.TurqDark = HexColor("#d35400")
 for _,panelName in ipairs({
 	-- Panel
 	"autoggle",
+	"custompanelcanvas",
+	"customvscrollbar",
 	"multipanel",
 
 	-- DPanel
+	"crosshairpreview",
+	"customscrollpanel",
 	"innerwindow",
+	"menucontrols",
+	"menuspacer",
 	"multipanelspacer",
 	"multipaneltabpanel",
 
 	-- DFrame
 	"window",
 
+	-- DLabel
+	"menuitem",
+
 	-- DButton
 	"button",
+	"customvscrollbarbutton",
 	"subbutton",
 	"togglebutton",
 
+	-- DIconLayout
+	"menulist",
+
+	-- DColorMixer
+	"crosshaircolormixer",
+
+	-- DScrollBarGrip
+	"customscrollbargrip",
+
+	-- DNumSlider
+	"menunumslider",
+
 	-- DR_Button
 	"closebutton",
-	"navbutton",
 	"multipaneltabbutton",
+	"navbutton",
+
+	-- DR_Window
+	"menuframe",
+
+	-- DR_InnerWindow
+	"menuinner",
 }) do
 	include("derma/dr_" .. panelName .. ".lua")
 end

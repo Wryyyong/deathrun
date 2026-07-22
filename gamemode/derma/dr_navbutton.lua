@@ -43,5 +43,6 @@ function DR_NavButtonRight:GetNewOffset()
 end
 
 derma.DefineControl("DR_NavButtonBase","",DR_NavButtonBase,"DR_Button")
+
 derma.DefineControl("DR_NavButtonLeft","",DR_NavButtonLeft,"DR_NavButtonBase")
 derma.DefineControl("DR_NavButtonRight","",DR_NavButtonRight,"DR_NavButtonBase")

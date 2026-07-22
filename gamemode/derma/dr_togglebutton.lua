@@ -1,15 +1,16 @@
 --- @class DR_ToggleButton : DButton
 --- @field Parent DR_AuToggle
-local DR_ToggleButton = {}
+local DR_ToggleButton = {
+	["Paint"] = DR.EmptyFunction,
+}
 
 function DR_ToggleButton:Init()
-	self.Parent = self:GetParent()
+	local parent = self:GetParent()
+	self.Parent = parent
 
 	self:SetText("")
-	self:SetSize(self.Parent:GetSize())
+	self:SetSize(parent:GetSize())
 end
-
-DR_ToggleButton.Paint = DR.EmptyFunction
 
 function DR_ToggleButton:DoClick()
 	self.Parent:Toggle()
