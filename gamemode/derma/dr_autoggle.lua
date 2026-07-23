@@ -1,5 +1,6 @@
 local Colors = DR.Colors
 local ColorClouds = Colors.Clouds
+local ColorGrey = Colors.Grey
 local ColorTurq = Colors.Turq
 
 --- @class DR_AuToggle : Panel
@@ -92,12 +93,12 @@ function DR_AuToggle:Paint(_,height)
 		ColorTurq
 	)
 
-	DR.ShadowTextSimple(
+	draw.SimpleText(
 		self:GetText(),
 		self:GetFont(),
 		32, -- 8 + 16 + 8
 		heightHalf,
-		ColorTurq,
+		ColorGrey,
 		TEXT_ALIGN_LEFT,
 		TEXT_ALIGN_CENTER,
 		1

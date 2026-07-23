@@ -246,7 +246,7 @@ if CLIENT then
 				stats3d.ang:RotateAroundAxis(LocalPlayer():EyeAngles():Right(),90)
 				stats3d.ang:RotateAroundAxis(LocalPlayer():EyeAngles():Forward(),90)
 				stats3d.born = CurTime()
-				hook.Call("DeathrunAddStatsRow",nil,labels,stats3d.data)
+				hook.Run("DeathrunAddStatsRow",labels,stats3d.data)
 			end
 		end
 	end)

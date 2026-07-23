@@ -77,17 +77,17 @@ function ZONE:Tick() -- cycle through zones and check for players
 						if not ply.InZones[name] then
 							if PlayerInCuboid(ply,z.pos1,z.pos2) then -- if we don't remember them being inside, but they are inside, then they mustve just entered the zone.
 								ply.InZones[name] = true
-								hook.Call("DeathrunPlayerEnteredZone",nil,ply,name,z)
+								hook.Run("DeathrunPlayerEnteredZone",ply,name,z)
 							end
 						else
 							if not PlayerInCuboid(ply,z.pos1,z.pos2) then -- if we remember them being inside, but they arent anymore, then they left.
 								ply.InZones[name] = false
-								hook.Call("DeathrunPlayerExitedZone",nil,ply,name,z)
+								hook.Run("DeathrunPlayerExitedZone",ply,name,z)
 							end
 						end
 
 						if PlayerInCuboid(ply,z.pos1,z.pos2) then -- if we don't remember them being inside, but they are inside, then they mustve just entered the zone.
-							hook.Call("DeathrunPlayerInsideZone",nil,ply,name,z)
+							hook.Run("DeathrunPlayerInsideZone",ply,name,z)
 						end
 					end
 				end
@@ -288,6 +288,6 @@ hook.Add("DeathrunPlayerEnteredZone","DeathrunPlayerFinishMap",function(ply,name
 			end
 		end
 
-		hook.Call("DeathrunPlayerFinishMap",nil,ply,name,z,place,finishtime)
+		hook.Run("DeathrunPlayerFinishMap",ply,name,z,place,finishtime)
 	end
 end)

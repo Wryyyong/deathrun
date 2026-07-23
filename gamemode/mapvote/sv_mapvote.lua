@@ -16,8 +16,8 @@ MV.MapStats = util.JSONToTable(file.Read("map_statistics.txt","DATA"))
 hook.Add("DeathrunBeginPrep","RecordMapStats",function()
 	-- increment stats by 1 each time a round is played on the map
 	local map = game.GetMap()
-	MV.MapStats[map] = MV.MapStats[map] or #player.GetAllPlaying()
-	MV.MapStats[map] = MV.MapStats[map] + #player.GetAllPlaying()
+	MV.MapStats[map] = MV.MapStats[map] or #DR.GetAllPlaying()
+	MV.MapStats[map] = MV.MapStats[map] + #DR.GetAllPlaying()
 	file.Write("map_statistics.txt",util.TableToJSON(MV.MapStats))
 end)
 
@@ -160,7 +160,7 @@ timer.Create("MapvoteCountdownTimer",.2,0,function()
 	end
 end)
 
-concommand.Add("mapvote_begin_mapvote",function(ply,cmd,args) if DR.CanAccessCommand(ply,cmd) then if not hook.Call("DeathrunStartMapvote",nil,ROUND:GetRoundsPlayed()) then MV:BeginMapVote() end end end)
+concommand.Add("mapvote_begin_mapvote",function(ply,cmd,args) if DR.CanAccessCommand(ply,cmd) then if not hook.Run("DeathrunStartMapvote",ROUND:GetRoundsPlayed()) then MV:BeginMapVote() end end end)
 concommand.Add("mapvote_vote",function(ply,cmd,args)
 	if DR.CanAccessCommand(ply,cmd) then
 		if MV.Active == false then return end
@@ -237,7 +237,7 @@ function MV:CheckRTV(suppress)
 
 	local ratio = votes / numplayers
 	if ratio > RTVRatio:GetFloat() then
-		if not hook.Call("DeathrunStartMapvote",nil,ROUND:GetRoundsPlayed()) then MV:BeginMapVote() end
+		if not hook.Run("DeathrunStartMapvote",ROUND:GetRoundsPlayed()) then MV:BeginMapVote() end
 		DR.ChatBroadcast("RTV limit reached. Initiating mapvote.")
 	else
 		local needed = math.ceil(RTVRatio:GetFloat() * numplayers) - votes + 1

@@ -37,7 +37,7 @@ if SERVER then
 	hook.Add("DeathrunPlayerFinishMap","PointshopRewards",function(ply,zname,z,place) DR.RewardPlayer(ply,CvFinishReward:GetInt(),"finishing the map") end)
 	hook.Add("PlayerDeath","PointshopRewards",function(ply,inflictor,attacker) if attacker:IsPlayer() then if ply:Team() ~= attacker:Team() then DR.RewardPlayer(attacker,CvKillReward:GetInt(),"killing " .. ply:Nick()) end end end)
 	hook.Add("DeathrunRoundWin","PointshopRewards",function(winner)
-		for k,v in ipairs(player.GetAllPlaying()) do
+		for k,v in ipairs(DR.GetAllPlaying()) do
 			if v:Team() == winner then DR.RewardPlayer(v,CvWinReward:GetInt(),"winning the round") end
 		end
 	end)

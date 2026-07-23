@@ -34,14 +34,11 @@ end
 function DR_MenuList:AddBoolean(text,cvar)
 	self:Add("DR_MenuSpacerSmall")
 
-	local boolean = self:Add("DR_MenuItemBase")
-	boolean:SetText(text)
-
 	local toggle = self:Add("DR_AuToggle")
-	toggle:SetText("Enabled")
+	toggle:SetText(text)
 	toggle:SetConVar(cvar:GetName())
 
-	return boolean,toggle
+	return toggle
 end
 
 --- @param text string

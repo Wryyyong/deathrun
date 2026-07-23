@@ -13,7 +13,7 @@ if SERVER then
 		local but_ids = {}
 		local players = {}
 		local buttonswerechanged = false
-		for k,v in ipairs(player.GetAllPlaying()) do
+		for k,v in ipairs(DR.GetAllPlaying()) do
 			if v:Alive() and v:Team() == TEAM_DEATH then -- get living death players
 				table.insert(players,v)
 			end
@@ -69,21 +69,21 @@ if SERVER then
 		local mid = ent:MapCreationID()
 		local sid = ply:SteamID()
 		if ply:Team() == TEAM_RUNNER then
-			if ent:GetSaveTable().m_toggle_state == 1 and not ent:GetSaveTable().m_bLocked and ply:KeyPressed(IN_USE) then hook.Call("DeathrunButtonActivated",nil,ply,ent) end
+			if ent:GetSaveTable().m_toggle_state == 1 and not ent:GetSaveTable().m_bLocked and ply:KeyPressed(IN_USE) then hook.Run("DeathrunButtonActivated",ply,ent) end
 			ent.User = ply
 			return
 		end
 
 		-- to stop secrets breaking
 		if not buttons[mid] then
-			if ent:GetSaveTable().m_toggle_state == 1 and not ent:GetSaveTable().m_bLocked and ply:KeyPressed(IN_USE) then hook.Call("DeathrunButtonActivated",nil,ply,ent) end
+			if ent:GetSaveTable().m_toggle_state == 1 and not ent:GetSaveTable().m_bLocked and ply:KeyPressed(IN_USE) then hook.Run("DeathrunButtonActivated",ply,ent) end
 			ent.User = ply
 			return
 		end
 
 		-- if that shit doesnt exist then sure, just do it, don't let your dreams be dreams
 		if buttons[mid].claimedPlayer == sid or buttons[mid].claimed == false then -- if they own it, or if it is unclaimed (e.g. they run and press it the moment before it updates on the server, it won't disable and it wont cause them to lose the runner.)
-			if ent:GetSaveTable().m_toggle_state == 1 and not ent:GetSaveTable().m_bLocked and ply:KeyPressed(IN_USE) then hook.Call("DeathrunButtonActivated",nil,ply,ent) end
+			if ent:GetSaveTable().m_toggle_state == 1 and not ent:GetSaveTable().m_bLocked and ply:KeyPressed(IN_USE) then hook.Run("DeathrunButtonActivated",ply,ent) end
 			ent.User = ply
 			return
 		else

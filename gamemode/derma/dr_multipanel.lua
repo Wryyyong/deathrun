@@ -3,7 +3,7 @@ local Iterator = ipairs({})
 local DermaColors = DR.Colors.Derma
 
 --- @class DR_MultiPanel : Panel
---- @field Tabs table<integer,string>
+--- @field Tabs string[]
 --- @field Buttons table<string,DR_MultiPanelTabButton>
 --- @field Panels table<string,DR_MultiPanelTabPanel>
 --- @field Spacer DR_MultiPanelSpacer

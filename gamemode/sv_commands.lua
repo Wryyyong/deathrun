@@ -204,7 +204,7 @@ concommand.Add("deathrun_punish",function(ply,cmd,args)
 			elseif #targets == 1 then
 				local t = targets[1]
 				DR.PunishDeathAvoid(t,tonumber(args[2]))
-				DeathrunSafeChatPrint(ply,"Punishing " .. tostring(t:Nick()) .. " for another " .. tostring(DR.GetDeathAvoid(t)) .. " rounds.")
+				DeathrunSafeChatPrint(ply,"Punishing " .. tostring(t:Nick()) .. " for another " .. tostring(DR.GetDeathAvoiderRounds(t)) .. " rounds.")
 			elseif #targets > 1 then
 				ply:DeathrunSafeChatPrint("Too many targets to punish.")
 			end

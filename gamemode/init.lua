@@ -89,43 +89,76 @@ util.AddNetworkString("DeathrunNotification")
 util.AddNetworkString("DeathrunSpectatorNotification")
 util.AddNetworkString("DeathrunForceSpectator")
 util.AddNetworkString("DeathrunAddKillNote")
+
 -- required configz
 RunConsoleCommand("sv_friction",8)
 RunConsoleCommand("sv_sticktoground",0)
 RunConsoleCommand("sv_airaccelerate",0)
 RunConsoleCommand("sv_gravity",800)
-local playermodels = {"models/player/group01/male_01.mdl","models/player/group01/male_02.mdl","models/player/group01/male_03.mdl","models/player/group01/male_04.mdl","models/player/group01/male_05.mdl","models/player/group01/male_06.mdl","models/player/group01/male_07.mdl","models/player/group01/male_08.mdl","models/player/group01/male_09.mdl","models/player/group01/female_01.mdl","models/player/group01/female_02.mdl","models/player/group01/female_03.mdl","models/player/group01/female_04.mdl","models/player/group01/female_05.mdl","models/player/group01/female_06.mdl",}
-local defaultFlags = FCVAR_SERVER_CAN_EXECUTE + FCVAR_REPLICATED + FCVAR_NOTIFY + FCVAR_ARCHIVE
+
+local ConVars = DR.ConVars
+
+local CvAllTalk = ConVars.AllTalk
+local CvDeathModel = ConVars.DeathModel
+local CvDrownTimer = ConVars.DrownTimer
+local CvIdleTimer = ConVars.IdleTimer
+local CvDisableDefaultDeathSpeed = DR.ConVars.DisableDefaultDeathSpeed
+
+local PlayerModels = {
+	"models/player/group01/male_01.mdl",
+	"models/player/group01/male_02.mdl",
+	"models/player/group01/male_03.mdl",
+	"models/player/group01/male_04.mdl",
+	"models/player/group01/male_05.mdl",
+	"models/player/group01/male_06.mdl",
+	"models/player/group01/male_07.mdl",
+	"models/player/group01/male_08.mdl",
+	"models/player/group01/male_09.mdl",
+	"models/player/group01/female_01.mdl",
+	"models/player/group01/female_02.mdl",
+	"models/player/group01/female_03.mdl",
+	"models/player/group01/female_04.mdl",
+	"models/player/group01/female_05.mdl",
+	"models/player/group01/female_06.mdl",
+}
+local PlayerModelCount = #PlayerModels
+
 hook.Add("PlayerInitialSpawn","DeathrunPlayerInitialSpawn",function(ply)
 	ply.FirstSpawn = true
 	ply:SetTeam(TEAM_SPECTATOR)
-	--ply:Spawn()
+
 	DR.ChatBroadcast(ply:Nick() .. " has joined the server.")
 end)
 
-hook.Add("PlayerDisconnected","DeathrunPlayerDisconnectMessage",function(ply) DR.ChatBroadcast(ply:Nick() .. " has left the server.") end)
-local deathModel = DR.ConVars.DeathModel
-local dropWeaponsOnDeath = DR.ConVars.DropWeaponsOnDeath
+hook.Add("PlayerDisconnected","DeathrunPlayerDisconnectMessage",function(ply)
+	DR.ChatBroadcast(ply:Nick() .. " has left the server.")
+end)
+
 hook.Add("PlayerSpawn","DeathrunSetPlayerModels",function(ply)
-	--if dropWeaponsOnDeath
-	if ply:Team() == TEAM_DEATH then
-		local mdl = deathModel:GetString()
+	local plyTeam = ply:Team()
+
+	if plyTeam == TEAM_DEATH then
+		local mdl = CvDeathModel:GetString()
+
 		if string.sub(mdl,-4,-1) == ".mdl" then
 			ply:SetModel(mdl)
 		else
 			print("The default death model is not a valid .mdl file ('" .. mdl .. "'). Please change the deathrun_death_model ConVar.")
 		end
-	elseif ply:Team() == TEAM_RUNNER then
-		ply:SetModel(table.Random(playermodels))
+	elseif plyTeam == TEAM_RUNNER then
+		ply:SetModel(PlayerModels[PlayerModelCount])
 	end
 
-	local mdl = hook.Call("ChangePlayerModel",nil,ply)
+	local mdl = hook.Run("ChangePlayerModel",ply)
+
 	if mdl then
 		ply:SetModel(mdl)
 	else
-		if not ply:GetModel() or ply:GetModel() == "models/player.mdl" then -- don't override the current set model if there is one
-			print("Player " .. tostring(ply:Nick()) .. " did not have a model - setting them a new one.")
-			ply:SetModel(table.Random(playermodels))
+		-- don't override the current set model if there is one
+		if not ply:GetModel() or ply:GetModel() == "models/player.mdl" then
+			print("Player " .. ply:Nick() .. " did not have a model - setting them a new one.")
+
+			ply:SetModel(PlayerModels[PlayerModelCount])
 		end
 	end
 end)
@@ -134,93 +167,131 @@ local function SpawnSpectator(ply)
 	ply:KillSilent()
 	ply:SetTeam(TEAM_SPECTATOR)
 	ply:BeginSpectate()
+
 	return GAMEMODE:PlayerSpawnAsSpectator(ply)
 end
 
-DR.SpecBuffer = {}
+local SpecBuffer = DR.SpecBuffer or {}
+DR.SpecBuffer = SpecBuffer
+
+local function FixSpecBuffer()
+	-- SUDDENTLY SPECTATOR IS MAGICALLY FIXED
+	for idx,spectator in ipairs(SpecBuffer) do
+		if not IsValid(spectator) then continue end
+
+		SpawnSpectator(spectator)
+		SpecBuffer[idx] = nil
+	end
+end
+
 hook.Add("PlayerSpawn","DeathrunPlayerSpawn",function(ply)
-	--print( ply:Nick(), "spectator only: "..tostring( ply:ShouldStaySpectating() ) )
-	if GhostMode then -- GhostMode compatibility
-		if ply:Team() == TEAM_GHOST then
-			ply:ConCommand("deathrun_spectate_only 0")
-			ply:StopSpectate()
-			return
-		end
+	local plyTeam = ply:Team()
+
+	-- GhostMode compatibility
+	if GhostMode and plyTeam == TEAM_GHOST then
+		ply:ConCommand("deathrun_spectate_only 0")
+		ply:StopSpectate()
+
+		return
+	elseif ply:ShouldStaySpectating() then
+		return SpawnSpectator(ply)
 	end
 
-	if ply:ShouldStaySpectating() then return SpawnSpectator(ply) end
 	ply:SetRenderMode(RENDERMODE_TRANSALPHA)
 	ply:AllowFlashlight(true)
 	ply:SetMoveType(MOVETYPE_WALK)
 	ply:SetNoCollideWithTeammates(true) -- so we don't block eachother's bhopes
 	ply:SetLagCompensated(true)
-	if ply.FirstSpawn == true then
+
+	if ply.FirstSpawn then
 		ply.FirstSpawn = false
-		if ROUND.GetCurrent() == ROUND_ACTIVE or ROUND.GetCurrent() == ROUND_OVER then
+
+		local roundState = ROUND.GetCurrent()
+
+		if roundState == ROUND_ACTIVE or roundState == ROUND_OVER then
 			--print("firstspawn, spawning as spectator.")
-			table.insert(DR.SpecBuffer,ply)
-			timer.Simple(0,function()
-				-- SUDDENTLY SPECTATOR IS MAGICALLY FIXED
-				for k,ply in pairs(DR.SpecBuffer) do
-					if IsValid(ply) then
-						SpawnSpectator(ply)
-						table.remove(DR.SpecBuffer,k)
-					end
-				end
-			end)
+			SpecBuffer[#SpecBuffer + 1] = ply
+
+			timer.Simple(0,FixSpecBuffer)
+
 			return SpawnSpectator(ply)
 		else
 			ply:SetTeam(TEAM_RUNNER)
 		end
 
-		hook.Call("PlayerLoadout",self,ply)
-	elseif ply.JustDied == true then
+		hook.Run("PlayerLoadout",ply)
+	elseif ply.JustDied then
 		ply:BeginSpectate()
 	elseif ply:ShouldStaySpectating() then
 		return SpawnSpectator(ply)
 	else
 		ply:StopSpectate()
-		hook.Call("PlayerLoadout",self,ply)
+
+		hook.Run("PlayerLoadout",ply)
 	end
 
-	if ply:Team() ~= TEAM_RUNNER and ply:Team() ~= TEAM_DEATH and ply:Team() ~= TEAM_SPECTATOR then ply:SetTeam(TEAM_RUNNER) end
-	local spawns = team.GetSpawnPoints(ply:Team()) or {}
-	if #spawns > 0 then ply:SetPos(table.Random(spawns):GetPos()) end
-	-- if ply:GetSpectate() or ply:Team() == TEAM_SPECTATOR or ply:GetObserverMode() ~= OBS_MODE_NONE then
-	-- 	return SpawnSpectator( ply )
-	-- end
+	if
+		plyTeam ~= TEAM_RUNNER
+	and	plyTeam ~= TEAM_DEATH
+	and	plyTeam ~= TEAM_SPECTATOR
+	then
+		ply:SetTeam(TEAM_RUNNER)
+	end
+
+	local spawns = team.GetSpawnPoints(plyTeam) or {}
+	local spawnsCount = #spawns
+
+	if spawnsCount <= 0 then return end
+
+	ply:SetPos(spawns[math.random(spawnsCount)]--[[@cast -?]]:GetPos())
 end)
 
-function GM:PlayerSpawn(ply)
-	return self.BaseClass:PlayerSpawn(ply)
-end
-
 function GM:PlayerLoadout(ply)
+	local plyTeam = ply:Team()
+
 	ply:StripWeapons()
-	ply:StripAmmo()
-	ply:Give(GetConVarString("deathrun_starting_weapon") or "weapon_crowbar")
-	local teamcol = team.GetColor(ply:Team())
-	--print(teamcol)
-	local playercol = Vector(teamcol.r / 255,teamcol.g / 255,teamcol.b / 255)
-	ply:SetPlayerColor(playercol)
+	ply:RemoveAllAmmo()
+	ply:Give(ConVars.StartingWeapon:GetString() or "weapon_crowbar")
+
+	ply:SetPlayerColor(team.GetColor(plyTeam):ToVector())
+
 	-- run speeds and jump powah
 	ply:SetRunSpeed(250)
 	ply:SetWalkSpeed(250)
 	ply:SetJumpPower(290)
-	if ply:Team() == TEAM_DEATH then ply:SetRunSpeed(GetConVar("deathrun_death_sprint"):GetFloat()) end
+
+	if plyTeam == TEAM_DEATH then
+		ply:SetRunSpeed(ConVars.DeathSprint:GetFloat())
+	end
+
 	ply:DrawViewModel(true)
 	ply:SetupHands(ply)
-	hook.Call("DeathrunPlayerLoadout",self,ply)
-	return self.BaseClass:PlayerLoadout(ply)
+
+	hook.Run("DeathrunPlayerLoadout",ply)
 end
 
-hook.Add("AcceptInput","DeathrunKillers",function(ent,input,activator,caller) ent.LastCaller = caller end)
-local causesOfDeath = {"Natural causes","Inappropriate yelling","Vehicular homicide","Bio-engineered assault turtles with acid breath","Dark and mysterious forces beyond our control","Joe Biden","The cool, refreshing taste of Pepsi®","The Patriarchy","The rains down in Africa","The horses","A saxophone solo"}
+hook.Add("AcceptInput","DeathrunKillers",function(ent,_,_,caller)
+	ent.LastCaller = caller
+end)
+
+local CausesOfDeath = {
+	"Natural causes",
+	"Inappropriate yelling",
+	"Vehicular homicide",
+	"Bio-engineered assault turtles with acid breath",
+	"Dark and mysterious forces beyond our control",
+	"Joe Biden",
+	"The cool, refreshing taste of Pepsi®",
+	"The Patriarchy",
+	"The rains down in Africa",
+	"The horses",
+	"A saxophone solo",
+}
+
 function GM:PlayerDeath(ply,inflictor,attacker)
 	ply:Extinguish()
-	-- some death sounds
-	local deathsounds = {"vo/npc/male01/myarm01.wav","vo/npc/male01/myarm02.wav","vo/npc/male01/mygut02.wav","vo/npc/male01/myleg01.wav","vo/npc/male01/myleg02.wav","vo/npc/male01/no01.wav","vo/npc/male01/no02.wav","vo/npc/male01/ohno.wav","vo/npc/male01/ow01.wav","vo/npc/male01/ow02.wav","vo/npc/male01/pain04.wav","vo/npc/male01/pain07.wav","vo/npc/male01/pain08.wav","vo/npc/male01/pain08.wav","vo/npc/male01/hacks02.wav",}
-	ply:EmitSound(table.Random(deathsounds),400,100,1)
+
+	ply:EmitSound("Deathrun.PlayerDeath")
 	ply:SetupHands(nil)
 	ply:DrawViewModel(false)
 	if ply:Team() == TEAM_SPECTATOR then
@@ -230,99 +301,65 @@ function GM:PlayerDeath(ply,inflictor,attacker)
 	end
 
 	timer.Simple(5,function()
-		if not IsValid(ply) then -- incase they die and disconnect, prevents console errors.
-			return
-		end
+		-- incase they die and disconnect, prevents console errors.
+		if not IsValid(ply) then return end
 
 		if not ply:Alive() then
 			ply.JustDied = true
-			--ply:SetTeam( TEAM_SPECTATOR )
-			--ply:Spawn() -- spawn then so we can put them in spectator while keeping their team
+
 			ply:BeginSpectate()
+
 			local pool = {}
-			for k,ply in ipairs(player.GetAll()) do
-				if ply:Alive() and not ply:GetSpectate() then table.insert(pool,ply) end
+
+			for _,tPly in player.Iterator() do
+				if
+					not tPly:Alive()
+				or	tPly:GetSpectate()
+				then continue end
+
+				pool[#pool + 1] = tPly
 			end
 
-			if #pool > 0 then
-				local randplay = table.Random(pool)
-				ply:SpectateEntity(randplay)
-				ply:SetupHands(randplay)
+			local poolCount = #pool
+
+			if poolCount > 0 then
+				local randPly = pool[math.random(poolCount)]
+
+				ply:SpectateEntity(randPly)
+				ply:SetupHands(randPly)
 				ply:SetObserverMode(OBS_MODE_IN_EYE)
-				ply:SetPos(randplay:GetPos())
+				ply:SetPos(randPly--[[@cast -?]]:GetPos())
 			end
 
 			ply.JustDied = false
-			hook.Call("DeathrunDeadToSpectator",GAMEMODE,ply)
+			hook.Run("DeathrunDeadToSpectator",ply)
 		end
 	end)
 
-	if inflictor.LastCaller then if inflictor.LastCaller.User then attacker = inflictor.LastCaller.User end end
-	hook.Call("DeathrunPlayerDeath",self,ply,inflictor,attacker) -- support for when traps kill players
-	--table.insert( DR.KillList, {ply, attacker} )
+	local lastCaller = inflictor.LastCaller
+
+	if lastCaller and lastCaller.User then
+		attacker = lastCaller.User
+	end
+
+	-- support for when traps kill players
+	hook.Run("DeathrunPlayerDeath",ply,inflictor,attacker)
+
 	if IsValid(attacker) then
 		if attacker:IsPlayer() then
 			attackerName = attacker:Nick()
 		else
-			attackerName = table.Random(causesOfDeath)
+			attackerName = CausesOfDeath[math.random(#CausesOfDeath)]
 		end
 	end
 
-	local msg = attackerName .. "\t" .. "✕" .. "\t" .. ply:Nick()
-	DR.DeathNotification(msg,1)
-	print(msg)
+	DR.DeathNotification(attackerName .. "\t" .. "✕" .. "\t" .. ply:Nick(),1)
 end
 
--- DR.KillList = {}
--- timer.Create("DeathrunSendKillList", .5,0,function()
--- 	if #DR.KillList > 0 then
--- 		local message = ""
--- 		-- this is a speed hole
--- 		-- it makes the code go faster
--- 		if type(DR.KillList[1]) == "string" then
--- 			DR.DeathNotification( DR.KillList[1] )
--- 			table.remove( DR.KillList, 1 )
--- 		elseif type(DR.KillList[1]) == "table" then
--- 			local ply = DR.KillList[1][1]
--- 			local att = DR.KillList[1][2]
--- 			if not IsValid( ply ) then return end
--- 			message = ply:Nick().." was killed"
--- 			if IsValid(att) then
--- 				if att:IsPlayer() then
--- 					message = message.." by "..att:Nick().."!"
--- 				else
--- 					message = message.." by a mysterious cause!"
--- 				end
--- 			else
--- 				message = message.."!"
--- 			end
--- 			DR.DeathNotification( message )
--- 			table.remove( DR.KillList, 1 )
--- 		end
--- 		-- for i = 1, #DR.KillList do
--- 		-- 	local ply = DR.KillList[i]
--- 		-- 	if IsValid(ply) then
--- 		-- 		if i < #DR.KillList-1 then
--- 		-- 			message = message..(i == 1 and "" or " ")..ply:Nick()..","
--- 		-- 			if i%4 == 0 then
--- 		-- 				message = message.."%newline%"
--- 		-- 			end
--- 		-- 		elseif i == #DR.KillList - 1 then
--- 		-- 			message = message.." "..ply:Nick().." and"
--- 		-- 		else
--- 		-- 			message = message.." "..ply:Nick()
--- 		-- 		end
--- 		-- 	end
--- 		-- end
--- 		-- message = message .. (#DR.KillList == 1 and " was" or " were").." killed!"
--- 		-- DR.DeathNotification( message )
--- 		-- DR.KillList = {}
--- 	end
--- end)
 function DR.DeathNotification(msg,mod)
 	net.Start("DeathrunAddKillNote")
-	net.WriteString(msg or 'nil')
-	net.WriteInt(mod or 1,8)
+		net.WriteString(msg or 'nil')
+		net.WriteInt(mod or 1,8)
 	net.Broadcast()
 end
 
@@ -331,335 +368,430 @@ function GM:PlayerDeathThink(ply)
 end
 
 function GM:CanPlayerSuicide(ply)
-	-- merge from Jerpy
-	if not ply:Alive() or ply:GetSpectate() then -- don't let dead players or spectators suicide
-		return false
-	end
+	local plyTeam = ply:Team()
 
-	if ply:Team() == TEAM_DEATH then -- never allow suicide on death team
+	if
+		( -- don't let dead players or spectators suicide
+			not ply:Alive()
+		or	ply:GetSpectate()
+		)
+	or	plyTeam == TEAM_DEATH -- never allow suicide on death team
+	or	plyTeam == TEAM_GHOST -- never allow suicide on ghost team
+	or	ROUND.GetCurrent() == ROUND_PREP -- players cannot suicide during round prep time
+	then
 		return false
 	end
-
-	if ply:Team() == TEAM_GHOST then -- never allow suicide on ghost team
-		return false
-	end
-
-	if ROUND.GetCurrent() == ROUND_PREP then -- players cannot suicide during round prep time
-		return false
-	end
-	return self.BaseClass:CanPlayerSuicide(ply)
 end
 
 -- damage hooks
-function GM:EntityTakeDamage(target,dmginfo)
-	local ply = target
-	local attacker = dmginfo:GetAttacker()
-	if target:IsPlayer() then
-		if ROUND.GetCurrent() == ROUND_WAITING or ROUND.GetCurrent() == ROUND_PREP then
-			target:DeathrunChatPrint("You took " .. tostring(dmginfo:GetDamage()) .. " damage.")
-			dmginfo:SetDamage(0)
-		end
-	end
+function GM:EntityTakeDamage(target,dmgInfo)
+	local dmgOrig = dmgInfo:GetDamage()
 
-	if target:IsPlayer() and attacker:IsPlayer() then
-		if target:Team() == attacker:Team() and target ~= attacker then
-			--print("Attacked teammate")
-			local od = dmginfo:GetDamage()
-			dmginfo:SetDamage(0)
-			hook.Call("DeathrunTeamDamage",self,attacker,target,dmginfo,od)
+	if target:IsPlayer() then
+		local roundState = ROUND.GetCurrent()
+
+		if
+			roundState == ROUND_WAITING
+		or	roundState == ROUND_PREP
+		then
+			target:DeathrunChatPrint("You took " .. dmgInfo:GetDamage() .. " damage.")
+
+			dmgInfo:SetDamage(0)
+		end
+
+		local attacker = dmgInfo:GetAttacker()
+
+		if
+			attacker ~= target
+		and	attacker:IsPlayer()
+		and attacker:Team() == target:Team()
+		then
+			dmgInfo:SetDamage(0)
+
+			hook.Run("DeathrunTeamDamage",attacker,target,dmgInfo,dmgOrig)
 		end
 	end
 
 	--damage sounds
-	local dmg = dmginfo:GetDamage()
-	if dmg > 0 then
-		if dmginfo:GetDamageType() == DMG_DROWN then -- drowning noisess
-			local drownsounds = {"player/pl_drown1.wav","player/pl_drown2.wav","player/pl_drown3.wav",}
-			ply:EmitSound(table.Random(drownsounds),400,100,1)
-		else
-			local painsounds = {}
-		end
-	end
+	if
+		dmgOrig <= 0
+	or	not dmgInfo:IsDamageType(DMG_DROWN)
+	then return end
+
+	-- drowning noisess
+	target:EmitSound("Deathrun.PlayerDrowning")
 end
 
 -- player muting
-
-local alltalk = DR.ConVars.AllTalk
 function GM:PlayerCanHearPlayersVoice(listener,talker)
-	listener.mutelist = listener.mutelist or {}
-	if table.HasValue(listener.mutelist,talker:SteamID()) then
-		return false -- dont transmit voices which are on the mutelist
-	else
-		if alltalk:GetBool() == false then
-			if talker:GetSpectate() == true and listener:GetSpectate() == false then return false end
-			if talker:Alive() == false and listener:Alive() == true then return false end
-			if talker:GetObserverMode() ~= OBS_MODE_NONE and listener:GetObserverMode() == OBS_MODE_NONE then return false end
-		end
-		return true
+	local muteList = listener.mutelist or {}
+	local result = true
+
+	if
+		table.HasValue(muteList,talker:SteamID()) -- dont transmit voices which are on the mutelist
+	or	(
+			not CvAllTalk:GetBool()
+		and	(
+				(
+					talker:GetSpectate()
+				and	not listener:GetSpectate()
+				)
+			or	(
+					not talker:Alive()
+				and	listener:Alive()
+				)
+			or	(
+					talker:GetObserverMode() ~= OBS_MODE_NONE
+				and	listener:GetObserverMode() == OBS_MODE_NONE
+				)
+			)
+		)
+	then
+		result = false
 	end
+
+	return result,false
 end
 
--- end player muting
-concommand.Add("deathrun_toggle_mute",function(ply,cmd,args)
+-- player muting
+concommand.Add("deathrun_toggle_mute",function(ply,_,args)
 	local id = args[1]
 	if not id then return end
-	ply.MuteList = ply.MuteList or {}
-	if table.HasValue(ply.MuteList,id) then
-		for k,v in ipairs(ply.MuteList) do
-			if v == id then
-				table.remove(ply.MuteList,k)
-				ply:DeathrunChatPrint("Player was unmuted.")
-			end
-		end
-	else
-		table.insert(ply.MuteList,id)
+
+	local muteList = ply.MuteList or {}
+	ply.MuteList = muteList
+
+	local found = false
+
+	for idx,tPly in pairs(muteList) do
+		if tPly ~= id then continue end
+
+		muteList[idx] = nil
+		ply:DeathrunChatPrint("Player was unmuted.")
+
+		found = true
+
+		break
+	end
+
+	if not found then
+		muteList[#muteList + 1] = id
+
 		ply:DeathrunChatPrint("Player was muted.")
 	end
 
 	net.Start("DeathrunSyncMutelist")
-	net.WriteTable(ply.MuteList)
+		net.WriteTable(muteList)
 	net.Send(ply)
 end)
 
-concommand.Add("strip",function(ply) ply:StripWeapons() end)
+concommand.Add("strip",function(ply)
+	ply:StripWeapons()
+end)
+
+local FallDamageByTeam = {
+	[TEAM_DEATH] = 0,
+	[TEAM_GHOST] = 0,
+}
+
 function GM:GetFallDamage(ply,speed)
-	if ply:Team() == TEAM_GHOST or ply:Team() == TEAM_DEATH then return false end
-	local dmg = hook.Call("DeathrunFallDamage",self,ply,speed)
-	if dmg ~= nil then return dmg end
-	local damage = math.max(0,math.ceil(.2418 * speed - 141.75))
-	return damage
+	return
+		FallDamageByTeam[ply:Team()]
+	or	hook.Run("DeathrunFallDamage",ply,speed)
+	or 	math.max(0,math.ceil(.2418 * speed - 141.75))
 end
 
-function GM:OnPlayerHitGround(ply,inWater,onFloater,speed)
-	if ply:Team() == TEAM_GHOST then return true end
+function GM:OnPlayerHitGround(ply)
+	return ply:Team() == TEAM_GHOST or nil
 end
 
 -- Function Key Binds
-hook.Add("ShowTeam","DeathrunSettingsBind",function(ply) ply:ConCommand("deathrun_open_settings") end)
-hook.Add("ShowHelp","DeathrunHelpBind",function(ply) ply:ConCommand("deathrun_open_help") end)
-local function IsCSSPrimary(wep)
-	local prims = {"_rif_","_shot_","_mach_","_smg_","_snip_",}
-	for i = 1,#prims do
-		v = prims[i]
-		if weapons.Get(wep:GetClass()) ~= nil then if string.find(weapons.Get(wep:GetClass()).WorldModel,v) ~= nil then return true end end
-	end
-	return false
+hook.Add("ShowTeam","DeathrunSettingsBind",function(ply)
+	ply:ConCommand("deathrun_open_settings")
+end)
+
+hook.Add("ShowHelp","DeathrunHelpBind",function(ply)
+	ply:ConCommand("deathrun_open_help")
+end)
+
+local DroppableWeapons = {
+	["weapon_crowbar"] = false,
+	["weapon_knife"] = false,
+}
+
+function DR.CanPlayerDropWeapon(ply,wepClass)
+	return DroppableWeapons[wepClass] or true
 end
 
-local function IsCSSSecondary(wep)
-	if weapons.Get(wep:GetClass()) ~= nil then
-		if string.find(weapons.Get(wep:GetClass()).WorldModel,"_pist_") ~= nil then return true end
-	else
-		return false
-	end
-end
+concommand.Add("deathrun_dropweapon",function(ply)
+	local weapon = ply:GetActiveWeapon()
 
-local stop_the_drop = {"weapon_fuckmeintheass","weapon_fuckmesilly2_fuckmybigblackass",}
---"weapon_crowbar",
-function DR.CanPlayerDropWeapon(ply,class)
-	return not table.HasValue(stop_the_drop,class)
-end
+	if
+		not (
+			ply:Alive()
+		and	IsValid(weapon)
+		and	DR.CanPlayerDropWeapon(ply,weapon:GetClass())
+		)
+	then return end
 
-concommand.Add("deathrun_dropweapon",function(ply,cmd,args) if ply:Alive() and ply:GetActiveWeapon() ~= nil and IsValid(ply:GetActiveWeapon()) then if DR.CanPlayerDropWeapon(ply,ply:GetActiveWeapon():GetClass()) then ply:DropWeapon(ply:GetActiveWeapon()) end end end)
+	ply:DropWeapon(weapon)
+end)
+
 -- stop people whoring the weapons
 hook.Add("PlayerCanPickupWeapon","StopWeaponAbuseAustraliaSaysNo",function(ply,wep)
-	if ply:Team() == TEAM_GHOST then return false end
-	local class = wep:GetClass()
-	local weps = ply:GetWeapons()
-	local wepsclasses = {}
-	local filledslots = {}
-	local slot1,slot3 = 0,0
-	local secondaries = 0
-	local primaries = 0
-	for k,v in ipairs(weps) do
-		table.insert(wepsclasses,v:GetClass())
-		if v.Slot ~= nil then
-			if v.Slot == 1 then slot1 = slot1 + 1 end
-			if v.Slot == 3 then slot3 = slot3 + 1 end
-		end
+	local wepClass = wep:GetClass()
+
+	if
+		ply:HasWeapon(wepClass)
+	or	ply:Team() == TEAM_GHOST
+	then
+		return false
 	end
 
-	if wep.Slot == 1 and slot1 > 0 then return false end
-	if wep.Slot == 3 and slot3 > 0 then return false end
-	if table.HasValue(wepsclasses,class) then return false end
+	local inventory = {}
+
+	for _,wepInv in ipairs(ply:GetWeapons()) do
+		local slot = wepInv.Slot
+		if slot == nil then continue end
+
+		inventory[slot] = true
+	end
+
+	return not inventory[wep.Slot]
 end)
 
 -- Something to check how long it's been since the player last did something
 hook.Add("SetupMove","DeathrunIdleCheck",function(ply,mv)
 	ply.LastActiveTime = ply.LastActiveTime or CurTime()
+
+	local curButtons = mv:GetButtons()
+
 	-- when the player stands still, mv:GetButtons() == 0, at least in binary
 	-- so we can check when no keys are being pressed, or when they keys haven't changed for a while
-	ply.LastButtons = ply.LastButtons or mv:GetButtons()
-	if mv:GetButtons() ~= ply.LastButtons or ply:GetObserverMode() ~= OBS_MODE_NONE then
+	ply.LastButtons = ply.LastButtons or curButtons
+
+	if
+		ply.LastButtons ~= curButtons
+	or	ply:GetObserverMode() ~= OBS_MODE_NONE
+	then
 		-- if there's a change in buttons, then they must not be afk.
 		-- sometimes they can type +forward, but we know they are afk because it's constant +forward and no other keys
 		ply.LastActiveTime = CurTime()
 	end
 
-	ply.LastButtons = mv:GetButtons()
+	ply.LastButtons = curButtons
 end)
 
-function DR.CheckIdleTime(ply) -- return how long the player has been idle for
+-- return how long the player has been idle for
+function DR.CheckIdleTime(ply)
 	return 0 -- hotfix to prevent autokick after 22-02-2016 update
 	-- ply.LastActiveTime = ply.LastActiveTime or CurTime()
 	-- return CurTime() - ply.LastActiveTime
 end
 
-local IdleTimer = DR.ConVars.IdleTimer
-timer.Create("CheckIdlePlayers",.95,0,function()
-	for k,ply in ipairs(player.GetAllPlaying()) do -- don't kick afk spectators or bots
-		--print( ply:Nick(), DR.CheckIdleTime( ply ) )
-		if math.floor(DR.CheckIdleTime(ply)) == math.floor(IdleTimer:GetInt() - 25) then ply:DeathrunChatPrint("If you do not move in 25 seconds, you will be moved to spec due to being idle.") end
-		if DR.CheckIdleTime(ply) > IdleTimer:GetInt() and ply:SteamID() ~= "BOT" and not ply:IsAdmin() and ply:GetObserverMode() == OBS_MODE_NONE then
-			ply:ConCommand("deathrun_spectate_only 1")
-			net.Start("DeathrunSpectatorNotification")
-			net.Send(ply)
-			DR.ChatBroadcast(ply:Nick() .. " was specced for being idle too long.")
+timer.Create("CheckIdlePlayers",1,0,function()
+	local idleTimer = CvIdleTimer:GetInt()
+	local idleWarn = idleTimer - 20
+
+	for _,ply in ipairs(DR.GetAllPlaying()) do
+		local idlePly = DR.CheckIdleTime(ply)
+
+		if math.floor(idlePly) == idleWarn then
+			ply:DeathrunChatPrint("If you do not move in 20 seconds, you will be forced into spectator for being idle.")
 		end
+
+		if
+			idleTimer <= idlePly
+		or	ply:SteamID() == "BOT"
+		or	ply:IsAdmin()
+		or	ply:GetObserverMode() ~= OBS_MODE_NONE
+		then continue end
+
+		ply:ConCommand("deathrun_spectate_only 1")
+
+		net.Start("DeathrunSpectatorNotification")
+		net.Send(ply)
+
+		DR.ChatBroadcast(ply:Nick() .. " was specced for being idle too long.")
 	end
 end)
 
--- timer.Create("TestIdleCheck", 1, 0, function()
--- 	for k, ply in ipairs(player.GetAll()) do
--- 		ply:DeathrunChatPrint( tostring(DR.CheckIdleTime( ply )).." seconds idle." )
--- 	end
--- end)
 -- Punish death avoiders
 -- Bar the player for the next 3 rounds if they disconnect or idle while death.
 -- this stuff gets handled in sh_definerounds.lua and shared.lua
--- Barred players are not included in player.GetAllPlaying()
-local deathbarred_path = "deathrun/deathbarred2.txt"
-if not file.Exists(deathbarred_path,"DATA") then file.Write(deathbarred_path,"") end
-DR.BarredPlayers = util.JSONToTable(file.Read(deathbarred_path,"DATA")) or {
+-- Barred players are not included in DR.GetAllPlaying()
+local DeathAvoidersFile = "deathrun/deathavoiders.json"
+
+if not file.Exists(DeathAvoidersFile,"DATA") then
+	file.Write(DeathAvoidersFile,"")
+end
+
+--- @alias DeathAvoiderData {
+--- 	RoundsLeft: integer,
+--- 	LastPunished: number,
+--- }
+
+--- @type table<string,DeathAvoiderData>
+local DeathAvoiders = DR.DeathAvoiders or util.JSONToTable(file.Read(DeathAvoidersFile,"DATA")) or {
 	["STEAMID_EXAMPLE"] = {
-		rounds = 3,
-		lastpunish = os.time()
-	}
+		["RoundsLeft"] = 3,
+		["LastPunished"] = os.time(),
+	},
 }
+DR.DeathAvoiders = DeathAvoiders
 
---PrintTable( DR.BarredPlayers )
---print("There are "..tostring(#DR.BarredPlayers).." players being punished for death avoidance.")
-function DR.SaveDeathAvoid()
-	for k,v in pairs(DR.BarredPlayers) do -- remove all players with 0 rounds left
-		if v.rounds == 0 or v.lastpunish < os.time() - 1 * 24 * 60 * 60 then -- remove all players punished 24 hours ago
-			DR.BarredPlayers[k] = nil
-		end
+function DR.SaveDeathAvoiders()
+	local oneDayAgo = os.time() - 86400
+
+	for id64,data in pairs(DeathAvoiders) do
+		if
+			data.RoundsLeft > 0 -- remove all players with 0 rounds left
+		or	data.LastPunished > oneDayAgo -- remove all players punished 24 hours ago
+		then continue end
+
+		DeathAvoiders[id64] = nil
 	end
 
-	file.Write(deathbarred_path,util.TableToJSON(DR.BarredPlayers))
-	--PrintTable( DR.BarredPlayers )
+	file.Write(DeathAvoidersFile,util.TableToJSON(DeathAvoiders))
 end
 
-DR.SaveDeathAvoid()
-hook.Add("PostCleanupMap","SaveDeathAvoid",function() DR.SaveDeathAvoid() end)
-function DR.PunishDeathAvoid(ply,amt)
-	local id = "id" .. tostring(ply:SteamID64())
-	DR.BarredPlayers[id] = DR.BarredPlayers[id] or {
-		rounds = 0, -- create the entry if it doesn't exist
-		lastpunish = os.time()
+hook.Add("PostCleanupMap","SaveDeathAvoid",DR.SaveDeathAvoiders)
+DR.SaveDeathAvoiders()
+
+function DR.GetDeathAvoiderData(ply)
+	local id64 = ply:SteamID64()
+
+	--- @type DeathAvoiderData
+	local data = DeathAvoiders[id64] or {
+		["RoundsLeft"] = 0,
+		["LastPunished"] = -1,
 	}
+	DeathAvoiders[id64] = data
 
-	DR.BarredPlayers[id].rounds = math.Clamp(DR.BarredPlayers[id].rounds + (amt or 1),0,99) -- add 1 rounds
+	return data
 end
 
-function DR.GetDeathAvoid(ply) -- returns how many rounds they still need to serve as punishment
-	local id = "id" .. tostring(ply:SteamID64())
-	return DR.BarredPlayers[id] ~= nil and (DR.BarredPlayers[id].rounds or 0) or 0
-end
+function DR.PunishDeathAvoid(ply,amt)
+	local data = DR.GetDeathAvoiderData(ply)
 
-function DR.GetOnlineBarredPlayers()
-	local plys = {}
-	for k,v in ipairs(player.GetAll()) do
-		if DR.GetDeathAvoid(v) > 0 and v:ShouldStaySpectating() == false then table.insert(plys,v) end
-	end
-	return plys
+	data.RoundsLeft = data.RoundsLeft + (amt or 1)
+	data.LastPunished = os.time()
 end
 
 function DR.PardonDeathAvoid(ply,amt)
-	local id = "id" .. tostring(ply:SteamID64())
-	DR.BarredPlayers[id] = DR.BarredPlayers[id] or {
-		rounds = 0,
-		lastpunish = os.time()
-	}
-
-	DR.BarredPlayers[id].rounds = math.Clamp(DR.BarredPlayers[id].rounds - (amt or 1),0,99)
+	DR.PunishDeathAvoid(ply,-(amt or 1))
 end
 
-concommand.Add("test_avoid",function(ply) DR.PunishDeathAvoid(ply,10) end)
--- drowning compatibility
--- needs a timer to check for last time not submerged
--- if it exceeds <drowntime> then start taking 10 damage per second
+-- returns how many rounds they still need to serve as punishment
+function DR.GetDeathAvoiderRounds(ply)
+	local data = DR.GetDeathAvoiderData(ply)
+
+	return
+		data ~= nil
+	and	data.RoundsLeft
+	or	0
+end
+
+function DR.GetOnlineDeathAvoiders()
+	local poolPly = {}
+
+	for _,ply in player.Iterator() do
+		if
+			DR.GetDeathAvoiderRounds(ply) <= 0
+		or	ply:ShouldStaySpectating()
+		then continue end
+
+		poolPly[#poolPly + 1] = ply
+	end
+
+	return poolPly
+end
+
+concommand.Add("test_avoid",function(ply)
+	DR.PunishDeathAvoid(ply,10)
+end)
+
+-- Drowning compatibility
+-- Needs a timer to check for last time not submerged
+-- If it exceeds <drowntime> then start taking 10 damage per second
+
+local DrowningViewPunch = Angle(0,0,0)
 
 timer.Create("DeathrunDrowningStuff",.5,0,function()
-	for k,ply in ipairs(player.GetAll()) do
-		ply.LastOxygenTime = ply.LastOxygenTime or CurTime()
-		if ply:WaterLevel() == 3 then --they are submerged completely
-			local timeUnder = CurTime() - ply.LastOxygenTime
-			if timeUnder > GetConVarNumber("deathrun_drown_time") then
-				local di = DamageInfo()
-				di:SetDamage(5)
-				di:SetDamageType(DMG_DROWN)
-				ply:TakeDamageInfo(di)
-				ply:ViewPunch(Angle(0,0,math.random(-1,1)))
-			end
-		else
-			ply.LastOxygenTime = CurTime()
+	local curTime = CurTime()
+	local drownTimer = CvDrownTimer:GetInt()
+
+	for _,ply in player.Iterator() do
+		local lastOxygenTime = ply.LastOxygenTime or curTime
+
+		if
+			not ply:Alive()
+		or	ply:GetSpectate()
+		or	ply:WaterLevel() < 3 -- Completely submerged
+		then
+			lastOxygenTime = curTime
+		elseif curTime - lastOxygenTime > drownTimer then
+			local dmgInfo = DamageInfo()
+
+			dmgInfo:SetDamage(5)
+			dmgInfo:SetDamageType(DMG_DROWN)
+
+			DrowningViewPunch[3] = math.random(-1,1)
+
+			ply:TakeDamageInfo(dmgInfo)
+			ply:ViewPunch(DrowningViewPunch)
 		end
 
-		if not ply:Alive() or ply:GetSpectate() then ply.LastOxygenTime = CurTime() end
+		ply.LastOxygenTime = lastOxygenTime
 	end
 end)
 
 concommand.Add("deathrun_not_amused",function(ply)
-	if not ply:Alive() or ply:GetSpectate() then return end
-	ply.LastNotAmused = ply.LastNotAmused or CurTime()
-	if CurTime() - ply.LastNotAmused > 3 then
-		local not_amused = {}
-		for i = 1,40 do
-			local path = "vo/npc/male01/answer"
-			if i < 10 then
-				if i == 6 then -- there is no answer06
-					i = 5
-				end
+	if
+		not ply:Alive()
+	or	ply:GetSpectate()
+	then return end
 
-				path = path .. "0" .. tostring(i) .. ".wav"
-			else
-				path = path .. tostring(i) .. ".wav"
-			end
+	local curTime = CurTime()
+	local lastNotAmused = ply.LastNotAmused or 0
 
-			table.insert(not_amused,path)
-		end
+	if curTime - lastNotAmused > 3 then
+		ply:EmitSound("Deathrun.NotAmused")
 
-		ply:EmitSound(table.Random(not_amused),300,100,1)
-		ply.LastNotAmused = CurTime()
+		lastNotAmused = curTime
 	end
+
+	ply.LastNotAmused = lastNotAmused
 end)
 
 net.Receive("DeathrunForceSpectator",function(len,ply)
 	if DR.CanAccessCommand(ply,"deathrun_force_spectate") then
-		local targID = net.ReadString()
-		local targ = nil
-		for _,v in ipairs(player.GetAll()) do
-			if targID == v:SteamID() then targ = v end
-		end
+		local target = player.GetBySteamID(net.ReadString())
+		if not target then return end
+		--- @cast target -boolean
 
-		if targ ~= nil then
-			targ:ConCommand("deathrun_spectate_only 1")
-			ply:DeathrunChatPrint("Forced " .. targ:Nick() .. " to the spectator team!")
-		end
+		target:ConCommand("deathrun_spectate_only 1")
+
+		ply:DeathrunChatPrint("Forced " .. target:Nick() .. " to the spectator team!")
 	else
 		ply:DeathrunChatPrint("You don't have access to this.")
 	end
 end)
 
-local removeSpeed = DR.ConVars.DisableDefaultDeathSpeed
 function DR.RemoveSpeedMods()
-	if removeSpeed:GetBool() == true then
-		for k,v in ipairs(ents.FindByClass("player_speedmod")) do
-			SafeRemoveEntity(v)
-		end
+	if not CvDisableDefaultDeathSpeed:GetBool() then return end
+
+	for _,ent in ipairs(ents.FindByClass("player_speedmod")) do
+		SafeRemoveEntity(ent)
 	end
 end
 
-hook.Add("PostCleanupMap","RemoveSpeedMods",DR.RemoveSpeedMods)
-hook.Add("InitPostEntity","RemoveSpeedMods",DR.RemoveSpeedMods)
+hook.Add("InitPostEntity","DeathrunRemoveSpeedMods",DR.RemoveSpeedMods)
+hook.Add("PostCleanupMap","DeathrunRemoveSpeedMods",DR.RemoveSpeedMods)
+
+concommand.Add("deathrun_internal_set_autojump",function(ply,_,args)
+	local bool = args[1]
+	if not bool then return end
+
+	ply.AutoJumpEnabled = tobool(bool)
+end)

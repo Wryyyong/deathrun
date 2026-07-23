@@ -4,8 +4,8 @@ local columnFunctions = {
 	function()
 		return "" -- empty space to even the spacings out
 	end,
-	function(ply) return hook.Call("GetScoreboardTag",nil,ply) or "" end,
-	function(ply) return hook.Call("GetScoreboardRank",nil,ply) or string.upper(ply:GetUserGroup()) end,
+	function(ply) return hook.Run("GetScoreboardTag",ply) or "" end,
+	function(ply) return hook.Run("GetScoreboardRank",ply) or string.upper(ply:GetUserGroup()) end,
 	function(ply) return ply:Ping() end,
 }
 
@@ -213,7 +213,7 @@ function DR.NewScoreboardPlayer(ply,w,h)
 		path = "icon16/heart.png"
 	end
 
-	local tpath = hook.Call("GetScoreboardIcon",nil,ply)
+	local tpath = hook.Run("GetScoreboardIcon",ply)
 	if tpath then path = tpath end
 	icon.Mat = path and Material(path) or false
 	function icon:Paint(w,h)
@@ -227,7 +227,7 @@ function DR.NewScoreboardPlayer(ply,w,h)
 	function data:Paint(w,h)
 	end
 
-	local plyscorecol = hook.Call("GetScoreboardNameColor",nil,ply) or Color(255,255,255)
+	local plyscorecol = hook.Run("GetScoreboardNameColor",ply) or Color(255,255,255)
 	for i = 1,#columns do
 		local k = i - 1
 		local align = .5
@@ -422,7 +422,7 @@ function GM:ScoreboardHide()
 end
 
 function GM:ScoreboardShow()
-	local should = hook.Call("DeathrunOpenScoreboard",nil) -- return false to suppress scoreboard opening
+	local should = hook.Run("DeathrunOpenScoreboard") -- return false to suppress scoreboard opening
 	if should == false then return end
 	DR.CreateScoreboard()
 	DR.ScoreboardOpenTime = CurTime()

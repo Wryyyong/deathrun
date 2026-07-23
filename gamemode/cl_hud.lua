@@ -244,7 +244,7 @@ net.Receive("DeathrunSendMVPs",function()
 	if CvPlayRoundCues:GetBool() then
 		surface.PlaySound(
 			"DR.RoundEnd." .. (
-				RoundEndData.winteam == 1
+				RoundEndData.winteam == WIN_STALEMATE
 			and	"Stalemate"
 			or	"Normal"
 			)
@@ -1550,7 +1550,7 @@ end)
 -- width and height should be within the values 228 and 108 respectively, e.g. 228 wide and 108 high, otherwise some clipping may occur with the edges of the screen.
 
 --- @alias HudDrawFunc fun(x: number,y: number,alpha: number)
---- @alias HudDrawFuncTable table<integer,HudDrawFunc>
+--- @alias HudDrawFuncTable HudDrawFunc[]
 
 --- @param x number
 --- @param y number
@@ -1572,7 +1572,7 @@ end
 
 local HudFuncTable_DefaultHUD = CreateHudMetaTable(DR.DrawPlayerHUD,DR.DrawPlayerHUDAmmo)
 
---- @type table<integer,HudDrawFuncTable>
+--- @type HudDrawFuncTable[]
 local HudDrawFunctions = {
 	[HUDTHEME_DEFAULT]      = HudFuncTable_DefaultHUD,
 	[HUDTHEME_DEFAULTTIMER] = HudFuncTable_DefaultHUD,
@@ -1640,7 +1640,7 @@ function GM:HUDPaint()
 			RoundEndData.mvps,
 			scrW_Half - WinnerOffset,
 			24,
-			RoundEndData.winteam == 1
+			RoundEndData.winteam == WIN_STALEMATE
 		)
 
 		if curTime > RoundEndData.BeginTime + RoundEndData.duration then

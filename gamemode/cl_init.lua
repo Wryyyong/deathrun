@@ -193,3 +193,45 @@ end
 function GM:PlayerFootstep(ply)
 	return ply:Team() == TEAM_GHOST
 end
+
+cvars.AddChangeCallback("deathrun_autojump",function(_,_,new)
+	RunConsoleCommand("deathrun_internal_set_autojump",tonumber(new))
+
+	LocalPlayer().AutoJumpEnabled = tobool(new)
+end,"DeathrunAutoJumpConVarChange")
+
+RunConsoleCommand("deathrun_internal_set_autojump",DR.ConVars.AutoJump.Enabled:GetInt())
+
+-- in case some trickery happens on the client we'll sync this right up. They can probably destroy the timer but whatever
+timer.Create("DeathrunAutojumpSendToServer",5,0,function()
+	RunConsoleCommand("deathrun_internal_set_autojump",DR.ConVars.AutoJump.Enabled:GetInt())
+end)
+
+cvars.AddChangeCallback("deathrun_spectate_only",function(_,_,new)
+	RunConsoleCommand("deathrun_set_spectate",new)
+end)
+
+hook.Add("InitPostEntity","DeathrunSendSpectateConVarInfo",function()
+	RunConsoleCommand("deathrun_set_spectate",DR.ConVars.SpectateOnly:GetInt())
+
+	if not DR.ConVars.SpectateOnly:GetBool() then return end
+
+	DR.OpenForcedSpectatorMenu(
+		[[You are currently in spectator mode.
+		To play, click on one of the buttons below,
+		or visit the spectator section of the settings menu by pressing F2.
+		\n\nWould you like to move back into the game?]]
+	)
+end)
+
+function DR.SetClientHullSizes()
+	local localPly = LocalPlayer()
+	local hulls = DR.Hulls
+
+	localPly:SetHull(hulls.HullMin,hulls.HullStand)
+	localPly:SetHullDuck(hulls.HullMin,hulls.HullDuck) -- quack quack
+	localPly:SetViewOffset(hulls.ViewStand)
+	localPly:SetViewOffsetDucked(hulls.ViewDuck) -- quack
+end
+
+concommand.Add("deathrun_reload_hull_client",DR.SetClientHullSizes)
