@@ -66,9 +66,11 @@ include("mapvote/sv_mapvote.lua")
 include("sv_player.lua")
 
 -- button claiming
-AddCSLuaFile("sh_buttonclaiming.lua")
+AddCSLuaFile("buttonclaiming/sh_buttonclaiming.lua")
+AddCSLuaFile("buttonclaiming/cl_buttonclaiming.lua")
 
-include("sh_buttonclaiming.lua")
+include("buttonclaiming/sh_buttonclaiming.lua")
+include("buttonclaiming/sv_buttonclaiming.lua")
 
 -- announcements
 AddCSLuaFile("cl_announcer.lua")
