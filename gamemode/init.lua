@@ -40,13 +40,11 @@ AddCSLuaFile("cl_scoreboard.lua")
 include("sv_commands.lua")
 
 -- Round System
-AddCSLuaFile("roundsystem/sh_round.lua")
-AddCSLuaFile("roundsystem/cl_round.lua")
-AddCSLuaFile("sh_definerounds.lua")
+AddCSLuaFile("roundsystem/sh_roundsystem.lua")
+AddCSLuaFile("roundsystem/cl_roundsystem.lua")
 
-include("roundsystem/sh_round.lua")
-include("roundsystem/sv_round.lua")
-include("sh_definerounds.lua")
+include("roundsystem/sh_roundsystem.lua")
+include("roundsystem/sv_roundsystem.lua")
 
 -- zones
 AddCSLuaFile("zones/sh_zone.lua")
@@ -695,6 +693,7 @@ function DR.GetDeathAvoiderRounds(ply)
 end
 
 function DR.GetOnlineDeathAvoiders()
+	--- @type Player[]
 	local poolPly = {}
 
 	for _,ply in player.Iterator() do

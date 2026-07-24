@@ -1,6 +1,8 @@
-include("sh_round.lua")
+net.Receive("DeathrunSyncRoundTimer",function(len,ply)
+	ROUND_TIMER = net.ReadUInt(16)
+end)
 
-net.Receive("ROUND_STATE",function()
+net.Receive("DeathrunUpdateRoundState",function()
 	local round = net.ReadUInt(16)
 
 	local roundTblOld = ROUND_STATES[ROUND_CURRENT]

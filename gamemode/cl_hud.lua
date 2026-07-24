@@ -211,20 +211,25 @@ local RoundNames = {
 	[ROUND_OVER] = "Round Over",
 }
 
+--- @class RoundEndData
 local RoundEndData = {
 	["Active"] = false,
 	["BeginTime"] = 0,
+	["winteam"] = WIN_STALEMATE,
+
+	--- @type Player[]
+	["mvps"] = {},
 }
 
 sound.Add({
-	["name"] = "DR.RoundEnd.Normal",
+	["name"] = "Deathrun.RoundEnd.Normal",
 	["sound"] = "ambient/alarms/warningbell1.wav",
 	["channel"] = CHAN_AUTO,
 	["level"] = SNDLVL_NORM,
 })
 
 sound.Add({
-	["name"] = "DR.RoundEnd.Stalemate",
+	["name"] = "Deathrun.RoundEnd.Stalemate",
 	["sound"] = {
 		"ambient/animal/cow.wav",
 		"ambient/animal/dog_med_inside_bark_2.wav",
@@ -243,7 +248,7 @@ net.Receive("DeathrunSendMVPs",function()
 
 	if CvPlayRoundCues:GetBool() then
 		surface.PlaySound(
-			"DR.RoundEnd." .. (
+			"Deathrun.RoundEnd." .. (
 				RoundEndData.winteam == WIN_STALEMATE
 			and	"Stalemate"
 			or	"Normal"
@@ -639,7 +644,7 @@ function DR.DrawPlayerHUD(x,y,alpha)
 		16
 	)
 
-	local roundState = RoundNames[ROUND:GetCurrent()]
+	local roundState = RoundNames[ROUND.GetCurrent()]
 	local yTimeLeftText = y + 8 -- 16 * .5
 
 	DR.ShadowTextSimple(
@@ -652,7 +657,7 @@ function DR.DrawPlayerHUD(x,y,alpha)
 		TEXT_ALIGN_CENTER
 	)
 	DR.ShadowTextSimple(
-		string.ToMinutesSeconds(ROUND:GetTimer()),
+		string.ToMinutesSeconds(ROUND.GetTimer()),
 		"Deathrun_DefaultHUD_Small",
 		x + 224, -- 228 - 4
 		yTimeLeftText,
@@ -1432,7 +1437,7 @@ function DR.DrawPlayerHUDMainSass(x,y,alpha)
 		teamtext = ply:Nick()
 	end
 
-	DR.ShadowTextSimple(teamtext .. " - " .. string.ToMinutesSeconds(math.Clamp(ROUND:GetTimer(),0,99999)),"Deathrun_SassHUD_Small",x + 8,y + h * .5 + 24,color_white,TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,2)
+	DR.ShadowTextSimple(teamtext .. " - " .. string.ToMinutesSeconds(math.Clamp(ROUND.GetTimer(),0,99999)),"Deathrun_SassHUD_Small",x + 8,y + h * .5 + 24,color_white,TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,2)
 	-- position avatar
 	local avx,avy = Avatar:GetPos()
 	if avx ~= x + 9 or avy ~= y + h * .5 - 24 + 1 then Avatar:SetPos(x + 9,y + h * .5 - 23) end
@@ -1480,7 +1485,7 @@ function DR.DrawPlayerHUDClassic(x,y,alpha)
 	draw.RoundedBox(0,x + w * .5 - hw * .5 + 4,y + h - hh + 4,(hw - 8) * hpfrac,hh - 8,Color(80,180,60,255 * amul))
 	DR.ShadowText(tostring(curhp > 999 and "dafuq" or math.max(curhp,0)),"Deathrun_ClassicHUD_Large",x + w * .5 - hw * .5 + 5,y + h - hh,Color(255,255,255),nil,nil,1)
 	-- timer
-	local timetext = string.ToMinutesSeconds(ROUND:GetTimer())
+	local timetext = string.ToMinutesSeconds(ROUND.GetTimer())
 	local tw,th = hw * .5,hh * 1.25
 	local tx,ty = x + w * .5 - tw * .5,y + h - hh - 4 - th
 	draw.RoundedBox(4,tx,ty,tw,th,Color(44,44,44,175 * amul))
