@@ -74,9 +74,7 @@ include("buttonclaiming/sv_buttonclaiming.lua")
 AddCSLuaFile("cl_announcer.lua")
 
 -- pointshop support
-AddCSLuaFile("sh_pointshopsupport.lua")
-
-include("sh_pointshopsupport.lua")
+include("sv_pointshopsupport.lua")
 
 -- statistics
 AddCSLuaFile("sh_statistics.lua")
