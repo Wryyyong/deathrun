@@ -13,6 +13,12 @@ GM.Website = "http://vhs7.tv"
 DR.TimeStamp = 1462083778
 DR.TimeStampFormatted = os.date("%Y-%m-%d %H:%M:%S",DR.TimeStamp)
 
+for _,event in ipairs({
+	"player_connect",
+}) do
+	gameevent.Listen(event)
+end
+
 sound.Add({
 	["name"] = "Deathrun.PlayerDeath",
 	["sound"] = {

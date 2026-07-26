@@ -24,8 +24,6 @@ for hue = 1,360,6 do
 end
 
 function ENT:SetupDataTables()
-	self.BaseClass.SetupDataTables(self)
-
 	self:NetworkVar("Float","BornTime")
 	self:NetworkVar("Int","Lifespan")
 end
@@ -51,7 +49,7 @@ function ENT:Initialize()
 		self:SetCollisionGroup(COLLISION_GROUP_WORLD)
 	end
 
-	self:SetColor(ColorTable[math.random(#ColorCount)])
+	self:SetColor(ColorTable[math.random(ColorCount)])
 end
 
 if SERVER then

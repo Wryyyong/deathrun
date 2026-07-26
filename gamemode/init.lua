@@ -77,9 +77,11 @@ AddCSLuaFile("cl_announcer.lua")
 include("sv_pointshopsupport.lua")
 
 -- statistics
-AddCSLuaFile("sh_statistics.lua")
+AddCSLuaFile("statistics/sh_statistics.lua")
+AddCSLuaFile("statistics/cl_statistics.lua")
 
-include("sh_statistics.lua")
+include("statistics/sh_statistics.lua")
+include("statistics/sv_statistics.lua")
 
 util.AddNetworkString("DeathrunChatMessage")
 util.AddNetworkString("DeathrunSyncMutelist")

@@ -2,7 +2,7 @@ include("sh_zone.lua")
 function ZONE:Save()
 	local map = game.GetMap()
 	local path = "deathrun/zones/" .. map .. ".txt"
-	local json = util.TableToJSON(self.zones)
+	local json = util.TableToJSON(self.MapZones)
 	file.Write(path,json)
 	print("Zones were saved.")
 end
@@ -101,15 +101,15 @@ function ZONE:Tick() -- cycle through zones and check for players
 end
 
 hook.Add("Tick","ZoneTick",function() ZONE:Tick() end)
-util.AddNetworkString("ZoneSendZones")
+util.AddNetworkString("DeathrunSendZones")
 function ZONE:SendZones(ply)
-	net.Start("ZoneSendZones")
+	net.Start("DeathrunSendZones")
 	net.WriteTable(self.MapZones)
 	net.Send(ply)
 end
 
 function ZONE:BroadcastZones()
-	net.Start("ZoneSendZones")
+	net.Start("DeathrunSendZones")
 	net.WriteTable(self.MapZones)
 	net.Broadcast()
 end
@@ -131,6 +131,8 @@ concommand.Add("zone_create",function(ply,cmd,args)
 			DR.SafeChatPrint(ply,"There already exists a zone named '" .. args[1] .. "'. Please delete it first!\nIf you wish to overwrite it run this command again")
 			ply.LastZoneDenied = args[1]
 		end
+
+		hook.Run("DeathrunZonesUpdated")
 	end
 end)
 
@@ -160,6 +162,8 @@ concommand.Add("zone_setpos1",function(ply,cmd,args)
 		else
 			DR.SafeChatPrint(ply,"Please use eyetrace.")
 		end
+
+		hook.Run("DeathrunZonesUpdated")
 	end
 end)
 
@@ -178,6 +182,8 @@ concommand.Add("zone_setpos2",function(ply,cmd,args)
 		else
 			DR.SafeChatPrint(ply,"Please use eyetrace.")
 		end
+
+		hook.Run("DeathrunZonesUpdated")
 	end
 end)
 
@@ -193,6 +199,8 @@ concommand.Add("zone_setcolor",function(ply,cmd,args)
 		else
 			DR.SafeChatPrint(ply,"Zone does not exist.")
 		end
+
+		hook.Run("DeathrunZonesUpdated")
 	end
 end)
 
@@ -208,6 +216,8 @@ concommand.Add("zone_settype",function(ply,cmd,args)
 		else
 			DR.SafeChatPrint(ply,"Zone does not exist.")
 		end
+
+		hook.Run("DeathrunZonesUpdated")
 	end
 end)
 
@@ -224,7 +234,7 @@ end
 
 resetFinishers()
 hook.Add("DeathrunBeginActive","DeathrunResetFinishers",resetFinishers)
-ZONE.StartTime = nil
+ZONE.StartTime = ZONE.StartTime or nil
 hook.Add("DeathrunBeginActive","DeathrunResetZoneTimer",function() ZONE.StartTime = CurTime() end)
 local function denyZone(ply,name,z)
 	if ply:Alive() and ply:GetObserverMode() == OBS_MODE_NONE then ply:Kill() end

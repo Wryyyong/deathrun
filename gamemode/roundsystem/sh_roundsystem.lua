@@ -480,7 +480,7 @@ hook.Add("DeathrunPlayerFinishMap","Balloons",function(ply)
 		local trace = util.TraceHull(BalloonTraceData)
 		local hitPos = trace.HitPos
 
-		if hitPos:DistToSqr(trace.start) > BalloonDistCheck then
+		if hitPos:DistToSqr(shootPos) > BalloonDistCheck then
 			BalloonDir:Div(BalloonEndPosMul)
 			BalloonDir:Mul(2.5)
 

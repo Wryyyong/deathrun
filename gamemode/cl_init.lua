@@ -16,7 +16,8 @@ include("cl_menus.lua")
 include("buttonclaiming/sh_buttonclaiming.lua")
 include("buttonclaiming/cl_buttonclaiming.lua")
 include("cl_announcer.lua")
-include("sh_statistics.lua")
+include("statistics/sh_statistics.lua")
+include("statistics/cl_statistics.lua")
 
 local CvThirdPerson_Enabled = DR.ConVars.ThirdPerson.Enabled
 local CvThirdPerson_OffsetX = DR.ConVars.ThirdPerson.OffsetX

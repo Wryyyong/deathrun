@@ -85,11 +85,13 @@ end,nil,nil,FCVAR_SERVER_CAN_EXECUTE)
 concommand.Add("deathrun_get_stats",function(ply,cmd,args)
 	if args[1] then
 		local targets = FindPlayersByName(args[1])
-		local cont = false
 		if #targets == 1 then
-			net.Start("deathrun_send_stats")
+			net.Start("DeathrunSendStats")
 			--net.WriteString( targets[1]:SteamID() )
-			net.WriteTable(sql.Query("SELECT * FROM deathrun_stats WHERE sid = '" .. targets[1]:SteamID() .. "'"))
+				local data = DR.ReturnStats(targets[1])
+				data.Name = targets[1]:Nick()
+
+				net.WriteTable(data)
 			net.Send(ply)
 		elseif #targets > 1 then
 			DeathrunSafeChatPrint(ply,"One player at a time, please.")
@@ -97,9 +99,12 @@ concommand.Add("deathrun_get_stats",function(ply,cmd,args)
 			DeathrunSafeChatPrint(ply,"No targets found with that name.")
 		end
 	elseif not args[1] then
-		net.Start("deathrun_send_stats")
+		net.Start("DeathrunSendStats")
 		--net.WriteString( ply:SteamID() )
-		net.WriteTable(sql.Query("SELECT * FROM deathrun_stats WHERE sid = '" .. ply:SteamID() .. "'"))
+			local data = DR.ReturnStats(ply)
+			data.Name = ply:Nick()
+
+			net.WriteTable(data)
 		net.Send(ply)
 		--print('meme')
 	else

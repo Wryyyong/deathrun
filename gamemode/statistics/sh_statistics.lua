@@ -1,0 +1,16 @@
+local DR = DR
+
+local Stats = DR.Stats or {}
+DR.Stats = Stats
+
+--- @alias DeathrunMapRecord {
+--- 	Name: string,
+--- 	Seconds: string,
+--- }
+
+DR_STATS_KILLS = 1
+DR_STATS_DEATHS = 2
+DR_STATS_WINSRUNNER = 3
+DR_STATS_WINSDEATH = 4
+
+DR_STATS_BITS = DR.CalcMaxBits(DR_STATS_WINSDEATH)

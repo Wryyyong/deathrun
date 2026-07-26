@@ -20,6 +20,8 @@ local HUDPOS_RIGHT_TOP     = 3
 local HUDPOS_RIGHT_MIDDLE  = 6
 local HUDPOS_RIGHT_BOTTOM  = 9
 
+local CvFinishDuration = DR.ConVars.FinishDuration
+
 local CvThirdPerson_Enabled = DR.ConVars.ThirdPerson.Enabled
 
 local CvCrosshairThickness = DR.ConVars.Crosshair.Thickness
@@ -1648,7 +1650,8 @@ function GM:HUDPaint()
 			RoundEndData.winteam == WIN_STALEMATE
 		)
 
-		if curTime > RoundEndData.BeginTime + RoundEndData.duration then
+		print(curTime,RoundEndData.BeginTime + CvFinishDuration:GetInt())
+		if curTime > RoundEndData.BeginTime + CvFinishDuration:GetInt() then
 			RoundEndData.Active = false
 		end
 	end

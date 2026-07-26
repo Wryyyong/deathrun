@@ -1,5 +1,5 @@
 include("sh_zone.lua")
-net.Receive("ZoneSendZones",function() ZONE.MapZones = net.ReadTable() end)
+net.Receive("DeathrunSendZones",function() ZONE.MapZones = net.ReadTable() end)
 local line_mat = Material("color.vmt")
 function ZONE:DrawCuboid(pos1,pos2,col,alt)
 	local pos1,pos2 = VectorMinMax(pos1,pos2)
