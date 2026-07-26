@@ -652,7 +652,7 @@ function DR.SaveDeathAvoiders()
 		DeathAvoiders[id64] = nil
 	end
 
-	file.Write(DeathAvoidersFile,util.TableToJSON(DeathAvoiders))
+	file.Write(DeathAvoidersFile,util.TableToJSON(DeathAvoiders,true))
 end
 
 hook.Add("PostCleanupMap","SaveDeathAvoid",DR.SaveDeathAvoiders)

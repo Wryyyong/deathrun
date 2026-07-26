@@ -1,57 +1,3 @@
-for _,panelName in ipairs({
-	-- Panel
-	"autoggle",
-	"custompanelcanvas",
-	"customvscrollbar",
-	"multipanel",
-
-	-- DPanel
-	"crosshairpreview",
-	"customscrollpanel",
-	"innerwindow",
-	"menucontrols",
-	"menuspacer",
-	"multipanelspacer",
-	"multipaneltabpanel",
-
-	-- DFrame
-	"window",
-
-	-- DLabel
-	"menuitem",
-
-	-- DButton
-	"button",
-	"customvscrollbarbutton",
-	"subbutton",
-	"togglebutton",
-
-	-- DIconLayout
-	"menulist",
-
-	-- DColorMixer
-	"crosshaircolormixer",
-
-	-- DScrollBarGrip
-	"customscrollbargrip",
-
-	-- DNumSlider
-	"menunumslider",
-
-	-- DR_Button
-	"closebutton",
-	"multipaneltabbutton",
-	"navbutton",
-
-	-- DR_Window
-	"menuframe",
-
-	-- DR_InnerWindow
-	"menuinner",
-}) do
-	include("derma/dr_" .. panelName .. ".lua")
-end
-
 local ShadowColorCache = {}
 
 --- @param color Color
@@ -152,6 +98,60 @@ end
 --- @param dist number?
 function DR.ShadowTextSimple(text,font,x,y,color,xAlign,yAlign,dist)
 	ShadowTextBase(draw.SimpleText,text,font,x,y,color,xAlign,yAlign,dist)
+end
+
+for _,panelName in ipairs({
+	-- Panel
+	"autoggle",
+	"custompanelcanvas",
+	"customvscrollbar",
+	"multipanel",
+
+	-- DPanel
+	"crosshairpreview",
+	"customscrollpanel",
+	"innerwindow",
+	"menucontrols",
+	"menuspacer",
+	"multipanelspacer",
+	"multipaneltabpanel",
+
+	-- DFrame
+	"window",
+
+	-- DLabel
+	"menuitem",
+
+	-- DButton
+	"button",
+	"customvscrollbarbutton",
+	"subbutton",
+	"togglebutton",
+
+	-- DIconLayout
+	"menulist",
+
+	-- DColorMixer
+	"crosshaircolormixer",
+
+	-- DScrollBarGrip
+	"customscrollbargrip",
+
+	-- DNumSlider
+	"menunumslider",
+
+	-- DR_Button
+	"closebutton",
+	"multipaneltabbutton",
+	"navbutton",
+
+	-- DR_Window
+	"menuframe",
+
+	-- DR_InnerWindow
+	"menuinner",
+}) do
+	include("derma/dr_" .. panelName .. ".lua")
 end
 
 concommand.Add("deathrun_test_derma",function()

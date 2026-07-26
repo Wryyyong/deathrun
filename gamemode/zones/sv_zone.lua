@@ -1,303 +1,514 @@
-include("sh_zone.lua")
-function ZONE:Save()
-	local map = game.GetMap()
-	local path = "deathrun/zones/" .. map .. ".txt"
-	local json = util.TableToJSON(self.MapZones)
-	file.Write(path,json)
+local DR = DR
+
+local MapZones = ZONE.MapZones
+
+ZONE.StartTime = ZONE.StartTime or -1
+
+local ZoneDataDir = "deathrun/zones"
+local ZoneDataFilepath = ZoneDataDir .. "/" .. game.GetMap() .. ".json"
+
+util.AddNetworkString("DeathrunSendZones")
+
+-- check if vector is within cuboid
+local function VectorInCuboid(pos,min,max)
+	-- get the min and max of the two corners
+	local newMin,newMax = DR.VectorMinMax(min,max)
+
+	local posX = pos[1]
+	local posY = pos[2]
+	local posZ = pos[3]
+
+	return
+		posX > newMin[1]
+	and	posX < newMax[1]
+
+	and	posY > newMin[2]
+	and	posY < newMax[2]
+
+	and	posZ > newMin[3]
+	and	posZ < newMax[3]
+end
+
+local function CuboidOverlap(min1,max1,min2,max2)
+	local pos1Min,pos1Max = DR.VectorMinMax(min1,max1)
+	local pos2Min,pos2Max = DR.VectorMinMax(min2,max2)
+
+	local pos1Min_X = pos1Min[1]
+	local pos1Min_Y = pos1Min[2]
+	local pos1Min_Z = pos1Min[3]
+
+	local pos2Min_X = pos2Min[1]
+	local pos2Min_Y = pos2Min[2]
+	local pos2Min_Z = pos2Min[3]
+
+	return
+		(
+			pos1Min_X <= pos2Min_X and pos2Min_X <= pos1Max[1]
+		or	pos2Min_X <= pos1Min_X and pos1Min_X <= pos2Max[1]
+		)
+	and	(
+			pos1Min_Y <= pos2Min_Y and pos2Min_Y <= pos1Max[2]
+		or	pos2Min_Y <= pos1Min_Y and pos1Min_Y <= pos2Max[2]
+		)
+	and	(
+			pos1Min_Z <= pos2Min_Z and pos2Min_Z <= pos1Max[3]
+		or	pos2Min_Z <= pos1Min_Z and pos1Min_Z <= pos2Max[3]
+		)
+end
+
+local OffsetIThink = Vector(0,0,50)
+
+local function PlayerInCuboid(ply,min,max) -- check if vector is within cuboid
+	local plyMin = ply:OBBMins()
+	local plyMax = ply:OBBMaxs()
+	local plyPos = ply:GetPos()
+
+	plyMin:Add(plyPos)
+	plyMax:Add(plyPos)
+
+	plyPos:Add(OffsetIThink)
+
+	return
+		VectorInCuboid(plyPos,min,max)
+	or	CuboidOverlap(plyMin,plyMax,min,max)
+end
+
+--- @param ply Player?
+function ZONE.SendZones(ply)
+	net.Start("DeathrunSendZones")
+		net.WriteTable(MapZones)
+
+	if ply then
+		net.Send(ply)
+	else
+		net.Broadcast()
+	end
+end
+
+hook.Add("PlayerInitialSpawn","DeathrunSetupPlayerZones",function(ply)
+	ply.InZones = {}
+
+	ZONE.SendZones(ply)
+
+	print("Sent zones to player " .. ply:Nick())
+end)
+
+function ZONE.Save()
+	file.Write(
+		ZoneDataFilepath,
+		util.TableToJSON(MapZones,true)
+	)
+
 	print("Zones were saved.")
 end
 
-function ZONE:Load()
-	local map = game.GetMap()
-	local path = "deathrun/zones/" .. map .. ".txt"
-	if not file.Exists("deathrun/zones","DATA") then file.CreateDir("deathrun/zones") end
-	if not file.Exists(path,"DATA") then file.Write(path,"{}") end
-	local json = file.Read(path,"DATA")
-	local tab = util.JSONToTable(json) or {}
-	self.MapZones = table.Copy(tab)
+function ZONE.Load()
+	if not file.Exists(ZoneDataDir,"DATA") then
+		file.CreateDir(ZoneDataDir)
+	end
+
+	local data
+
+	if file.Exists(ZoneDataFilepath,"DATA") then
+		data = util.JSONToTable(file.Read(ZoneDataFilepath,"DATA"))
+	else
+		data = {}
+	end
+
+	table.CopyFromTo(data,MapZones)
+
 	print("Zones were loaded.")
 end
 
-ZONE:Load()
-function ZONE:Create(name,pos1,pos2,color,type,force)
-	if not istable(self.MapZones[name]) or next(self.MapZones[name]) == nil or force then -- empty table
-		self.MapZones[name] = {}
-		self.MapZones[name].pos1 = pos1
-		self.MapZones[name].pos2 = pos2
-		self.MapZones[name].color = color
-		self.MapZones[name].type = type
-		self:Save()
+ZONE.Load()
+
+--- @param name string
+--- @param pos1 Vector
+--- @param pos2 Vector
+--- @param color Color
+--- @param force boolean
+function ZONE.Create(name,pos1,pos2,color,type,force)
+	local targetZone = MapZones[name]
+
+	-- empty table
+	if
+		not istable(targetZone)
+	or	next(targetZone) == nil
+	or	force
+	then
+		MapZones[name] = {
+			["pos1"] = pos1,
+			["pos2"] = pos2,
+			["color"] = color,
+			["type"] = type,
+		}
+
+		ZONE.Save()
+
 		return true
 	end
+
 	return false
 end
 
-function ZONE:ZoneData(name)
-	return self.MapZones[name] or false
+local ScanRate
+local SkipCounter = -1
+
+-- makes it a bit less taxing, at the cost of reducing the resolution of records
+local TickRate = math.Round(1 / engine.TickInterval())
+
+if TickRate >= 100 then
+	ScanRate = 3
+elseif TickRate >= 66 then
+	ScanRate = 2
+else
+	ScanRate = 1
 end
 
-function ZONE:GetPlayerInZone(name)
-	return ply.InZones and ply.InZones[name]
-end
+local ZoneBorder = Vector(20,20,20)
 
-function ZONE:GetPlayerInZoneType(ply,t)
-	for k,v in pairs(ply.InZones or {}) do
-		if self.MapZones[k] and v == true then
-			if type(t) == "string" then
-				if self.MapZones[k].type == t then return true end
-			elseif type(t) == "table" then
-				for _,j in ipairs(t) do
-					if self.MapZones[k].type == j then return true end
-				end
+-- cycle through zones and check for players
+hook.Add("Tick","ZoneTick",function()
+	SkipCounter = (SkipCounter + 1) % ScanRate
+	if SkipCounter ~= 0 then return end
+
+	for name,zone in pairs(MapZones) do
+		if not zone.type then continue end
+
+		local pos1 = zone.pos1
+		local pos2 = zone.pos2
+
+		local posMin,posMax = DR.VectorMinMax(pos1,pos2)
+		posMin:Sub(ZoneBorder)
+		posMax:Add(ZoneBorder)
+
+		for _,ent in ipairs(ents.FindInBox(posMin,posMax)) do
+			if not ent:IsPlayer() then continue end
+
+			local inZones = ent.InZones
+			local inCuboid = PlayerInCuboid(ent,pos1,pos2)
+			local hasChanged
+
+			if
+				inZones[name]
+			and	not inCuboid
+			then
+				-- if we remember them being inside, but they arent anymore, then they left.
+				inZones[name] = false
+				hasChanged = true
+			elseif
+				not inZones[name]
+			and	inCuboid
+			then
+				-- if we don't remember them being inside, but they are inside, then they mustve just entered the zone.
+				inZones[name] = true
+				hasChanged = true
 			end
+
+			if not hasChanged then continue end
+
+			hook.Run("DeathrunPlayerEnteredZone",ent,name,zone)
 		end
 	end
-	return false
-end
-
-local skipcount = 0
-local skip = 0
-local tickrate = math.ceil(1 / engine.TickInterval()) -- makes it a bit less taxing, at the cost of reducing the resolution of records
-if tickrate >= 100 then
-	skip = 2
-elseif tickrate >= 66 then
-	skip = 1
-end
-
-function ZONE:Tick() -- cycle through zones and check for players
-	if skipcount == skip then
-		for name,z in pairs(self.MapZones) do
-			if z.type then
-				local border = Vector(20,20,20)
-				local posmin,posmax = VectorMinMax(z.pos1,z.pos2)
-				for k,ply in ipairs(ents.FindInBox(posmin - border,posmax + border)) do
-					if ply:IsPlayer() == true then
-						-- create a bunch of variables on the player
-						ply.InZones = ply.InZones or {}
-						if not ply.InZones[name] then
-							if PlayerInCuboid(ply,z.pos1,z.pos2) then -- if we don't remember them being inside, but they are inside, then they mustve just entered the zone.
-								ply.InZones[name] = true
-								hook.Run("DeathrunPlayerEnteredZone",ply,name,z)
-							end
-						else
-							if not PlayerInCuboid(ply,z.pos1,z.pos2) then -- if we remember them being inside, but they arent anymore, then they left.
-								ply.InZones[name] = false
-								hook.Run("DeathrunPlayerExitedZone",ply,name,z)
-							end
-						end
-
-						if PlayerInCuboid(ply,z.pos1,z.pos2) then -- if we don't remember them being inside, but they are inside, then they mustve just entered the zone.
-							hook.Run("DeathrunPlayerInsideZone",ply,name,z)
-						end
-					end
-				end
-			end
-		end
-
-		skipcount = 0
-	else
-		skipcount = skipcount + 1
-	end
-end
-
-hook.Add("Tick","ZoneTick",function() ZONE:Tick() end)
-util.AddNetworkString("DeathrunSendZones")
-function ZONE:SendZones(ply)
-	net.Start("DeathrunSendZones")
-	net.WriteTable(self.MapZones)
-	net.Send(ply)
-end
-
-function ZONE:BroadcastZones()
-	net.Start("DeathrunSendZones")
-	net.WriteTable(self.MapZones)
-	net.Broadcast()
-end
-
-hook.Add("PlayerSpawn","ZoneSendZonesSpawn",function(ply)
-	ZONE:SendZones(ply)
-	print("Sent zones to player " .. ply:Nick())
 end)
 
 -- add some concommands for creating zones
 concommand.Add("zone_create",function(ply,cmd,args)
 	-- e.g. zone_create endmap end
-	if DR.CanAccessCommand(ply,cmd) and #args == 2 then
-		if ZONE:Create(args[1],Vector(0,0,0),Vector(0,0,0),Color(255,255,255),args[2],ply.LastZoneDenied == args[1]) then
-			ZONE:BroadcastZones()
-			DR.SafeChatPrint(ply,"Created zone '" .. args[1] .. "' of type '" .. args[2] .. "'")
-			ply.LastZoneDenied = nil
-		else
-			DR.SafeChatPrint(ply,"There already exists a zone named '" .. args[1] .. "'. Please delete it first!\nIf you wish to overwrite it run this command again")
-			ply.LastZoneDenied = args[1]
-		end
+	local name = args[1]
+	local type = args[2]
+
+	if not DR.CanAccessCommand(ply,cmd) then
+		DR.SafeChatPrint(ply,"Insufficient permissions.")
+
+		return
+	elseif
+		not (
+			name
+		and type
+		)
+	then
+		DR.SafeChatPrint(ply,"Invalid command arguments.")
+
+		return
+	end
+
+	local msg
+
+	if ZONE.Create(name,Vector(),Vector(),color_white,type,ply.LastZoneDenied == name) then
+		ZONE.Save()
+		ZONE.SendZones()
+
+		ply.LastZoneDenied = nil
+
+		msg = "Created zone \"" .. name .. "\" of type \"" .. type .. "\"."
 
 		hook.Run("DeathrunZonesUpdated")
+	else
+		ply.LastZoneDenied = name
+
+		msg = "There already exists a zone named \"" .. name .. "\". Please delete it first!\nIf you wish to overwrite it run this command again."
 	end
+
+	DR.SafeChatPrint(ply,msg)
 end)
 
-DR.AddChatCommand("createzone",function(ply,args) ply:ConCommand("zone_create " .. (args[1] or "") .. " " .. (args[2] or "")) end)
+DR.AddChatCommand("createzone",function(ply,args)
+	ply:ConCommand("zone_create " .. (args[1] or "") .. " " .. (args[2] or ""))
+end)
+
 concommand.Add("zone_remove",function(ply,cmd,args)
 	-- e.g. zone_create endmap end
-	if DR.CanAccessCommand(ply,cmd) and #args == 1 then
-		ZONE.MapZones[args[1]] = nil
-		ZONE:Save()
-		ZONE:BroadcastZones()
-		DR.SafeChatPrint(ply,"Deleted zone '" .. args[1] .. "'")
+	local name = args[1]
+
+	if not DR.CanAccessCommand(ply,cmd) then
+		DR.SafeChatPrint(ply,"Insufficient permissions.")
+
+		return
+	elseif not name then
+		DR.SafeChatPrint(ply,"Invalid command arguments.")
+
+		return
 	end
+
+	MapZones[name] = nil
+
+	ZONE.Save()
+	ZONE.SendZones()
+
+	hook.Run("DeathrunZonesUpdated")
+
+	DR.SafeChatPrint(ply,"Deleted zone \"" .. name .. "\"")
 end)
 
-DR.AddChatCommand("removezone",function(ply,args) ply:ConCommand("zone_remove " .. (args[1] or "")) end)
-concommand.Add("zone_setpos1",function(ply,cmd,args)
-	if DR.CanAccessCommand(ply,cmd) and #args == 2 then
-		if args[2] == "eyetrace" and IsValid(ply) then
-			if ZONE.MapZones[args[1]] then
-				ZONE.MapZones[args[1]].pos1 = ply:GetEyeTrace().HitPos
-				ZONE:BroadcastZones()
-				ZONE:Save()
-				DR.SafeChatPrint(ply,args[1] .. ".pos1 set to " .. tostring(ZONE.MapZones[args[1]].pos1))
-			else
-				DR.SafeChatPrint(ply,"Zone does not exist.")
-			end
+DR.AddChatCommand("removezone",function(ply,args)
+	ply:ConCommand("zone_remove " .. (args[1] or ""))
+end)
+
+concommand.Add("zone_setpos",function(ply,cmd,args)
+	local name = args[1]
+	local pos = args[2]
+
+	if not DR.CanAccessCommand(ply,cmd) then
+		DR.SafeChatPrint(ply,"Insufficient permissions.")
+
+		return
+	elseif
+		not (
+			name
+		and pos
+		)
+	then
+		DR.SafeChatPrint(ply,"Invalid command arguments.")
+
+		return
+	end
+
+	local zone = MapZones[name]
+	local msg
+
+	if zone then
+		if
+			pos == "1"
+		or	pos == "2"
+		then
+			local hitPos = ply:GetEyeTrace().HitPos
+			zone["pos" .. pos] = hitPos
+
+			ZONE.Save()
+			ZONE.SendZones()
+
+			msg = name .. ".pos" .. pos .. " set to " .. tostring(hitPos) .. "."
+
+			hook.Run("DeathrunZonesUpdated")
 		else
-			DR.SafeChatPrint(ply,"Please use eyetrace.")
+			msg = "Bad \"pos\" argument, please use either \"1\" or \"2\"."
 		end
-
-		hook.Run("DeathrunZonesUpdated")
+	else
+		msg = "Zone does not exist."
 	end
+
+	DR.SafeChatPrint(ply,msg)
 end)
 
-DR.AddChatCommand("setzonepos1",function(ply,args) ply:ConCommand("zone_setpos1 " .. (args[1] or "") .. " " .. (args[2] or "")) end)
-concommand.Add("zone_setpos2",function(ply,cmd,args)
-	if DR.CanAccessCommand(ply,cmd) and #args == 2 then
-		if args[2] == "eyetrace" and IsValid(ply) then
-			if ZONE.MapZones[args[1]] then
-				ZONE.MapZones[args[1]].pos2 = ply:GetEyeTrace().HitPos
-				ZONE:BroadcastZones()
-				ZONE:Save()
-				DR.SafeChatPrint(ply,args[1] .. ".pos2 set to " .. tostring(ZONE.MapZones[args[1]].pos2))
-			else
-				DR.SafeChatPrint(ply,"Zone does not exist.")
-			end
-		else
-			DR.SafeChatPrint(ply,"Please use eyetrace.")
-		end
-
-		hook.Run("DeathrunZonesUpdated")
-	end
+DR.AddChatCommand("setzonepos1",function(ply,args)
+	ply:ConCommand("zone_setpos " .. (args[1] or "") .. "1")
 end)
 
-DR.AddChatCommand("setzonepos2",function(ply,args) ply:ConCommand("zone_setpos2 " .. (args[1] or "") .. " " .. (args[2] or "")) end)
+DR.AddChatCommand("setzonepos2",function(ply,args)
+	ply:ConCommand("zone_setpos " .. (args[1] or "") .. "2")
+end)
+
 concommand.Add("zone_setcolor",function(ply,cmd,args)
 	-- RGBA e.g. zone_setcolor endmap 255 0 0 255
-	if DR.CanAccessCommand(ply,cmd) and #args > 0 then
-		if ZONE.MapZones[args[1]] then
-			ZONE.MapZones[args[1]].color = Color(tonumber(args[2]) or 255,tonumber(args[3]) or 255,tonumber(args[4]) or 255,tonumber(args[5]) or 255)
-			ZONE:BroadcastZones()
-			ZONE:Save()
-			DR.SafeChatPrint(ply,args[1] .. ".color set to " .. tostring(ZONE.MapZones[args[1]].color))
-		else
-			DR.SafeChatPrint(ply,"Zone does not exist.")
-		end
+	local name = args[1]
+	local colR = tonumber(args[2]) or 255
+	local colG = tonumber(args[3]) or 255
+	local colB = tonumber(args[4]) or 255
+	local colA = tonumber(args[5]) or 255
+
+	if not DR.CanAccessCommand(ply,cmd) then
+		DR.SafeChatPrint(ply,"Insufficient permissions.")
+
+		return
+	elseif not name then
+		DR.SafeChatPrint(ply,"Invalid command arguments.")
+
+		return
+	end
+
+	local zone = MapZones[name]
+	local msg
+
+	if zone then
+		local color = zone.color
+		color.r = colR
+		color.g = colG
+		color.b = colB
+		color.a = colA
+
+		ZONE.Save()
+		ZONE.SendZones()
+
+		msg = name .. ".color set to " .. colR .. " " .. colG .. " " .. colB .. " " .. colA .. "."
 
 		hook.Run("DeathrunZonesUpdated")
+	else
+		msg = "Zone does not exist."
 	end
+
+	DR.SafeChatPrint(ply,msg)
 end)
 
-DR.AddChatCommand("setzonecolor",function(ply,args) ply:ConCommand("zone_setcolor " .. (args[1] or "") .. " " .. (args[2] or "") .. " " .. (args[3] or "") .. " " .. (args[4] or "") .. " " .. (args[5] or "")) end)
+DR.AddChatCommand("setzonecolor",function(ply,args)
+	ply:ConCommand("zone_setcolor " .. (args[1] or "") .. " " .. (args[2] or "") .. " " .. (args[3] or "") .. " " .. (args[4] or "") .. " " .. (args[5] or ""))
+end)
+
 concommand.Add("zone_settype",function(ply,cmd,args)
 	-- e.g. zone_settype endmap end
-	if DR.CanAccessCommand(ply,cmd) and #args == 2 then
-		if ZONE.MapZones[args[1]] then
-			ZONE.MapZones[args[1]].type = args[2]
-			ZONE:BroadcastZones()
-			ZONE:Save()
-			DR.SafeChatPrint(ply,args[1] .. ".type set to " .. tostring(ZONE.MapZones[args[1]].type))
-		else
-			DR.SafeChatPrint(ply,"Zone does not exist.")
-		end
+	local name = args[1]
+	local type = args[2]
+
+	if not DR.CanAccessCommand(ply,cmd) then
+		DR.SafeChatPrint(ply,"Insufficient permissions.")
+
+		return
+	elseif
+		not (
+			name
+		and type
+		)
+	then
+		DR.SafeChatPrint(ply,"Invalid command arguments.")
+
+		return
+	end
+
+	local zone = MapZones[name]
+	local msg
+
+	if zone then
+		zone.type = type
+
+		ZONE.Save()
+		ZONE.SendZones()
+
+		msg = name .. ".type set to " .. type .. "."
 
 		hook.Run("DeathrunZonesUpdated")
+	else
+		msg = "Zone does not exist."
 	end
+
+	DR.SafeChatPrint(ply,msg)
 end)
 
-DR.AddChatCommand("setzonetype",function(ply,args) ply:ConCommand("zone_settype " .. (args[1] or "") .. " " .. (args[2] or "") .. " ") end)
+DR.AddChatCommand("setzonetype",function(ply,args)
+	ply:ConCommand("zone_settype " .. (args[1] or "") .. " " .. (args[2] or ""))
+end)
+
 -- timing and rewards
-local finishorder = {}
-local function resetFinishers()
-	for k,ply in ipairs(player.GetAll()) do
+local FinishOrder = {}
+
+hook.Add("DeathrunBeginPrep","DeathrunResetFinishers",function()
+	for _,ply in player.Iterator() do
 		ply.HasFinishedMap = false
 	end
 
-	finishorder = {}
-end
-
-resetFinishers()
-hook.Add("DeathrunBeginActive","DeathrunResetFinishers",resetFinishers)
-ZONE.StartTime = ZONE.StartTime or nil
-hook.Add("DeathrunBeginActive","DeathrunResetZoneTimer",function() ZONE.StartTime = CurTime() end)
-local function denyZone(ply,name,z)
-	if ply:Alive() and ply:GetObserverMode() == OBS_MODE_NONE then ply:Kill() end
-end
-
-hook.Add("DeathrunPlayerInsideZone","DeathrunPlayerDenyZones",function(ply,name,z)
-	if z.type == "deny_team_runner" and ply:Team() == DR_TEAM_RUNNER then
-		denyZone(ply,name,z)
-		return
-	end
-
-	if z.type == "deny_team_death" and ply:Team() == DR_TEAM_DEATH then
-		denyZone(ply,name,z)
-		return
-	end
-
-	if z.type == "deny" then
-		denyZone(ply,name,z)
-		return
+	for idx in ipairs(FinishOrder) do
+		FinishOrder[idx] = nil
 	end
 end)
 
--- hook.Add("Move", "DeathrunPlayerDenyZones", function( ply, cmd )
--- 	if ZONE:GetPlayerInZoneType( ply, {"deny", "deny_team_death", "deny_team_runner"} ) then
--- 		--cmd:SetMaxSpeed( 0 )
--- 		--cmd:SetMaxClientSpeed( 0 )
--- 	end
--- end)
-hook.Add("DeathrunPlayerEnteredZone","DeathrunPlayerFinishMap",function(ply,name,z)
-	if string.sub(z.type,1,4) == "deny" then
-		if not ply.DenyEntryList then ply.DenyEntryList = {} end
-		ply.DenyEntryList[name] = ply:GetPos()
+hook.Add("DeathrunBeginActive","DeathrunResetZoneTimer",function()
+	ZONE.StartTime = CurTime()
+end)
+
+hook.Add("DeathrunPlayerInsideZone","DeathrunPlayerDenyZones",function(ply,_,zone)
+	local type = zone.type
+	local plyTeam = ply:Team()
+
+	if
+		not (
+			ply:Alive()
+		and	ply:GetObserverMode() == OBS_MODE_NONE
+		and	(
+				type == "deny"
+			or	type == "deny_team_runner" and plyTeam == DR_TEAM_RUNNER
+			or	type == "deny_team_death" and plyTeam == DR_TEAM_DEATH
+			)
+		)
+	then return end
+
+	ply:Kill()
+end)
+
+hook.Add("DeathrunPlayerEnteredZone","DeathrunPlayerFinishMap",function(ply,name,zone)
+	if
+		zone.type ~= "end"
+	or	not ply:Alive()
+	or	ply:GetSpectate()
+	or	ply:Team() ~= DR_TEAM_RUNNER
+	or	ply.HasFinishedMap
+	or	ROUND.GetCurrent() == DR_ROUND_WAITING
+	then return end
+
+	ply.HasFinishedMap = true
+
+	local place = #FinishOrder + 1
+	FinishOrder[place] = ply
+
+	local placeTxt
+	local placeStr = tostring(place)
+	local endCharNN = placeStr:sub(-1,-2)
+	local endCharN = endCharNN:sub(-1,-1)
+
+	if
+		endCharNN == "11"
+	or	endCharNN == "12"
+	or	endCharNN == "13"
+	then
+		placeTxt = placeStr .. "th"
+	elseif endCharN == "1" then
+		placeTxt = placeStr .. "st"
+	elseif endCharN == "2" then
+		placeTxt = placeStr .. "nd"
+	elseif endCharN == "3" then
+		placeTxt = placeStr .. "rd"
+	else
+		placeTxt = placeStr .. "th"
 	end
 
-	if ply:Team() ~= DR_TEAM_RUNNER or ply:GetSpectate() or not ply:Alive() or ROUND.GetCurrent() == DR_ROUND_WAITING then return end
-	if z.type == "end" and ply.HasFinishedMap ~= true then
-		table.insert(finishorder,ply)
-		local place = #finishorder
-		local placestring = tostring(place)
-		local endchar = string.sub(placestring,-1,-1)
-		local end2char = string.sub(placestring,-1,-2)
-		local placetext = ""
-		if end2char == "11" or end2char == "12" or end2char == "13" then
-			placetext = placetext .. "th"
-		elseif endchar == "1" then
-			placetext = placestring .. "st"
-		elseif endchar == "2" then
-			placetext = placestring .. "nd"
-		elseif endchar == "3" then
-			placetext = placestring .. "rd"
-		else
-			placetext = placestring .. "th"
-		end
+	local finishTime = CurTime() - ZONE.StartTime
 
-		local finishtime = CurTime() - ZONE.StartTime
-		DR.ChatBroadcast(ply:Nick() .. " has finished the map in " .. placetext .. " place with a time of " .. string.ToMinutesSecondsMilliseconds(finishtime) .. "!")
-		ply.HasFinishedMap = true
-		if place == 1 then
-			for k,v in ipairs(team.GetPlayers(DR_TEAM_DEATH)) do
-				v:SetRunSpeed(v:GetWalkSpeed()) -- deaths lose sprint when the runner finishes
-			end
-		end
+	DR.ChatBroadcast(ply:Nick() .. " has finished the map in " .. placeTxt .. " place with a time of " .. string.ToMinutesSecondsMilliseconds(finishTime) .. "!")
 
-		hook.Run("DeathrunPlayerFinishMap",ply,name,z,place,finishtime)
+	if place == 1 then
+		-- deaths lose sprint when the first runner finishes
+		for _,death in ipairs(team.GetPlayers(DR_TEAM_DEATH)) do
+			death:SetRunSpeed(250)
+		end
 	end
+
+	hook.Run("DeathrunPlayerFinishMap",ply,name,zone,place,finishTime)
 end)

@@ -232,7 +232,7 @@ function DR.OpenZoneEditor()
 	but.dd = dd
 	list:Add(but)
 	function but:DoClick()
-		LocalPlayer():ConCommand("zone_setpos1 " .. self.dd:GetValue() .. " eyetrace")
+		LocalPlayer():ConCommand("zone_setpos " .. self.dd:GetValue() .. " 1")
 	end
 
 	local but = vgui.Create("DR_Button")
@@ -243,7 +243,7 @@ function DR.OpenZoneEditor()
 	but.dd = dd
 	list:Add(but)
 	function but:DoClick()
-		LocalPlayer():ConCommand("zone_setpos2 " .. self.dd:GetValue() .. " eyetrace")
+		LocalPlayer():ConCommand("zone_setpos " .. self.dd:GetValue() .. " 2")
 	end
 
 	local but = vgui.Create("DR_Button")
