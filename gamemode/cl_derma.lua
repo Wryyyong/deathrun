@@ -103,55 +103,55 @@ end
 for _,panelName in ipairs({
 	-- Panel
 	"autoggle",
-	"custompanelcanvas",
-	"customvscrollbar",
-	"multipanel",
+	"customscroll/custompanelcanvas",
+	"customscroll/customvscrollbar",
+	"multipanel/multipanel",
 
 	-- DPanel
-	"crosshairpreview",
-	"customscrollpanel",
+	"crosshaircreator/crosshairpreview",
+	"customscroll/customscrollpanel",
 	"innerwindow",
-	"menucontrols",
-	"menuspacer",
-	"multipanelspacer",
-	"multipaneltabpanel",
+	"menu/menucontrols",
+	"menu/menuspacer",
+	"multipanel/multipanelspacer",
+	"multipanel/multipaneltabpanel",
 
 	-- DFrame
 	"window",
 
 	-- DLabel
-	"menuitem",
+	"menu/menuitem",
 
 	-- DButton
 	"button",
-	"customvscrollbarbutton",
+	"customscroll/customvscrollbarbutton",
 	"subbutton",
 	"togglebutton",
 
 	-- DIconLayout
-	"menulist",
+	"menu/menulist",
 
 	-- DColorMixer
-	"crosshaircolormixer",
+	"crosshaircreator/crosshaircolormixer",
 
 	-- DScrollBarGrip
-	"customscrollbargrip",
+	"customscroll/customscrollbargrip",
 
 	-- DNumSlider
-	"menunumslider",
+	"menu/menunumslider",
 
 	-- DR_Button
 	"closebutton",
-	"multipaneltabbutton",
-	"navbutton",
+	"multipanel/multipaneltabbutton",
+	"multipanel/navbutton",
 
 	-- DR_Window
-	"menuframe",
+	"menu/menuframe",
 
 	-- DR_InnerWindow
-	"menuinner",
+	"menu/menuinner",
 }) do
-	include("derma/dr_" .. panelName .. ".lua")
+	include("derma/" .. panelName .. ".lua")
 end
 
 concommand.Add("deathrun_test_derma",function()
