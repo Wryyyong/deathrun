@@ -1541,9 +1541,11 @@ hook.Add("HUDPaintBackground","Vaporwave",function()
 	matrix:Rotate(Vaporwave_Rotate)
 
 	local scale = math.sin(curTime * .3) * .2 + .9
-	Vaporwave_Scale[1] = scale
-	Vaporwave_Scale[2] = scale
-	Vaporwave_Scale[3] = scale
+	Vaporwave_Scale:SetUnpacked(
+		scale,
+		scale,
+		scale
+	)
 	matrix:Scale(Vaporwave_Scale)
 
 	matrix:Translate(Vaporwave_Translate2)

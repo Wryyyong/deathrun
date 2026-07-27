@@ -25,7 +25,7 @@ AddCSLuaFile("cl_fonts.lua")
 -- derma
 AddCSLuaFile("cl_derma.lua")
 
-for _,fileName in ipairs(file.Find("gamemodes/deathrun/gamemode/derma/dr_*.lua","GAME")) do
+for _,fileName in ipairs(file.Find("gamemodes/deathrun/gamemode/derma/dr_*.lua","GAME") or {}) do
 	AddCSLuaFile("derma/" .. fileName)
 end
 
@@ -514,14 +514,10 @@ hook.Add("ShowHelp","DeathrunHelpBind",function(ply)
 	ply:ConCommand("deathrun_open_help")
 end)
 
-local DroppableWeapons = {
-	["weapon_crowbar"] = false,
-	["weapon_knife"] = false,
+local UndroppableWeapons = {
+	["weapon_crowbar"] = true,
+	["weapon_knife"] = true,
 }
-
-function DR.CanPlayerDropWeapon(ply,wepClass)
-	return DroppableWeapons[wepClass] or true
-end
 
 concommand.Add("deathrun_dropweapon",function(ply)
 	local weapon = ply:GetActiveWeapon()
@@ -530,7 +526,7 @@ concommand.Add("deathrun_dropweapon",function(ply)
 		not (
 			ply:Alive()
 		and	IsValid(weapon)
-		and	DR.CanPlayerDropWeapon(ply,weapon:GetClass())
+		and not UndroppableWeapons[weapon:GetClass()]
 		)
 	then return end
 
@@ -548,6 +544,7 @@ hook.Add("PlayerCanPickupWeapon","StopWeaponAbuseAustraliaSaysNo",function(ply,w
 		return false
 	end
 
+	--- @type table<integer,bool>
 	local inventory = {}
 
 	for _,wepInv in ipairs(ply:GetWeapons()) do

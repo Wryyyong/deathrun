@@ -17,7 +17,12 @@ Stats.PlayerStatsCache = PlayerStatsCache
 local MapRecordsDrawPos = Stats.MapRecordsDrawPos or Vector()
 Stats.MapRecordsDrawPos = MapRecordsDrawPos
 
---- @type DeathrunMapRecord[]
+--- @alias DeathrunMapRecord_Client {
+--- 	Name: string,
+--- 	Seconds: string,
+--- }
+
+--- @type DeathrunMapRecord_Client[]
 local MapRecordsCache = Stats.MapRecordsCache or {
 	{},
 	{},
@@ -28,9 +33,11 @@ Stats.MapRecordsCache = MapRecordsCache
 Stats.PersonalBestCache = Stats.PersonalBestCache or "--:--:--"
 
 net.Receive("DeathrunSendMapRecords",function()
-	MapRecordsDrawPos[1] = net.ReadDouble()
-	MapRecordsDrawPos[2] = net.ReadDouble()
-	MapRecordsDrawPos[3] = net.ReadDouble()
+	MapRecordsDrawPos:SetUnpacked(
+		net.ReadDouble(),
+		net.ReadDouble(),
+		net.ReadDouble()
+	)
 
 	local idx = 0
 
@@ -38,7 +45,7 @@ net.Receive("DeathrunSendMapRecords",function()
 		idx = idx + 1
 		local rank = MapRecordsCache[idx]
 
-		rank.Name = net.ReadString():sub(1,24)
+		rank.Name = net.ReadString()
 		rank.Seconds = string.ToMinutesSecondsMilliseconds(net.ReadFloat())
 	end
 end)

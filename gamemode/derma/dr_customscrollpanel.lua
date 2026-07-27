@@ -1,5 +1,4 @@
 --- @class DR_CustomScrollPanel : DPanel
---- @field pnlCanvas DR_CustomPanelCanvas
 --- @field VBar DR_CustomVScrollBar
 local DR_CustomScrollPanel = {
 	["AddItem"] = DScrollPanel.AddItem,

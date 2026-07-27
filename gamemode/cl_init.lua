@@ -70,7 +70,9 @@ end
 
 local PosEndOffset = Vector(0,0,9)
 
-local TraceTable = {
+local TraceCache = {
+	["start"] = vector_origin,
+	["endpos"] = vector_origin,
 	["mins"] = Vector(-5,-5,-5),
 	["maxs"] = Vector(5,5,5),
 	["mask"] = MASK_SHOT_HULL,
@@ -115,11 +117,11 @@ function GM:CalcView(ply,pos,ang,fov,znear,zfar)
 		targetFov = wep.ScopedFOV
 	end
 
-	TraceTable.start = pos
-	TraceTable.endpos = posEnd
-	TraceTable.filter = player.GetAll()
+	TraceCache.start = pos
+	TraceCache.endpos = posEnd
+	TraceCache.filter = player.GetAll()
 
-	CalcViewTable.origin = util.TraceHull(TraceTable).HitPos
+	CalcViewTable.origin = util.TraceHull(TraceCache).HitPos
 	CalcViewTable.angles = ang
 	CalcViewTable.fov = targetFov
 	CalcViewTable.znear = znear

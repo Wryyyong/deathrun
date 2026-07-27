@@ -1,7 +1,11 @@
+local MapSettingsDir = "mapsettings"
+
 if SERVER then
-	for k,v in ipairs(file.Find("gamemode/mapsettings/*.lua","LUA")) do
-		AddCSLuaFile("mapsettings/" .. v)
+	for _,filePath in ipairs(file.Find("gamemode/mapsettings/*.lua","LUA") or {}) do
+		AddCSLuaFile(MapSettingsDir .. "/" .. filePath)
 	end
 end
 
-hook.Add("InitPostEntity","MapSettings",function() include("mapsettings/" .. game.GetMap() .. ".lua") end)
+hook.Add("InitPostEntity","MapSettings",function()
+	include(MapSettingsDir .. "/" .. game.GetMap() .. ".lua")
+end)

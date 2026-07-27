@@ -15,6 +15,12 @@ local WinningTeamToStats = {
 	[DR_WIN_DEATHS] = DR_STATS_WINSDEATH,
 }
 
+--- @alias DeathrunMapRecord_Server {
+--- 	Name: string,
+--- 	Seconds: number,
+--- }
+
+--- @type DeathrunMapRecord_Server[]
 local MapRecordsCache = Stats.MapRecordsCache or {}
 Stats.MapRecordsCache = MapRecordsCache
 
@@ -142,14 +148,15 @@ local function UpdateMapRecords(plyFinish)
 			ORDER BY "Seconds" LIMIT 3
 			;
 		]]
-	) --- @cast newRecords -boolean
+	) or {} --- @cast newRecords -boolean
 
 	MapRecordsCache = newRecords
 	PrintTable(MapRecordsCache)
 
 	net.Start("DeathrunSendMapRecords")
 		--- @type Vector
-		local location = (EndZone.pos1 + EndZone.pos2) * .5
+		local location = (EndZone.pos1 + EndZone.pos2)
+		location:Mul(.5)
 		location[1] = location[1] - 90
 
 		net.WriteDouble(location[1])
@@ -158,7 +165,7 @@ local function UpdateMapRecords(plyFinish)
 
 		for _,data in ipairs(MapRecordsCache) do
 			net.WriteBool(true)
-			net.WriteString(data.Name)
+			net.WriteString(data.Name:sub(1,24))
 			net.WriteFloat(data.Seconds)
 		end
 

@@ -53,7 +53,7 @@ end
 
 -- set whether they should stay in spectator even when the round starts
 --- @param bool boolean
---- @param noSwitch boolean
+--- @param noSwitch boolean?
 function PlyMeta:SetShouldStaySpectating(bool,noSwitch)
 	self.StaySpectating = bool
 

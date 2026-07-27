@@ -448,7 +448,12 @@ local BalloonAngle = Angle()
 local BalloonEndPosMul = 92
 local BalloonDistCheck = 30 ^ 2
 
-local BalloonTraceData = {}
+local BalloonTraceCache = {
+	["start"] = vector_origin,
+	["endpos"] = vector_origin,
+	["mins"] = vector_origin,
+	["maxs"] = vector_origin,
+}
 
 hook.Add("DeathrunPlayerFinishMap","Balloons",function(ply)
 	local balloonCount = ConVars.FinishBalloons:GetInt()
@@ -462,22 +467,24 @@ hook.Add("DeathrunPlayerFinishMap","Balloons",function(ply)
 
 		balloon:Spawn()
 
-		BalloonDir[1] = math.Rand(-100,100)
-		BalloonDir[2] = math.Rand(-100,100)
-		BalloonDir[3] = math.Rand(-100,100)
+		BalloonDir:SetUnpacked(
+			math.Rand(-100,100),
+			math.Rand(-100,100),
+			math.Rand(-100,100)
+		)
 		BalloonDir:Normalize()
 		BalloonDir:Mul(BalloonEndPosMul)
 
 		BalloonAngle[2] = math.Rand(-180,180)
 		balloon:SetAngles(BalloonAngle)
 
-		BalloonTraceData.start = shootPos
-		BalloonTraceData.endpos = shootPos + BalloonDir
-		BalloonTraceData.filter = ply
-		BalloonTraceData.mins = balloon:OBBMins()
-		BalloonTraceData.maxs = balloon:OBBMaxs()
+		BalloonTraceCache.start = shootPos
+		BalloonTraceCache.endpos = shootPos + BalloonDir
+		BalloonTraceCache.filter = ply
+		BalloonTraceCache.mins = balloon:OBBMins()
+		BalloonTraceCache.maxs = balloon:OBBMaxs()
 
-		local trace = util.TraceHull(BalloonTraceData)
+		local trace = util.TraceHull(BalloonTraceCache)
 		local hitPos = trace.HitPos
 
 		if hitPos:DistToSqr(shootPos) > BalloonDistCheck then

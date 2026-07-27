@@ -55,11 +55,12 @@ sound.Add({
 --- @type string[]
 local NotAmusedSounds = {}
 
-for idx = 01,40 do
+for idx = 1,40 do
 	local pad = string.format("%02d",idx)
+	local count = #NotAmusedSounds
 
-	NotAmusedSounds[#NotAmusedSounds + 1] = "vo/npc/male01/answer" .. pad .. ".wav"
-	NotAmusedSounds[#NotAmusedSounds + 1] = "vo/npc/female01/answer" .. pad .. ".wav"
+	NotAmusedSounds[count + 1] = "vo/npc/male01/answer" .. pad .. ".wav"
+	NotAmusedSounds[count + 2] = "vo/npc/female01/answer" .. pad .. ".wav"
 end
 
 sound.Add({
@@ -187,6 +188,8 @@ end)
 local GroundForce = {}
 local VelocitySub = Vector(0,0,0)
 
+--- @param ply Player
+--- @param data CMoveData
 function GM:Move(ply,data)
 	if not IsValid(ply) then return end
 
@@ -246,6 +249,7 @@ function GM:Move(ply,data)
 
 	aimForward:Add(aimRight)
 
+	-- TODO: Find a way to utilize LengthSqr instead
 	local speedWish = aimForward:Length()
 	local speedMax = data:GetMaxSpeed()
 
