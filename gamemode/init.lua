@@ -125,7 +125,7 @@ local PlayerModelCount = #PlayerModels
 
 hook.Add("PlayerInitialSpawn","DeathrunPlayerInitialSpawn",function(ply)
 	ply.FirstSpawn = true
-	ply:SetTeam(TEAM_SPECTATOR)
+	ply:SetTeam(DR_TEAM_SPECTATOR)
 
 	DR.ChatBroadcast(ply:Nick() .. " has joined the server.")
 end)
@@ -137,7 +137,7 @@ end)
 hook.Add("PlayerSpawn","DeathrunSetPlayerModels",function(ply)
 	local plyTeam = ply:Team()
 
-	if plyTeam == TEAM_DEATH then
+	if plyTeam == DR_TEAM_DEATH then
 		local mdl = CvDeathModel:GetString()
 
 		if string.sub(mdl,-4,-1) == ".mdl" then
@@ -145,7 +145,7 @@ hook.Add("PlayerSpawn","DeathrunSetPlayerModels",function(ply)
 		else
 			print("The default death model is not a valid .mdl file ('" .. mdl .. "'). Please change the deathrun_death_model ConVar.")
 		end
-	elseif plyTeam == TEAM_RUNNER then
+	elseif plyTeam == DR_TEAM_RUNNER then
 		ply:SetModel(PlayerModels[PlayerModelCount])
 	end
 
@@ -165,7 +165,7 @@ end)
 
 local function SpawnSpectator(ply)
 	ply:KillSilent()
-	ply:SetTeam(TEAM_SPECTATOR)
+	ply:SetTeam(DR_TEAM_SPECTATOR)
 	ply:BeginSpectate()
 
 	return GAMEMODE:PlayerSpawnAsSpectator(ply)
@@ -188,7 +188,7 @@ hook.Add("PlayerSpawn","DeathrunPlayerSpawn",function(ply)
 	local plyTeam = ply:Team()
 
 	-- GhostMode compatibility
-	if GhostMode and plyTeam == TEAM_GHOST then
+	if GhostMode and plyTeam == DR_TEAM_GHOST then
 		ply:ConCommand("deathrun_spectate_only 0")
 		ply:StopSpectate()
 
@@ -208,7 +208,7 @@ hook.Add("PlayerSpawn","DeathrunPlayerSpawn",function(ply)
 
 		local roundState = ROUND.GetCurrent()
 
-		if roundState == ROUND_ACTIVE or roundState == ROUND_OVER then
+		if roundState == DR_ROUND_ACTIVE or roundState == DR_ROUND_OVER then
 			--print("firstspawn, spawning as spectator.")
 			SpecBuffer[#SpecBuffer + 1] = ply
 
@@ -216,7 +216,7 @@ hook.Add("PlayerSpawn","DeathrunPlayerSpawn",function(ply)
 
 			return SpawnSpectator(ply)
 		else
-			ply:SetTeam(TEAM_RUNNER)
+			ply:SetTeam(DR_TEAM_RUNNER)
 		end
 
 		hook.Run("PlayerLoadout",ply)
@@ -231,11 +231,11 @@ hook.Add("PlayerSpawn","DeathrunPlayerSpawn",function(ply)
 	end
 
 	if
-		plyTeam ~= TEAM_RUNNER
-	and	plyTeam ~= TEAM_DEATH
-	and	plyTeam ~= TEAM_SPECTATOR
+		plyTeam ~= DR_TEAM_RUNNER
+	and	plyTeam ~= DR_TEAM_DEATH
+	and	plyTeam ~= DR_TEAM_SPECTATOR
 	then
-		ply:SetTeam(TEAM_RUNNER)
+		ply:SetTeam(DR_TEAM_RUNNER)
 	end
 
 	local spawns = team.GetSpawnPoints(plyTeam) or {}
@@ -260,7 +260,7 @@ function GM:PlayerLoadout(ply)
 	ply:SetWalkSpeed(250)
 	ply:SetJumpPower(290)
 
-	if plyTeam == TEAM_DEATH then
+	if plyTeam == DR_TEAM_DEATH then
 		ply:SetRunSpeed(ConVars.DeathSprint:GetFloat())
 	end
 
@@ -294,7 +294,7 @@ function GM:PlayerDeath(ply,inflictor,attacker)
 	ply:EmitSound("Deathrun.PlayerDeath")
 	ply:SetupHands(nil)
 	ply:DrawViewModel(false)
-	if ply:Team() == TEAM_SPECTATOR then
+	if ply:Team() == DR_TEAM_SPECTATOR then
 		ply:Spawn()
 		ply:BeginSpectate()
 		return
@@ -375,9 +375,9 @@ function GM:CanPlayerSuicide(ply)
 			not ply:Alive()
 		or	ply:GetSpectate()
 		)
-	or	plyTeam == TEAM_DEATH -- never allow suicide on death team
-	or	plyTeam == TEAM_GHOST -- never allow suicide on ghost team
-	or	ROUND.GetCurrent() == ROUND_PREP -- players cannot suicide during round prep time
+	or	plyTeam == DR_TEAM_DEATH -- never allow suicide on death team
+	or	plyTeam == DR_TEAM_GHOST -- never allow suicide on ghost team
+	or	ROUND.GetCurrent() == DR_ROUND_PREP -- players cannot suicide during round prep time
 	then
 		return false
 	end
@@ -391,8 +391,8 @@ function GM:EntityTakeDamage(target,dmgInfo)
 		local roundState = ROUND.GetCurrent()
 
 		if
-			roundState == ROUND_WAITING
-		or	roundState == ROUND_PREP
+			roundState == DR_ROUND_WAITING
+		or	roundState == DR_ROUND_PREP
 		then
 			target:DeathrunChatPrint("You took " .. dmgInfo:GetDamage() .. " damage.")
 
@@ -490,8 +490,8 @@ concommand.Add("strip",function(ply)
 end)
 
 local FallDamageByTeam = {
-	[TEAM_DEATH] = 0,
-	[TEAM_GHOST] = 0,
+	[DR_TEAM_DEATH] = 0,
+	[DR_TEAM_GHOST] = 0,
 }
 
 function GM:GetFallDamage(ply,speed)
@@ -502,7 +502,7 @@ function GM:GetFallDamage(ply,speed)
 end
 
 function GM:OnPlayerHitGround(ply)
-	return ply:Team() == TEAM_GHOST or nil
+	return ply:Team() == DR_TEAM_GHOST or nil
 end
 
 -- Function Key Binds
@@ -543,7 +543,7 @@ hook.Add("PlayerCanPickupWeapon","StopWeaponAbuseAustraliaSaysNo",function(ply,w
 
 	if
 		ply:HasWeapon(wepClass)
-	or	ply:Team() == TEAM_GHOST
+	or	ply:Team() == DR_TEAM_GHOST
 	then
 		return false
 	end

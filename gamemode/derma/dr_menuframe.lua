@@ -85,7 +85,7 @@ function DR_QuickInfoFrame:Init()
 end
 
 function DR_QuickInfoFrame:OnClose()
-	if ROUND.GetCurrent() ~= ROUND_WAITING then return end
+	if ROUND.GetCurrent() ~= DR_ROUND_WAITING then return end
 
 	DR.OpenWaitingMenu()
 end

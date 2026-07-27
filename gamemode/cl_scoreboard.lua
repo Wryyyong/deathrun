@@ -90,25 +90,25 @@ function DR.CreateScoreboard()
 	local small = GetConVar("deathrun_scoreboard_small"):GetBool()
 	dlist:Add(header)
 	dlist:Add(DR.NewScoreboardSpacer({"[Hint] Right Click to scroll and interact with scoreboard."},dlist:GetWide(),small and 24 or 32,DR.Colors.Turq))
-	dlist:Add(DR.NewScoreboardSpacer({tostring(#team.GetPlayers(TEAM_DEATH)) .. " players on Death Team"},dlist:GetWide(),small and 24 or 32,team.GetColor(TEAM_DEATH)))
-	for k,ply in ipairs(team.GetPlayers(TEAM_DEATH)) do
+	dlist:Add(DR.NewScoreboardSpacer({tostring(#team.GetPlayers(DR_TEAM_DEATH)) .. " players on Death Team"},dlist:GetWide(),small and 24 or 32,team.GetColor(DR_TEAM_DEATH)))
+	for k,ply in ipairs(team.GetPlayers(DR_TEAM_DEATH)) do
 		dlist:Add(DR.NewScoreboardPlayer(ply,dlist:GetWide(),small and 22 or 28))
 	end
 
-	dlist:Add(DR.NewScoreboardSpacer({tostring(#team.GetPlayers(TEAM_RUNNER)) .. " players on Runner Team"},dlist:GetWide(),small and 24 or 32,team.GetColor(TEAM_RUNNER)))
-	for k,ply in ipairs(team.GetPlayers(TEAM_RUNNER)) do
+	dlist:Add(DR.NewScoreboardSpacer({tostring(#team.GetPlayers(DR_TEAM_RUNNER)) .. " players on Runner Team"},dlist:GetWide(),small and 24 or 32,team.GetColor(DR_TEAM_RUNNER)))
+	for k,ply in ipairs(team.GetPlayers(DR_TEAM_RUNNER)) do
 		dlist:Add(DR.NewScoreboardPlayer(ply,dlist:GetWide(),small and 22 or 28))
 	end
 
 	if GhostMode then -- GhostMode support
-		dlist:Add(DR.NewScoreboardSpacer({tostring(#team.GetPlayers(TEAM_GHOST)) .. " players in Ghost Mode"},dlist:GetWide(),small and 24 or 32,team.GetColor(TEAM_GHOST)))
-		for k,ply in ipairs(team.GetPlayers(TEAM_GHOST)) do
+		dlist:Add(DR.NewScoreboardSpacer({tostring(#team.GetPlayers(DR_TEAM_GHOST)) .. " players in Ghost Mode"},dlist:GetWide(),small and 24 or 32,team.GetColor(DR_TEAM_GHOST)))
+		for k,ply in ipairs(team.GetPlayers(DR_TEAM_GHOST)) do
 			dlist:Add(DR.NewScoreboardPlayer(ply,dlist:GetWide(),small and 22 or 28))
 		end
 	end
 
-	dlist:Add(DR.NewScoreboardSpacer({tostring(#team.GetPlayers(TEAM_SPECTATOR)) .. " players Spectating"},dlist:GetWide(),small and 24 or 32,DR.Colors.Grey))
-	for k,ply in ipairs(team.GetPlayers(TEAM_SPECTATOR)) do
+	dlist:Add(DR.NewScoreboardSpacer({tostring(#team.GetPlayers(DR_TEAM_SPECTATOR)) .. " players Spectating"},dlist:GetWide(),small and 24 or 32,DR.Colors.Grey))
+	for k,ply in ipairs(team.GetPlayers(DR_TEAM_SPECTATOR)) do
 		dlist:Add(DR.NewScoreboardPlayer(ply,dlist:GetWide(),small and 22 or 28))
 	end
 

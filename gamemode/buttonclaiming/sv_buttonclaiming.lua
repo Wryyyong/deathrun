@@ -75,7 +75,7 @@ timer.Create("CheckButtonClaims",1 / 3,0,function()
 	--- @type Player[]
 	local plyList = {}
 
-	for _,ply in ipairs(team.GetPlayers(TEAM_DEATH)) do
+	for _,ply in ipairs(team.GetPlayers(DR_TEAM_DEATH)) do
 		if not ply:Alive() then continue end
 
 		plyList[#plyList + 1] = ply
@@ -129,7 +129,7 @@ hook.Add("PlayerUse","DeathrunButtonClaimPlayerUse",function(ply,ent)
 
 	if
 		not ply:Alive()
-	or	plyTeam == TEAM_SPECTATOR
+	or	plyTeam == DR_TEAM_SPECTATOR
 	or	ply:GetObserverMode() ~= OBS_MODE_NONE
 	then
 		return false
@@ -142,7 +142,7 @@ hook.Add("PlayerUse","DeathrunButtonClaimPlayerUse",function(ply,ent)
 	-- if that shit doesnt exist then sure, just do it, don't let your dreams be dreams
 	-- if they own it, or if it is unclaimed (e.g. they run and press it the moment before it updates on the server, it won't disable and it wont cause them to lose the runner.)
 	if
-		plyTeam == TEAM_RUNNER
+		plyTeam == DR_TEAM_RUNNER
 	or	not data
 	or	not data.Claimed
 	or	data.ClaimingPlayer == ply

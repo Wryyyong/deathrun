@@ -1,5 +1,5 @@
 net.Receive("DeathrunSyncRoundTimer",function(len,ply)
-	ROUND_TIMER = net.ReadUInt(16)
+	DR_ROUND_TIMER = net.ReadUInt(16)
 end)
 
 net.Receive("DeathrunUpdateRoundState",function()

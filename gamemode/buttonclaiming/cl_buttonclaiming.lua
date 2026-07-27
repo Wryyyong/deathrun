@@ -52,7 +52,7 @@ end)
 hook.Add("HUDPaint","DeathrunButtonClaimHUD",function()
 	local localPly = LocalPlayer()
 
-	if localPly:Team() == TEAM_RUNNER then return end
+	if localPly:Team() == DR_TEAM_RUNNER then return end
 
 	local eyePos = localPly:EyePos()
 

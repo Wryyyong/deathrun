@@ -58,8 +58,8 @@ hook.Add("PostDrawTranslucentRenderables","DeathrunZoneCuboidDrawing",function()
 					tempcolor.a = frac * z.color.a
 					local alt = false
 					local ply = LocalPlayer()
-					if z.type == "deny_team_runner" and ply:Team() == TEAM_RUNNER then alt = true end
-					if z.type == "deny_team_death" and ply:Team() == TEAM_DEATH then alt = true end
+					if z.type == "deny_team_runner" and ply:Team() == DR_TEAM_RUNNER then alt = true end
+					if z.type == "deny_team_death" and ply:Team() == DR_TEAM_DEATH then alt = true end
 					if z.type == "deny" then alt = true end
 					ZONE:DrawCuboid(z.pos1,z.pos2,tempcolor,alt)
 					--if string.sub( z.type, 1, 4 ) == "deny" then

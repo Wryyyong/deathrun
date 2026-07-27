@@ -15,31 +15,31 @@ local KillfeedTbl_Meta = {
 ROUND = ROUND or {}
 
 -- Create round state constants
-ROUND_CURRENT = ROUND_CURRENT or ROUND_WAITING
+ROUND_CURRENT = ROUND_CURRENT or DR_ROUND_WAITING
 
 --- @type RoundStateData[]
 ROUND_STATES = ROUND_STATES or {} -- heheh
 
-ROUND_WAITING = 1
-ROUND_PREP = 2
-ROUND_ACTIVE = 3
-ROUND_OVER = 4
+DR_ROUND_WAITING = 1
+DR_ROUND_PREP = 2
+DR_ROUND_ACTIVE = 3
+DR_ROUND_OVER = 4
 
-ROUND_PREPARING = ROUND_PREP
-ROUND_ENDING = ROUND_OVER
+DR_ROUND_PREPARING = DR_ROUND_PREP
+DR_ROUND_ENDING = DR_ROUND_OVER
 
 -- win constants
-WIN_RUNNERS = TEAM_RUNNER
-WIN_DEATHS = TEAM_DEATH
-WIN_STALEMATE = 3
+DR_WIN_RUNNERS = DR_TEAM_RUNNER
+DR_WIN_DEATHS = DR_TEAM_DEATH
+DR_WIN_STALEMATE = 3
 
-WINNER_BITS = DR.CalcMaxBits(WIN_STALEMATE)
+DR_WINNER_BITS = DR.CalcMaxBits(DR_WIN_STALEMATE)
 
 -- for the round timer
 -- have a shared ROUND_TIMER variable which continuously counts down each .2 second
 -- timer going every .2s updating ROUND_TIMER so we have a precision of 1/5th of a second ?????
 -- network each time the timer is set, but calculate the timer on server and client individually
-ROUND_TIMER = ROUND_TIMER or 0
+DR_ROUND_TIMER = DR_ROUND_TIMER or 0
 
 sound.Add({
 	["name"] = "Deathrun.RoundStart",
@@ -77,13 +77,13 @@ hook.Add("Think","ROUND_THINK",function()
 end)
 
 function ROUND.GetTimer()
-	return ROUND_TIMER or 0
+	return DR_ROUND_TIMER or 0
 end
 
 local TimerInterval = .2
 
 timer.Create("DeathrunRoundTimerCalculate",TimerInterval,0,function()
-	ROUND_TIMER = math.max(0,ROUND_TIMER - TimerInterval)
+	DR_ROUND_TIMER = math.max(0,DR_ROUND_TIMER - TimerInterval)
 end)
 
 DR.RoundsPlayed = DR.RoundsPlayed or 0
@@ -100,13 +100,13 @@ DR.DeathTimes = DeathTimes
 local function WaitingStateCheck()
 	if #DR.GetAllPlaying() < 2 then return end
 
-	ROUND.RoundSwitch(ROUND_PREP)
+	ROUND.RoundSwitch(DR_ROUND_PREP)
 
 	timer.Remove("DeathrunWaitingStateCheck")
 end
 
 ROUND.AddState(
-	ROUND_WAITING,
+	DR_ROUND_WAITING,
 	function()
 		print("Round State: WAITING")
 
@@ -117,7 +117,7 @@ ROUND.AddState(
 		for _,ply in ipairs(DR.GetAllPlaying()) do
 			ply:StripWeapons()
 			ply:RemoveAllAmmo()
-			ply:SetTeam(TEAM_RUNNER)
+			ply:SetTeam(DR_TEAM_RUNNER)
 			ply:Spawn()
 		end
 
@@ -130,7 +130,7 @@ ROUND.AddState(
 )
 
 ROUND.AddState(
-	ROUND_PREP,
+	DR_ROUND_PREP,
 	function()
 		print("Round State: PREP")
 
@@ -148,7 +148,7 @@ ROUND.AddState(
 		game.CleanUpMap()
 
 		timer.Simple(ConVars.PrepDuration:GetInt(),function()
-			ROUND.RoundSwitch(ROUND_ACTIVE)
+			ROUND.RoundSwitch(DR_ROUND_ACTIVE)
 		end)
 
 		ROUND.SetTimer(ConVars.PrepDuration:GetInt())
@@ -157,7 +157,7 @@ ROUND.AddState(
 			-- for some reason we need to do this otherwise people spawn as spec when they shouldnt!
 			if not ply:ShouldStaySpectating() then
 				ply:KillSilent()
-				ply:SetTeam(TEAM_RUNNER)
+				ply:SetTeam(DR_TEAM_RUNNER)
 			end
 
 			DeathTeamStreaks[ply] = DeathTeamStreaks[ply] or 0
@@ -264,12 +264,12 @@ ROUND.AddState(
 
 		-- Set our selected Deaths
 		for _,death in ipairs(deaths) do
-			death:SetTeam(TEAM_DEATH)
+			death:SetTeam(DR_TEAM_DEATH)
 		end
 
 		-- Set everyone left in the pool as Runners
 		for _,runner in ipairs(pool) do
-			runner:SetTeam(TEAM_RUNNER)
+			runner:SetTeam(DR_TEAM_RUNNER)
 		end
 
 		-- make sure nobody is dead??????
@@ -283,7 +283,7 @@ ROUND.AddState(
 			local deathTime = DeathTimes[ply] or 0
 			local deathTeamStreak = DeathTeamStreaks[ply] or 0
 
-			if ply:Team() == TEAM_DEATH then
+			if ply:Team() == DR_TEAM_DEATH then
 				deathTime = deathTime + 1
 				deathTeamStreak = deathTeamStreak + 1
 			else
@@ -326,7 +326,7 @@ local function AutoslayDelay()
 		net.Start("DeathrunSpectatorNotification")
 		net.Send(ply)
 
-		if ply:Team() == TEAM_DEATH then
+		if ply:Team() == DR_TEAM_DEATH then
 			DR.PunishDeathAvoid(ply,ConVars.DeathAvoidPunishment:GetInt())
 
 			DR.ChatBroadcast("Player " .. ply:Nick() .. " went AFK during a Death round! They will be punished.")
@@ -337,7 +337,7 @@ local function AutoslayDelay()
 end
 
 ROUND.AddState(
-	ROUND_ACTIVE,
+	DR_ROUND_ACTIVE,
 	function()
 		print("Round State: ACTIVE")
 
@@ -355,7 +355,7 @@ ROUND.AddState(
 		local playing = DR.GetAllPlaying()
 
 		if #playing < 2 then
-			ROUND.RoundSwitch(ROUND_WAITING)
+			ROUND.RoundSwitch(DR_ROUND_WAITING)
 
 			return
 		end
@@ -369,9 +369,9 @@ ROUND.AddState(
 			local targetTbl
 			local plyTeam = ply:Team()
 
-			if plyTeam == TEAM_RUNNER then
+			if plyTeam == DR_TEAM_RUNNER then
 				targetTbl = runners
-			elseif plyTeam == TEAM_DEATH then
+			elseif plyTeam == DR_TEAM_DEATH then
 				targetTbl = deaths
 			else continue end
 
@@ -383,11 +383,11 @@ ROUND.AddState(
 		local winTeam
 
 		if allGoneDeaths and allGoneRunners or ROUND.GetTimer() == 0 then
-			winTeam = WIN_STALEMATE
+			winTeam = DR_WIN_STALEMATE
 		elseif allGoneDeaths then
-			winTeam = WIN_RUNNERS
+			winTeam = DR_WIN_RUNNERS
 		elseif allGoneRunners then
-			winTeam = WIN_DEATHS
+			winTeam = DR_WIN_DEATHS
 		else return end
 
 		ROUND.FinishRound(winTeam)
@@ -398,11 +398,11 @@ ROUND.AddState(
 )
 
 local function RestartRound()
-	ROUND.RoundSwitch(ROUND_PREP)
+	ROUND.RoundSwitch(DR_ROUND_PREP)
 end
 
 ROUND.AddState(
-	ROUND_OVER,
+	DR_ROUND_OVER,
 	function()
 		print("Round State: OVER")
 

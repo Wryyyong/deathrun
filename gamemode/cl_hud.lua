@@ -207,17 +207,17 @@ concommand.Add("deathrun_testkillnote",function()
 end)
 
 local RoundNames = {
-	[ROUND_WAITING] = "Waiting for players",
-	[ROUND_PREP] = "Preparing",
-	[ROUND_ACTIVE] = "Time Left",
-	[ROUND_OVER] = "Round Over",
+	[DR_ROUND_WAITING] = "Waiting for players",
+	[DR_ROUND_PREP] = "Preparing",
+	[DR_ROUND_ACTIVE] = "Time Left",
+	[DR_ROUND_OVER] = "Round Over",
 }
 
 --- @class RoundEndData
 local RoundEndData = {
 	["Active"] = false,
 	["BeginTime"] = 0,
-	["winteam"] = WIN_STALEMATE,
+	["winteam"] = DR_WIN_STALEMATE,
 
 	--- @type Player[]
 	["mvps"] = {},
@@ -251,7 +251,7 @@ net.Receive("DeathrunSendMVPs",function()
 	if CvPlayRoundCues:GetBool() then
 		surface.PlaySound(
 			"Deathrun.RoundEnd." .. (
-				RoundEndData.winteam == WIN_STALEMATE
+				RoundEndData.winteam == DR_WIN_STALEMATE
 			and	"Stalemate"
 			or	"Normal"
 			)
@@ -411,7 +411,7 @@ function DR.DrawTargetID()
 	if
 		trace.Hit
 	and	ent:IsPlayer()
-	and	ent:Team() ~= TEAM_GHOST
+	and	ent:Team() ~= DR_TEAM_GHOST
 	then
 		DR.TargetIDAlpha = 255
 		DR.TargetIDPlayer = ent
@@ -471,7 +471,7 @@ function DR.DrawPlayerNames()
 	-- draw floating names if you're on the Death team and they are not a ghost
 	-- draw them for Runners as well, but not thru walls
 	local localPlyTeam = localPly:Team()
-	local localPlyRunner = localPlyTeam == TEAM_RUNNER
+	local localPlyRunner = localPlyTeam == DR_TEAM_RUNNER
 	local localPlyAlive = localPly:Alive()
 
 	local localPlyObsTarget = localPly:GetObserverTarget()
@@ -484,8 +484,8 @@ function DR.DrawPlayerNames()
 		local plyAlive = ply:Alive()
 		local plyActive =
 			plyAlive
-		and	plyTeam ~= TEAM_SPECTATOR
-		and	plyTeam ~= TEAM_GHOST
+		and	plyTeam ~= DR_TEAM_SPECTATOR
+		and	plyTeam ~= DR_TEAM_GHOST
 
 		if
 			ply == localPly
@@ -498,7 +498,7 @@ function DR.DrawPlayerNames()
 					)
 				or	(
 						not localPlyRunner
-					and	plyTeam ~= TEAM_GHOST
+					and	plyTeam ~= DR_TEAM_GHOST
 					or	not localPlyAlive
 					and	(
 							localPlyIsNotObsInEye
@@ -583,8 +583,8 @@ function DR.DrawPlayerHUD(x,y,alpha)
 	local shouldDrawTime =
 		isLocalPly
 	and	CvHudTheme:GetInt() == HUDTHEME_DEFAULTTIMER
-	and	ROUND.GetCurrent() == ROUND_ACTIVE
-	and	ply:Team() == TEAM_RUNNER
+	and	ROUND.GetCurrent() == DR_ROUND_ACTIVE
+	and	ply:Team() == DR_TEAM_RUNNER
 
 	local teamColor = team.GetColor(ply:Team())
 	local teamColorOrig = teamColor:Copy()
@@ -1647,7 +1647,7 @@ function GM:HUDPaint()
 			RoundEndData.mvps,
 			scrW_Half - WinnerOffset,
 			24,
-			RoundEndData.winteam == WIN_STALEMATE
+			RoundEndData.winteam == DR_WIN_STALEMATE
 		)
 
 		print(curTime,RoundEndData.BeginTime + CvFinishDuration:GetInt())

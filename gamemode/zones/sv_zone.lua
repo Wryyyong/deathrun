@@ -241,12 +241,12 @@ local function denyZone(ply,name,z)
 end
 
 hook.Add("DeathrunPlayerInsideZone","DeathrunPlayerDenyZones",function(ply,name,z)
-	if z.type == "deny_team_runner" and ply:Team() == TEAM_RUNNER then
+	if z.type == "deny_team_runner" and ply:Team() == DR_TEAM_RUNNER then
 		denyZone(ply,name,z)
 		return
 	end
 
-	if z.type == "deny_team_death" and ply:Team() == TEAM_DEATH then
+	if z.type == "deny_team_death" and ply:Team() == DR_TEAM_DEATH then
 		denyZone(ply,name,z)
 		return
 	end
@@ -269,7 +269,7 @@ hook.Add("DeathrunPlayerEnteredZone","DeathrunPlayerFinishMap",function(ply,name
 		ply.DenyEntryList[name] = ply:GetPos()
 	end
 
-	if ply:Team() ~= TEAM_RUNNER or ply:GetSpectate() or not ply:Alive() or ROUND.GetCurrent() == ROUND_WAITING then return end
+	if ply:Team() ~= DR_TEAM_RUNNER or ply:GetSpectate() or not ply:Alive() or ROUND.GetCurrent() == DR_ROUND_WAITING then return end
 	if z.type == "end" and ply.HasFinishedMap ~= true then
 		table.insert(finishorder,ply)
 		local place = #finishorder
@@ -293,7 +293,7 @@ hook.Add("DeathrunPlayerEnteredZone","DeathrunPlayerFinishMap",function(ply,name
 		DR.ChatBroadcast(ply:Nick() .. " has finished the map in " .. placetext .. " place with a time of " .. string.ToMinutesSecondsMilliseconds(finishtime) .. "!")
 		ply.HasFinishedMap = true
 		if place == 1 then
-			for k,v in ipairs(team.GetPlayers(TEAM_DEATH)) do
+			for k,v in ipairs(team.GetPlayers(DR_TEAM_DEATH)) do
 				v:SetRunSpeed(v:GetWalkSpeed()) -- deaths lose sprint when the runner finishes
 			end
 		end

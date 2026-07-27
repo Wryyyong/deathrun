@@ -5,9 +5,9 @@ end)
 
 function PLAYER:BeginSpectate()
 	--print(self:Nick(),"deathteam",self:Team(), TEAM_DEATH, "voluntary:", self.VoluntarySpec)
-	local avoided = (self:Team() == TEAM_DEATH and self.VoluntarySpec == true) and true or false
+	local avoided = (self:Team() == DR_TEAM_DEATH and self.VoluntarySpec == true) and true or false
 	print("Checking death avoid...",self:Nick(),avoided)
-	if avoided == true and (ROUND.GetCurrent() == ROUND_PREP or ROUND.GetCurrent() == ROUND_ACTIVE) and #DR.GetAllPlaying() > 1 then
+	if avoided == true and (ROUND.GetCurrent() == DR_ROUND_PREP or ROUND.GetCurrent() == DR_ROUND_ACTIVE) and #DR.GetAllPlaying() > 1 then
 		print("Punish death avoider..")
 		DR.PunishDeathAvoid(self,DR.DeathAvoidPunishment:GetInt())
 		DR.ChatBroadcast("Player " .. self:Nick() .. " will be punished for attempting to avoid being on the Death team!")
@@ -40,7 +40,7 @@ function PLAYER:SetShouldStaySpectating(bool,noswitch) -- set whether they shoul
 	print(bool == true and self:Nick() .. " will stay as spectator." or self:Nick() .. " will not stay as spectator.")
 	self.StaySpectating = bool
 	--print( self.StaySpectating )
-	if bool == true and noswitch ~= true then self:SetTeam(TEAM_SPECTATOR) end
+	if bool == true and noswitch ~= true then self:SetTeam(DR_TEAM_SPECTATOR) end
 end
 
 function PLAYER:ShouldStaySpectating() -- check if he should respawn
@@ -152,15 +152,15 @@ end)
 concommand.Add("deathrun_set_spectate",function(self,cmd,args)
 	if tonumber(args[1]) == 1 then
 		self:KillSilent()
-		self:SetShouldStaySpectating(true,self:Team() == TEAM_DEATH and true or false)
+		self:SetShouldStaySpectating(true,self:Team() == DR_TEAM_DEATH and true or false)
 		self.VoluntarySpec = true
 		self:BeginSpectate()
 	else
 		self:SetShouldStaySpectating(false)
 		self:EndSpectate()
-		if ROUND.GetCurrent() == ROUND_WAITING then
+		if ROUND.GetCurrent() == DR_ROUND_WAITING then
 			self:KillSilent()
-			self:SetTeam(TEAM_RUNNER)
+			self:SetTeam(DR_TEAM_RUNNER)
 			self:Spawn()
 		end
 	end
@@ -189,6 +189,6 @@ end
 
 timer.Create("MoveSpectatorsToCorrectTeam",5,0,function()
 	for k,ply in ipairs(player.GetAll()) do
-		if ply:Team() ~= TEAM_SPECTATOR then if ply:ShouldStaySpectating() == true then ply:SetTeam(TEAM_SPECTATOR) end end
+		if ply:Team() ~= DR_TEAM_SPECTATOR then if ply:ShouldStaySpectating() == true then ply:SetTeam(DR_TEAM_SPECTATOR) end end
 	end
 end)

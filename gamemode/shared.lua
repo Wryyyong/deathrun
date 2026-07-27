@@ -84,22 +84,23 @@ function DR.CalcMaxBits(max,min,signed)
 	+	(signed and 1 or 0)
 end
 
-TEAM_RUNNER = 1
-TEAM_DEATH = 2
-TEAM_GHOST = 3
+DR_TEAM_RUNNER = 1
+DR_TEAM_DEATH = 2
+DR_TEAM_GHOST = 3
+DR_TEAM_SPECTATOR = TEAM_SPECTATOR
 
-TEAM_BITS = DR.CalcMaxBits(TEAM_SPECTATOR)
+DR_TEAM_BITS = DR.CalcMaxBits(DR_TEAM_SPECTATOR)
 
 function GM:CreateTeams()
-	team.SetUp(TEAM_RUNNER,"Runners",Colors.RunnerTeam,false)
-	team.SetUp(TEAM_DEATH,"Deaths",Colors.DeathTeam,false)
-	team.SetUp(TEAM_GHOST,"Ghosts",Colors.GhostTeam,false)
+	team.SetUp(DR_TEAM_RUNNER,"Runners",Colors.RunnerTeam,false)
+	team.SetUp(DR_TEAM_DEATH,"Deaths",Colors.DeathTeam,false)
+	team.SetUp(DR_TEAM_GHOST,"Ghosts",Colors.GhostTeam,false)
 
-	team.SetSpawnPoint(TEAM_RUNNER,"info_player_counterterrorist")
-	team.SetSpawnPoint(TEAM_DEATH,"info_player_terrorist")
-	team.SetSpawnPoint(TEAM_GHOST,"info_player_counterterrorist")
+	team.SetSpawnPoint(DR_TEAM_RUNNER,"info_player_counterterrorist")
+	team.SetSpawnPoint(DR_TEAM_DEATH,"info_player_terrorist")
+	team.SetSpawnPoint(DR_TEAM_GHOST,"info_player_counterterrorist")
 
-	team.SetColor(TEAM_SPECTATOR,Colors.Silver)
+	team.SetColor(DR_TEAM_SPECTATOR,Colors.Silver)
 end
 
 function DR.GetAllPlaying()
@@ -126,7 +127,7 @@ hook.Add("SetupMove","DeathrunDisableSpectatorSpacebar",function(ply,data,cmd)
 	if
 		not (
 			ply:Alive()
-		and	ROUND.GetCurrent() == ROUND_PREP
+		and	ROUND.GetCurrent() == DR_ROUND_PREP
 		)
 	then return end
 
@@ -134,7 +135,7 @@ hook.Add("SetupMove","DeathrunDisableSpectatorSpacebar",function(ply,data,cmd)
 
 	if
 		block
-	and	ply:Team() == TEAM_RUNNER -- block movement for runners
+	and	ply:Team() == DR_TEAM_RUNNER -- block movement for runners
 	then
 		data:SetSideSpeed(0)
 		data:SetUpSpeed(0)

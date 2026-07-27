@@ -55,7 +55,7 @@ end
 
 --- @param seconds number
 function ROUND.SetTimer(seconds)
-	ROUND_TIMER = seconds
+	DR_ROUND_TIMER = seconds
 
 	ROUND.SyncTimer()
 end
@@ -77,11 +77,11 @@ hook.Add("PlayerDisconnected","DeathrunWatchDeathAvoid",function(ply)
 	if
 		not (
 			(
-				roundState == ROUND_PREP
-			or	roundState == ROUND_ACTIVE
+				roundState == DR_ROUND_PREP
+			or	roundState == DR_ROUND_ACTIVE
 			)
 		and	ply:Alive()
-		and	ply:Team() == TEAM_DEATH
+		and	ply:Team() == DR_TEAM_DEATH
 		and	#DR.GetAllPlaying() > 2
 		)
 	then return end
@@ -109,12 +109,12 @@ end)
 function ROUND.FinishRound(winningTeam)
 	print(winningTeam)
 
-	ROUND.RoundSwitch(ROUND_OVER)
+	ROUND.RoundSwitch(DR_ROUND_OVER)
 
 	DR.ChatBroadcast(
 		"Round over! " .. (
-			winningTeam == WIN_RUNNERS and team.GetName(TEAM_RUNNER) .. " win!"
-		or	winningTeam == WIN_DEATHS and team.GetName(TEAM_DEATH) .. " win!"
+			winningTeam == DR_WIN_RUNNERS and team.GetName(DR_TEAM_RUNNER) .. " win!"
+		or	winningTeam == DR_WIN_DEATHS and team.GetName(DR_TEAM_DEATH) .. " win!"
 		or	"Stalemate! Unbelievable!"
 		)
 	)
@@ -141,7 +141,7 @@ function ROUND.FinishRound(winningTeam)
 		mostKillsMvp = ply
 	end
 
-	if mostKillsMvp and winningTeam == TEAM_RUNNER then
+	if mostKillsMvp and winningTeam == DR_TEAM_RUNNER then
 		mvpList[#mvpList + 1] = mostKillsMvp:Nick() .. " got " .. mostKills .. " kill" .. (mostKills > 1 and "s" or "") .. "!"
 	end
 
@@ -155,8 +155,8 @@ function ROUND.FinishRound(winningTeam)
 	hook.Run("DeathrunRoundWin",winningTeam)
 
 	-- compatibility
-	hook.Run("OnRoundSet",ROUND_OVER,winningTeam ~= WIN_STALEMATE and winningTeam or -1)
+	hook.Run("OnRoundSet",DR_ROUND_OVER,winningTeam ~= DR_WIN_STALEMATE and winningTeam or -1)
 end
 
 -- initial round
-hook.Add("InitPostEntity","DeathrunInitialRoundState",function() ROUND.RoundSwitch(ROUND_WAITING) end)
+hook.Add("InitPostEntity","DeathrunInitialRoundState",function() ROUND.RoundSwitch(DR_ROUND_WAITING) end)

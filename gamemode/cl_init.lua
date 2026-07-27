@@ -65,7 +65,7 @@ local function ThirdpersonCheck(ply)
 	return
 		CvThirdPerson_Enabled:GetBool()
 	and	ply:Alive()
-	and	ply:Team() ~= TEAM_SPECTATOR
+	and	ply:Team() ~= DR_TEAM_SPECTATOR
 end
 
 local PosEndOffset = Vector(0,0,9)
@@ -191,7 +191,7 @@ function GM:PreDrawPlayerHands(_,_,ply)
 end
 
 function GM:PlayerFootstep(ply)
-	return ply:Team() == TEAM_GHOST
+	return ply:Team() == DR_TEAM_GHOST
 end
 
 cvars.AddChangeCallback("deathrun_autojump",function(_,_,new)
