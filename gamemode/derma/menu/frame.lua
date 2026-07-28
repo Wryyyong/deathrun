@@ -7,7 +7,7 @@ local MotD = ConVars.MotD
 local CvMotDTitle = MotD.Title
 local CvMotDUrl = MotD.URL
 
---- @class DR_MenuFrame : DR_Window
+--- @class DR_MenuFrame : DR_Frame
 local DR_MenuFrame = {
 	["Width"] = 640,
 	["Height"] = 640,
@@ -15,8 +15,8 @@ local DR_MenuFrame = {
 
 -- fucking WHY does this shit not inherit normally
 function DR_MenuFrame:Init()
-	self.InnerWindow:Remove()
-	self.InnerWindow = nil
+	self.Inner:Remove()
+	self.Inner = nil
 
 	self:RefreshSettings()
 
@@ -27,11 +27,6 @@ function DR_MenuFrame:RefreshSettings()
 	self:SetSize(self.Width,self.Height)
 	self:Center()
 end
-
---- @class DR_CrosshairCreatorFrame : DR_MenuFrame
-local DR_CrosshairCreatorFrame = {
-	["Title"] = "Crosshair Creator",
-}
 
 --- @class DR_SettingsFrame : DR_MenuFrame
 local DR_SettingsFrame = {
@@ -90,21 +85,8 @@ function DR_QuickInfoFrame:OnClose()
 	DR.OpenWaitingMenu()
 end
 
---- @class DR_ZoneEditorFrame : DR_MenuFrame
-local DR_ZoneEditorFrame = {
-	["Title"] = "Zone Editor",
-	["Width"] = 480,
-	["Height"] = 480,
-}
+derma.DefineControl("DR_MenuFrame","",DR_MenuFrame,"DR_Frame")
 
-function DR_ZoneEditorFrame:Init()
-	self:RefreshSettings()
-end
-
-derma.DefineControl("DR_MenuFrame","",DR_MenuFrame,"DR_Window")
-
-derma.DefineControl("DR_CrosshairCreatorFrame","",DR_CrosshairCreatorFrame,"DR_MenuFrame")
 derma.DefineControl("DR_SettingsFrame","",DR_SettingsFrame,"DR_MenuFrame")
 derma.DefineControl("DR_HelpFrame","",DR_HelpFrame,"DR_MenuFrame")
 derma.DefineControl("DR_QuickInfoFrame","",DR_QuickInfoFrame,"DR_MenuFrame")
-derma.DefineControl("DR_ZoneEditorFrame","",DR_ZoneEditorFrame,"DR_MenuFrame")

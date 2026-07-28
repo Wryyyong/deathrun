@@ -1,7 +1,7 @@
 local DermaColors = DR.Colors.Derma
 
 --- @class DR_CloseButton : DR_Button
---- @field Parent DR_Window
+--- @field Parent DR_Frame
 local DR_CloseButton = {}
 
 function DR_CloseButton:DoClick()

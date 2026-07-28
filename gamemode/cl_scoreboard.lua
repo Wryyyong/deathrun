@@ -10,13 +10,15 @@ local DR = DR
 --- @type DeathrunScoreboardSpecial
 local Special_Default = {}
 local Special_Meta = {
-	["__index"] = function()
-		return Special_Default
-	end,
+	["__index"] = Special_Default,
 }
 
 --- @type table<string,DeathrunScoreboardSpecial>
-local ScoreboardSpecials = DR.ScoreboardSpecials or setmetatable({},Special_Meta)
+local ScoreboardSpecials = DR.ScoreboardSpecials or setmetatable({},{
+	["__index"] = function()
+		return Special_Default
+	end,
+})
 DR.ScoreboardSpecials = ScoreboardSpecials
 
 local ScoreboardPanel = DR.ScoreboardPanel

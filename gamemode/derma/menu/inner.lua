@@ -1,4 +1,4 @@
---- @class DR_MenuInner : DR_InnerWindow
+--- @class DR_MenuInner : DR_Inner
 --- @field Controls DR_MenuControls
 local DR_MenuInner = {}
 
@@ -16,4 +16,4 @@ function DR_MenuInner:RefreshSettings()
 	self:SetPos(4,32)
 end
 
-derma.DefineControl("DR_MenuInner","",DR_MenuInner,"DR_InnerWindow")
+derma.DefineControl("DR_MenuInner","",DR_MenuInner,"DR_Inner")

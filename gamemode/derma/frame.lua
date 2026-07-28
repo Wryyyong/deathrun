@@ -2,14 +2,14 @@ local Colors = DR.Colors
 local ColorClouds = Colors.Clouds
 local ColorTurq = Colors.Turq
 
-local DermaColors = DR.Colors.Derma
+local DermaColors = Colors.Derma
 
 local MatBlur = Material("pp/blurscreen")
 
---- @class DR_Window : DFrame
+--- @class DR_Frame : DFrame
 --- @field CloseButton DR_CloseButton
---- @field InnerWindow DR_InnerWindow
-local DR_Window = {
+--- @field Inner DR_Inner
+local DR_Frame = {
 	["Title"] = "Deathrun Window",
 	["Width"] = 384,
 	["Height"] = 548, -- 512 + 28 + 8
@@ -20,7 +20,7 @@ local DR_Window = {
 	["OnClose"] = DR.EmptyFunction,
 }
 
-function DR_Window:Init()
+function DR_Frame:Init()
 	self:SetSize(self.Width,self.Height)
 	self:Center()
 	self:ShowCloseButton(false)
@@ -31,7 +31,7 @@ function DR_Window:Init()
 	self:SetupInnerWindow()
 end
 
-function DR_Window:SetupCloseButton()
+function DR_Frame:SetupCloseButton()
 	local closeButton = self.CloseButton
 
 	if closeButton then
@@ -42,18 +42,18 @@ function DR_Window:SetupCloseButton()
 	self.CloseButton = self:Add("DR_CloseButton")
 end
 
-function DR_Window:SetupInnerWindow()
-	local innerWindow = self.InnerWindow
+function DR_Frame:SetupInnerWindow()
+	local innerWindow = self.Inner
 
 	if innerWindow then
 		innerWindow:Remove()
-		self.InnerWindow = nil
+		self.Inner = nil
 	end
 
-	self.InnerWindow = self:Add("DR_InnerWindow")
+	self.Inner = self:Add("DR_Inner")
 end
 
-function DR_Window:PerformLayout()
+function DR_Frame:PerformLayout()
 	local width,height = self:GetSize()
 
 	local closeButton = self.CloseButton
@@ -68,7 +68,7 @@ function DR_Window:PerformLayout()
 		)
 	end
 
-	local innerWindow = self.InnerWindow
+	local innerWindow = self.Inner
 	if IsValid(innerWindow) then
 		innerWindow:SetSize(
 			width,
@@ -81,7 +81,7 @@ function DR_Window:PerformLayout()
 	end
 end
 
-function DR_Window:Paint(width,height)
+function DR_Frame:Paint(width,height)
 	local colFg = self:GetPrimaryColor()
 	local wide,tall = self:GetSize()
 	local heightInner = height - 8
@@ -135,7 +135,7 @@ function DR_Window:Paint(width,height)
 end
 
 --- @param amount number?
-function DR_Window:DrawPanelBlur(amount)
+function DR_Frame:DrawPanelBlur(amount)
 	local width = ScrW()
 	local height = ScrH()
 	local x,y = self:LocalToScreen(0,0)
@@ -156,24 +156,24 @@ function DR_Window:DrawPanelBlur(amount)
 	end
 end
 
-function DR_Window:SetPrimaryColor(color)
+function DR_Frame:SetPrimaryColor(color)
 	self.FgColor = color:Copy()
 end
 
-function DR_Window:SetSecondaryColor(color)
+function DR_Frame:SetSecondaryColor(color)
 	self.BgColor = color:Copy()
 end
 
-function DR_Window:GetPrimaryColor()
+function DR_Frame:GetPrimaryColor()
 	return self.FgColor
 end
 
-function DR_Window:GetSecondaryColor()
+function DR_Frame:GetSecondaryColor()
 	return self.BgColor
 end
 
-function DR_Window:SetTitle(str)
+function DR_Frame:SetTitle(str)
 	self.Title = str:upper()
 end
 
-derma.DefineControl("DR_Window","",DR_Window,"DFrame")
+derma.DefineControl("DR_Frame","",DR_Frame,"DFrame")

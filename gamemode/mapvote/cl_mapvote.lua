@@ -54,7 +54,7 @@ function MV:NewDermaRow(tbl_cols,w,h,customColor,customColor2,doclick)
 end
 
 function MV:OpenFullMapList(maps)
-	local frame = vgui.Create("DR_Window")
+	local frame = vgui.Create("DR_Frame")
 	frame:SetSize(480,math.min(ScrH() - 64,480 * 1.618 - 44)) -- GOLDEN RATIO FIBONACCI SPIRAL OMG
 	frame:Center()
 	frame:MakePopup()
@@ -150,7 +150,7 @@ MV.Active = false
 MV.VotingMapList = {}
 -- actual voting menu place
 function MV:OpenVotingPanel()
-	local frame = vgui.Create("DR_Window")
+	local frame = vgui.Create("DR_Frame")
 	frame:SetSize(230 * 1.618 + 4,MV.MaxMaps * 24 + (MV.MaxMaps - 1) * 4 + 44) -- GOLDEN RATIO FIBONACCI SPIRAL OMG
 	frame:SetPos(4,0)
 	frame:CenterVertical()

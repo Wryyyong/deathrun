@@ -86,7 +86,7 @@ function DR.AddSetting(tbl)
 	Settings[#Settings + 1] = tbl
 end
 
-function DR.OpenSettings()
+concommand.Add("deathrun_open_settings",function()
 	local frame = vgui.Create("DR_SettingsFrame")
 	local inner = frame:Add("DR_MenuInner")
 	frame.InnerWindow = inner
@@ -96,9 +96,7 @@ function DR.OpenSettings()
 	local list = scroll:Add("DR_MenuList")
 
 	SetupMenuList(list,Settings)
-end
-
-concommand.Add("deathrun_open_settings",DR.OpenSettings)
+end)
 
 local SettingsCrosshair = {
 	{SETTINGTYPE_TOP,"Crosshair Options"},
@@ -112,7 +110,7 @@ local SettingsCrosshair = {
 	{SETTINGTYPE_NUMBER,"Inner Gap",Crosshair.Gap,8},
 }
 
-function DR.OpenCrosshairCreator()
+concommand.Add("deathrun_open_crosshair_creator",function()
 	local frame = vgui.Create("DR_CrosshairCreatorFrame")
 	local inner = frame:Add("DR_MenuInner")
 	frame.InnerWindow = inner
@@ -123,153 +121,65 @@ function DR.OpenCrosshairCreator()
 	local list = scroll:Add("DR_MenuList")
 
 	SetupMenuList(list,SettingsCrosshair)
-end
+end)
 
-concommand.Add("deathrun_open_crosshair_creator",DR.OpenCrosshairCreator)
-
-function DR.OpenHelp()
+concommand.Add("deathrun_open_help",function()
 	vgui.Create("DR_HelpFrame")
-end
+end)
 
-concommand.Add("deathrun_open_help",DR.OpenHelp)
+concommand.Add("deathrun_open_zone_editor",function(ply,cmd)
+	if not DR.CanAccessCommand(ply,cmd) then return end
 
-function DR.OpenZoneEditor()
 	local frame = vgui.Create("DR_ZoneEditorFrame")
 	local inner = frame:Add("DR_MenuInner")
 	frame.InnerWindow = inner
 
 	local scroll = inner:Add("DR_MenuScrollPanel")
-	local list = scroll:Add("DR_MenuList_ZoneEditor")
+	local list = scroll:Add("DR_ZoneEditorList")
 
 	list:AddHeader("Create Zone",true)
 
-	local _,zoneName = list:AddTextEntry("Zone Name:","New Zone")
-	local _,zoneType = list:AddComboBox("Zone Type:",ZONE.ZoneTypes,"start")
+	local zoneNameEntry = list:AddZoneNameEntry()
+	local zoneTypeCombo = list:AddComboBox("Zone Type:",ZONE.ZoneTypes,"start")
 
-	local sbmt = vgui.Create("DR_Button")
-	sbmt:SetSize(list:GetWide(),18)
-	sbmt:SetText("Create Zone")
-	sbmt:SetFont("Deathrun_Derma_ExtraSmall")
-	sbmt:SetOffsets()
-	list:Add(sbmt)
-	sbmt.te = zoneName
-	zoneName.sbmt = sbmt
-	sbmt.dd = zoneType
-	function zoneName:OnTextChanged()
-		self.sbmt:SetText("Create Zone '" .. self:GetText() .. "'")
-	end
+	local buttonCreate = list:Add("DR_ZoneEditorButtonCreate")
 
-	function sbmt:DoClick()
-		LocalPlayer():ConCommand("zone_create " .. self.te:GetText() .. " " .. self.dd:GetValue() .. " ")
-		print("zone_create",self.te:GetText() .. " " .. self.dd:GetValue())
-	end
+	buttonCreate.ZoneName = zoneNameEntry
+	buttonCreate.ZoneType = zoneTypeCombo
+
+	zoneNameEntry.CreateButton = buttonCreate
 
 	-- edit zones
-	local lbl = vgui.Create("DLabel")
-	lbl:SetFont("Deathrun_Derma_Small")
-	lbl:SetTextColor(DR.Colors.Turq)
-	lbl:SetText("Modify Zone")
-	lbl:SizeToContents()
-	lbl:SetWide(list:GetWide())
-	list:Add(lbl)
-	local dd = vgui.Create("DComboBox")
-	dd:SetSize(list:GetWide(),18)
-	dd:SetValue(LocalPlayer().LastSelectZone or "Select Zone")
-	for name,z in pairs(ZONE.MapZones) do
-		if z.type then dd:AddChoice(name) end
-	end
+	list:AddHeader("Modify Zone")
 
-	function dd:OnSelect(index,value)
-		LocalPlayer().LastSelectZone = value
-	end
+	local zoneEditCombo = list:Add("DR_ZoneEditComboBox")
 
-	list:Add(dd)
-	local pnl = vgui.Create("DPanel")
-	pnl:SetSize(list:GetWide(),85)
-	list:Add(pnl)
-	pnl.dd = dd
-	function pnl:Paint(w,h)
-		local zone = ZONE.MapZones[self.dd:GetValue()] or nil
-		if zone ~= nil then
-			if zone.type then
-				local col = zone.color
-				local info = {"Zone Name: " .. self.dd:GetValue(),"Zone Type: " .. zone.type,"Pos1: " .. tostring(zone.pos1),"Pos2: " .. tostring(zone.pos2),"Color:" .. " " .. tostring(col.r) .. " " .. tostring(col.g) .. " " .. tostring(col.b) .. " " .. tostring(col.a)}
-				for i = 1,#info do
-					local k = i - 1
-					draw.SimpleText(info[i],"Deathrun_Derma_ExtraSmall",0,14 * k,DR.Colors.Grey)
-				end
-			end
-		end
-	end
+	local zoneDataText = list:Add("DR_ZoneData")
 
-	-- ripped from wiki lmao
-	local Mixer = vgui.Create("DColorMixer")
-	Mixer:SetSize(list:GetWide(),196)
-	Mixer:SetPalette(true) -- Show/hide the palette			DEF:true
-	Mixer:SetAlphaBar(true) -- Show/hide the alpha bar		DEF:true
-	Mixer:SetWangs(true) -- Show/hide the R G B A indicators 	DEF:true
-	Mixer:SetColor(Color(255,255,255)) -- Set the default color
-	Mixer.dd = dd
-	list:Add(Mixer)
-	local but = vgui.Create("DR_Button")
-	but:SetSize(list:GetWide(),18)
-	but:SetText("Set zone color")
-	but:SetFont("Deathrun_Derma_ExtraSmall")
-	but:SetOffsets()
-	but.dd = dd
-	but.mixer = Mixer
-	list:Add(but)
-	function but:DoClick()
-		local col = self.mixer:GetColor()
-		LocalPlayer():ConCommand("zone_setcolor " .. self.dd:GetValue() .. " " .. tostring(col.r) .. " " .. tostring(col.g) .. " " .. tostring(col.b) .. " " .. tostring(col.a))
-	end
+	zoneDataText.ZoneEdit = zoneEditCombo
+	zoneEditCombo.ZoneData = zoneDataText
 
-	local but = vgui.Create("DR_Button")
-	but:SetSize(list:GetWide(),18)
-	but:SetText("Set Pos1 to eyetrace")
-	but:SetFont("Deathrun_Derma_ExtraSmall")
-	but:SetOffsets()
-	but.dd = dd
-	list:Add(but)
-	function but:DoClick()
-		LocalPlayer():ConCommand("zone_setpos " .. self.dd:GetValue() .. " 1")
-	end
+	local colorMixer = list:Add("DR_ZoneEditorColorMixer")
 
-	local but = vgui.Create("DR_Button")
-	but:SetSize(list:GetWide(),18)
-	but:SetText("Set Pos2 to eyetrace")
-	but:SetFont("Deathrun_Derma_ExtraSmall")
-	but:SetOffsets()
-	but.dd = dd
-	list:Add(but)
-	function but:DoClick()
-		LocalPlayer():ConCommand("zone_setpos " .. self.dd:GetValue() .. " 2")
-	end
+	local buttonSetColor = list:Add("DR_ZoneEditorButtonSetColor")
+	local buttonSetPos1 = list:Add("DR_ZoneEditorButtonSetPos1")
+	local buttonSetPos2 = list:Add("DR_ZoneEditorButtonSetPos2")
+	local buttonRemove = list:Add("DR_ZoneEditorButtonRemove")
 
-	local but = vgui.Create("DR_Button")
-	but:SetSize(list:GetWide(),18)
-	but:SetText("Remove this zone")
-	but:SetFont("Deathrun_Derma_ExtraSmall")
-	but:SetOffsets()
-	but.dd = dd
-	list:Add(but)
-	function but:DoClick()
-		LocalPlayer():ConCommand("zone_remove " .. self.dd:GetValue())
-	end
-end
-
-concommand.Add("deathrun_open_zone_editor",function(ply,cmd)
-	if not DR.CanAccessCommand(ply,cmd) then return end
-
-	DR.OpenZoneEditor()
+	colorMixer.ZoneEdit = zoneEditCombo
+	buttonSetColor.ZoneEdit = zoneEditCombo
+	buttonSetColor.Mixer = colorMixer
+	buttonSetPos1.ZoneEdit = zoneEditCombo
+	buttonSetPos2.ZoneEdit = zoneEditCombo
+	buttonRemove.ZoneEdit = zoneEditCombo
 end)
 
-function DR.OpenQuickInfo()
+local function OpenQuickInfo()
 	vgui.Create("DR_QuickInfoFrame")
 end
 
-concommand.Add("deathrun_open_quickinfo",DR.OpenQuickInfo)
-concommand.Add("deathrun_open_motd",DR.OpenQuickInfo)
+concommand.Add("deathrun_open_quickinfo",OpenQuickInfo)
+concommand.Add("deathrun_open_motd",OpenQuickInfo)
 
 hook.Add("InitPostEntity","DeathrunOpenQuickInfo",function()
 	if
@@ -279,7 +189,7 @@ hook.Add("InitPostEntity","DeathrunOpenQuickInfo",function()
 		)
 	then return end
 
-	DR.OpenQuickInfo()
+	OpenQuickInfo()
 end)
 
 function DR.GetWordWrapText(text,width,font)
@@ -311,75 +221,27 @@ end
 
 -- waiting menu
 function DR.OpenWaitingMenu()
-	local frame = vgui.Create("DR_Window")
-	frame:SetSize(600,270)
-	frame:Center()
-	frame:MakePopup()
-	frame:SetTitle("Waiting For Players")
-	local panel = vgui.Create("panel",frame)
-	panel:SetSize(frame:GetWide() - 8,frame:GetTall() - 44)
-	panel:SetPos(4,32)
-	function panel:Paint(w,h)
-		local x,y = 0,0
-		surface.SetDrawColor(DR.Colors.Clouds)
-		surface.DrawRect(x,y,w,h)
-		local ix,iy,iw,ih = x + 8,y + 8,w - 16,h - 16
-		local info = [[Welcome to the server! Currently there are no players online.
-		This means that you can explore the map at your own pace
-		from the safety of godmode, so you can practice
-		your Bhop and check for auto-traps with ease.\n\n
-		Some useful commands:\n
-		\t\b !respawn - Respawn yourself.\n
-		\t\b !cleanup - Reset all traps on the map.\n
-		\t\b !help - View the help menu.\n\n
-		Enjoy, and have fun!]]
-		info = DR.GetWordWrapText(info,iw,"Deathrun_DefaultHUD_MediumLight")
-		DR.ShadowText(info,"Deathrun_DefaultHUD_MediumLight",ix,iy,DR.Colors.Grey,nil,nil,0)
-	end
+	local frame = vgui.Create("DR_WaitingMenuFrame")
+
+	frame:Add("DR_WaitingMenuInner")
 end
 
 concommand.Add("deathrun_open_waitingmenu",DR.OpenWaitingMenu)
-function DR.OpenForcedSpectatorMenu(msg)
-	local frame = vgui.Create("DR_Window")
-	frame:SetSize(640,200)
-	frame:Center()
-	frame:SetTitle("Moved to Spectator")
-	frame:MakePopup()
-	local panel = vgui.Create("Panel",frame)
-	panel:SetSize(frame:GetWide() - 8,frame:GetTall() - 44)
-	panel:SetPos(4,32)
-	function panel:Paint(w,h)
-		local x,y = 0,0
-		surface.SetDrawColor(DR.Colors.Clouds)
-		surface.DrawRect(x,y,w,h)
-		local ix,iy,iw,ih = x + 8,y + 8,w - 16,h - 16
-		local info = [[You have been moved to the Spectator team for being AFK.
-		To move back, either click on one of the buttons below or visit the
-		Spectator section of the F2 menu.
-		\n\nWould you like to move back into to the game?]]
-		if msg then info = msg end
 
-		info = DR.GetWordWrapText(info,iw,"Deathrun_DefaultHUD_MediumLight")
-		DR.ShadowText(info,"Deathrun_DefaultHUD_MediumLight",ix,iy,DR.Colors.Grey,nil,nil,0)
-	end
+--- @param returning boolean?
+function DR.OpenMovedToSpectatorMenu(returning)
+	local frame = vgui.Create("DR_MovedToSpectatorFrame")
 
-	local cont = vgui.Create("DR_Button",panel)
-	cont:SetSize((panel:GetWide() - 3 * 4) * .5,32)
-	cont:SetPos(4,panel:GetTall() - 32 - 4)
-	cont:SetText("No, I'm okay with this.")
-	function cont:DoClick()
-		self:GetParent():GetParent():Close()
-	end
+	local inner = frame:Add("DR_MovedToSpectatorInner" .. (returning and "Returning" or "AFK"))
 
-	local back = vgui.Create("DR_Button",panel)
-	back:SetSize((panel:GetWide() - 3 * 4) * .5,32)
-	back:SetPos(8 + (panel:GetWide() - 3 * 4) * .5,panel:GetTall() - 32 - 4)
-	back:SetText("Yes, please move me back.")
-	function back:DoClick()
-		LocalPlayer():ConCommand("deathrun_spectate_only 0")
-		self:GetParent():GetParent():Close()
-	end
+	inner:Add("DR_MovedToSpectatorButtonContinue")
+	inner:Add("DR_MovedToSpectatorButtonBack")
 end
 
-concommand.Add("deathrun_open_forcespectatormenu",DR.OpenForcedSpectatorMenu)
-net.Receive("DeathrunSpectatorNotification",DR.OpenForcedSpectatorMenu)
+local function WrapperFunctionForSpecMenuToAppeaseMyLangServer()
+	DR.OpenMovedToSpectatorMenu()
+end
+
+concommand.Add("deathrun_open_forcespectatormenu",WrapperFunctionForSpecMenuToAppeaseMyLangServer)
+
+net.Receive("DeathrunSpectatorNotification",WrapperFunctionForSpecMenuToAppeaseMyLangServer)

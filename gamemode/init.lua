@@ -22,19 +22,26 @@ include("shared.lua")
 -- fonts
 AddCSLuaFile("cl_fonts.lua")
 
--- derma
-AddCSLuaFile("cl_derma.lua")
-
-for _,fileName in ipairs(file.Find("gamemodes/deathrun/gamemode/derma/dr_*.lua","GAME") or {}) do
-	AddCSLuaFile("derma/" .. fileName)
-end
-
 -- base
 AddCSLuaFile("cl_hud.lua")
 AddCSLuaFile("cl_menus.lua")
 
 -- scoreboard
 AddCSLuaFile("cl_scoreboard.lua")
+
+-- map votes
+AddCSLuaFile("mapvote/sh_mapvote.lua")
+AddCSLuaFile("mapvote/cl_mapvote.lua")
+
+include("mapvote/sh_mapvote.lua")
+include("mapvote/sv_mapvote.lua")
+
+-- derma
+AddCSLuaFile("cl_derma.lua")
+
+for _,fileName in ipairs(file.Find("gamemodes/deathrun/gamemode/derma/dr_*.lua","GAME") or {}) do
+	AddCSLuaFile("derma/" .. fileName)
+end
 
 -- commands
 include("sv_commands.lua")
@@ -52,13 +59,6 @@ AddCSLuaFile("zones/cl_zone.lua")
 
 include("zones/sh_zone.lua")
 include("zones/sv_zone.lua")
-
--- map votes
-AddCSLuaFile("mapvote/sh_mapvote.lua")
-AddCSLuaFile("mapvote/cl_mapvote.lua")
-
-include("mapvote/sh_mapvote.lua")
-include("mapvote/sv_mapvote.lua")
 
 -- player
 include("sv_player.lua")
@@ -548,13 +548,13 @@ hook.Add("PlayerCanPickupWeapon","StopWeaponAbuseAustraliaSaysNo",function(ply,w
 	local inventory = {}
 
 	for _,wepInv in ipairs(ply:GetWeapons()) do
-		local slot = wepInv.Slot
+		local slot = wepInv:GetSlot()
 		if slot == nil then continue end
 
 		inventory[slot] = true
 	end
 
-	return not inventory[wep.Slot]
+	return not inventory[wep:GetSlot()]
 end)
 
 -- Something to check how long it's been since the player last did something
@@ -581,7 +581,9 @@ end)
 
 -- return how long the player has been idle for
 function DR.CheckIdleTime(ply)
-	return 0 -- hotfix to prevent autokick after 22-02-2016 update
+	-- hotfix to prevent autokick after 22-02-2016 update
+	return 0
+
 	-- ply.LastActiveTime = ply.LastActiveTime or CurTime()
 	-- return CurTime() - ply.LastActiveTime
 end
@@ -599,7 +601,7 @@ timer.Create("CheckIdlePlayers",1,0,function()
 
 		if
 			idleTimer <= idlePly
-		or	ply:SteamID() == "BOT"
+		or	ply:IsBot()
 		or	ply:IsAdmin()
 		or	ply:GetObserverMode() ~= OBS_MODE_NONE
 		then continue end

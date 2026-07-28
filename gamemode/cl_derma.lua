@@ -113,7 +113,7 @@ for _,panelName in ipairs({
 	-- DPanel
 	"crosshaircreator/preview",
 	"customscrollpanel/main",
-	"innerwindow",
+	"inner",
 	"menu/controls",
 	"menu/spacer",
 	"multipanel/spacer",
@@ -121,9 +121,10 @@ for _,panelName in ipairs({
 	"scoreboard/item",
 	"scoreboard/main",
 	"scoreboard/player/icon",
+	"zoneeditor/data",
 
 	-- DFrame
-	"window",
+	"frame",
 
 	-- DLabel
 	"menu/item",
@@ -138,8 +139,12 @@ for _,panelName in ipairs({
 	-- DIconLayout
 	"list",
 
+	-- DComboBox
+	"zoneeditor/edit",
+
 	-- DColorMixer
 	"crosshaircreator/colormixer",
+	"zoneeditor/colormixer",
 
 	-- DScrollBarGrip
 	"customscrollpanel/grip",
@@ -153,24 +158,42 @@ for _,panelName in ipairs({
 	-- DNumSlider
 	"menu/numslider",
 
+	-- DTextEntry
+	"zoneeditor/name",
+
 	-- DR_Button
 	"closebutton",
+	"misc/movedtospec/button",
 	"multipanel/navbutton",
 	"multipanel/tabbutton",
+	"zoneeditor/buttons/_base",
 
-	-- DR_Window
+	-- DR_CustomScrollPanel
+	"menu/scrollpanel",
+	"scoreboard/scrollpanel",
+
+	-- DR_Frame
 	"menu/frame",
 
-	-- DR_InnerWindow
+	-- DR_Inner
 	"menu/inner",
 
 	-- DR_List
 	"menu/list",
 	"scoreboard/list",
 
-	-- DR_CustomScrollPanel
-	"menu/scrollpanel",
-	"scoreboard/scrollpanel",
+	-- DR_MenuFrame
+	"crosshaircreator/frame",
+	"misc/movedtospec/frame",
+	"misc/waitingmenu/frame",
+	"zoneeditor/frame",
+
+	-- DR_MenuInner
+	"misc/movedtospec/inner",
+	"misc/waitingmenu/inner",
+
+	-- DR_MenuList
+	"zoneeditor/list",
 
 	-- DR_ScoreboardItemBase
 	"scoreboard/player/data",
@@ -192,10 +215,16 @@ for _,panelName in ipairs({
 	"scoreboard/player/menuoptions/ulx_kick",
 	"scoreboard/player/menuoptions/ulx_mute",
 	"scoreboard/player/menuoptions/ulx_slay",
+
+	-- DR_ZoneEditorButtonBase
+	"zoneeditor/buttons/create",
+	"zoneeditor/buttons/remove",
+	"zoneeditor/buttons/setpos",
+	"zoneeditor/buttons/setcolor",
 }) do
 	include("derma/" .. panelName .. ".lua")
 end
 
 concommand.Add("deathrun_test_derma",function()
-	vgui.Create("DR_Window")
+	vgui.Create("DR_Frame")
 end)

@@ -3,16 +3,16 @@ include("convars/sh_convars.lua")
 include("convars/cl_convars.lua")
 include("shared.lua")
 include("cl_fonts.lua")
-include("cl_derma.lua")
+include("cl_hud.lua")
+include("cl_menus.lua")
 include("cl_scoreboard.lua")
 include("mapvote/sh_mapvote.lua")
 include("mapvote/cl_mapvote.lua")
+include("cl_derma.lua")
 include("roundsystem/sh_roundsystem.lua")
 include("roundsystem/cl_roundsystem.lua")
 include("zones/sh_zone.lua")
 include("zones/cl_zone.lua")
-include("cl_hud.lua")
-include("cl_menus.lua")
 include("buttonclaiming/sh_buttonclaiming.lua")
 include("buttonclaiming/cl_buttonclaiming.lua")
 include("cl_announcer.lua")
@@ -218,12 +218,7 @@ hook.Add("InitPostEntity","DeathrunSendSpectateConVarInfo",function()
 
 	if not DR.ConVars.SpectateOnly:GetBool() then return end
 
-	DR.OpenForcedSpectatorMenu(
-		[[You are currently in spectator mode.
-		To play, click on one of the buttons below,
-		or visit the spectator section of the settings menu by pressing F2.
-		\n\nWould you like to move back into the game?]]
-	)
+	DR.OpenMovedToSpectatorMenu(true)
 end)
 
 function DR.SetClientHullSizes()
