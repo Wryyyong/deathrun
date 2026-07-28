@@ -1,3 +1,4 @@
+include("sh_init.lua")
 include("config.lua")
 include("convars/sh_convars.lua")
 include("convars/cl_convars.lua")

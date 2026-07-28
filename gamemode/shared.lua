@@ -1,6 +1,3 @@
--- local DR = DR or {}
--- _G["DR"] = DR
-
 local DR = DR
 
 local Colors = DR.Colors

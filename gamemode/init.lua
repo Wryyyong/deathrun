@@ -3,6 +3,11 @@ if not file.Exists("deathrun","DATA") then -- creates a folder in data for the g
 end
 
 -- init
+AddCSLuaFile("sh_init.lua")
+
+include("sh_init.lua")
+
+-- config
 AddCSLuaFile("config.lua")
 
 include("config.lua")

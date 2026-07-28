@@ -1,5 +1,5 @@
 print("Loading Config...")
-DR = DR or {}
+
 print("Creating global table DR...")
 
 DR.Colors = {
@@ -70,6 +70,7 @@ DR.Permissions = {
 	["zone_setcolor"] = 3,
 	["zone_settype"] = 3,
 	["deathrun_force_spectate"] = 2,
+
 	-- mapvote
 	["mapvote_list_maps"] = 1,
 	["mapvote_begin_mapvote"] = 3,
