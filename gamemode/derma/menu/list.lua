@@ -1,11 +1,8 @@
---- @class DR_MenuList : DIconLayout
+--- @class DR_MenuList : DR_List
 local DR_MenuList = {}
 
 function DR_MenuList:Init()
 	self:SetSize(self:GetParent():GetSize())
-	self:SetPos(0,0)
-	self:SetSpaceX(0)
-	self:SetSpaceY(4)
 end
 
 --- @param text string
@@ -151,6 +148,6 @@ function DR_MenuList_ZoneEditor:Init()
 	self:SetSpaceY(8)
 end
 
-derma.DefineControl("DR_MenuList","",DR_MenuList,"DIconLayout")
+derma.DefineControl("DR_MenuList","",DR_MenuList,"DR_List")
 
 derma.DefineControl("DR_MenuList_ZoneEditor","",DR_MenuList_ZoneEditor,"DR_MenuList")

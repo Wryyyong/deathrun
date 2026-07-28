@@ -101,55 +101,97 @@ function DR.ShadowTextSimple(text,font,x,y,color,xAlign,yAlign,dist)
 end
 
 for _,panelName in ipairs({
+	-- AvatarImage
+	"scoreboard/player/avatar",
+
 	-- Panel
 	"autoggle",
-	"customscroll/custompanelcanvas",
-	"customscroll/customvscrollbar",
-	"multipanel/multipanel",
+	"customscrollpanel/panelcanvas",
+	"customscrollpanel/vscrollbar",
+	"multipanel/main",
 
 	-- DPanel
-	"crosshaircreator/crosshairpreview",
-	"customscroll/customscrollpanel",
+	"crosshaircreator/preview",
+	"customscrollpanel/main",
 	"innerwindow",
-	"menu/menucontrols",
-	"menu/menuspacer",
-	"multipanel/multipanelspacer",
-	"multipanel/multipaneltabpanel",
+	"menu/controls",
+	"menu/spacer",
+	"multipanel/spacer",
+	"multipanel/tabpanel",
+	"scoreboard/item",
+	"scoreboard/main",
+	"scoreboard/player/icon",
 
 	-- DFrame
 	"window",
 
 	-- DLabel
-	"menu/menuitem",
+	"menu/item",
 
 	-- DButton
 	"button",
-	"customscroll/customvscrollbarbutton",
+	"customscrollpanel/button",
+	"scoreboard/player/button",
 	"subbutton",
 	"togglebutton",
 
 	-- DIconLayout
-	"menu/menulist",
+	"list",
 
 	-- DColorMixer
-	"crosshaircreator/crosshaircolormixer",
+	"crosshaircreator/colormixer",
 
 	-- DScrollBarGrip
-	"customscroll/customscrollbargrip",
+	"customscrollpanel/grip",
+
+	-- DMenu
+	"scoreboard/player/menu",
+
+	-- DMenuOption
+	"scoreboard/player/menuoptions/_base",
 
 	-- DNumSlider
-	"menu/menunumslider",
+	"menu/numslider",
 
 	-- DR_Button
 	"closebutton",
-	"multipanel/multipaneltabbutton",
 	"multipanel/navbutton",
+	"multipanel/tabbutton",
 
 	-- DR_Window
-	"menu/menuframe",
+	"menu/frame",
 
 	-- DR_InnerWindow
-	"menu/menuinner",
+	"menu/inner",
+
+	-- DR_List
+	"menu/list",
+	"scoreboard/list",
+
+	-- DR_CustomScrollPanel
+	"menu/scrollpanel",
+	"scoreboard/scrollpanel",
+
+	-- DR_ScoreboardItemBase
+	"scoreboard/player/data",
+	"scoreboard/top",
+
+	-- DR_ScoreboardItemSmallBase
+	"scoreboard/player/panel",
+
+	-- DR_ScoreboardPlayerMenuOptionBase
+	"scoreboard/player/menuoptions/_ulx",
+	"scoreboard/player/menuoptions/copyid",
+	"scoreboard/player/menuoptions/forcespec",
+	"scoreboard/player/menuoptions/mute",
+	"scoreboard/player/menuoptions/openprofile",
+
+	-- DR_ScoreboardPlayerMenuOptionULXBase
+	"scoreboard/player/menuoptions/ulx_ban",
+	"scoreboard/player/menuoptions/ulx_gag",
+	"scoreboard/player/menuoptions/ulx_kick",
+	"scoreboard/player/menuoptions/ulx_mute",
+	"scoreboard/player/menuoptions/ulx_slay",
 }) do
 	include("derma/" .. panelName .. ".lua")
 end

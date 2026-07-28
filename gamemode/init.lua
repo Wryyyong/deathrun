@@ -764,7 +764,7 @@ end)
 
 net.Receive("DeathrunForceSpectator",function(len,ply)
 	if DR.CanAccessCommand(ply,"deathrun_force_spectate") then
-		local target = player.GetBySteamID(net.ReadString())
+		local target = net.ReadPlayer()
 		if not target then return end
 		--- @cast target -boolean
 

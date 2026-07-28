@@ -32,10 +32,8 @@ AccessorFunc(DR_CustomVScrollBar,"m_HideButtons","HideButtons")
 
 function DR_CustomVScrollBar:Init()
 	self:SetSize(15,15)
-	self:SetHideButtons(false)
+	self:SetHideButtons(true)
 	self:Dock(RIGHT)
-
-	self:SetWide(4)
 
 	self.btnUp = self:Add("DR_CustomVScrollBarButtonUp")
 	self.btnDown = self:Add("DR_CustomVScrollBarButtonDown")

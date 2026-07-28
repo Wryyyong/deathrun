@@ -92,7 +92,7 @@ function DR.OpenSettings()
 	frame.InnerWindow = inner
 
 	local controls = inner:Add("DR_MenuControls")
-	local scroll = controls:Add("DR_CustomScrollPanel")
+	local scroll = controls:Add("DR_MenuScrollPanel")
 	local list = scroll:Add("DR_MenuList")
 
 	SetupMenuList(list,Settings)
@@ -119,7 +119,7 @@ function DR.OpenCrosshairCreator()
 
 	inner:Add("DR_CrosshairPreview")
 	local controls = inner:Add("DR_CrosshairControls")
-	local scroll = controls:Add("DR_CustomScrollPanel")
+	local scroll = controls:Add("DR_MenuScrollPanel")
 	local list = scroll:Add("DR_MenuList")
 
 	SetupMenuList(list,SettingsCrosshair)
@@ -138,7 +138,7 @@ function DR.OpenZoneEditor()
 	local inner = frame:Add("DR_MenuInner")
 	frame.InnerWindow = inner
 
-	local scroll = inner:Add("DR_CustomScrollPanel")
+	local scroll = inner:Add("DR_MenuScrollPanel")
 	local list = scroll:Add("DR_MenuList_ZoneEditor")
 
 	list:AddHeader("Create Zone",true)

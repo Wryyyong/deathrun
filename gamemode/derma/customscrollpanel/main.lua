@@ -1,4 +1,5 @@
 --- @class DR_CustomScrollPanel : DPanel
+--- @field pnlCanvas DR_CustomPanelCanvas
 --- @field VBar DR_CustomVScrollBar
 local DR_CustomScrollPanel = {
 	["AddItem"] = DScrollPanel.AddItem,
@@ -21,18 +22,7 @@ local DR_CustomScrollPanel = {
 	["SetPadding"] = DScrollPanel.SetPadding,
 }
 
-AccessorFunc(DR_CustomScrollPanel,"Padding","Padding")
-AccessorFunc(DR_CustomScrollPanel,"pnlCanvas","Canvas")
-
 function DR_CustomScrollPanel:Init()
-	local width,height = self:GetParent():GetSize()
-
-	self:SetSize(
-		width - 16,
-		height - 16
-	)
-	self:SetPos(8,8)
-
 	self:SetPadding(0)
 	self:SetMouseInputEnabled(true)
 
