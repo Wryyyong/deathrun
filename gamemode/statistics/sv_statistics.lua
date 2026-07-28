@@ -318,10 +318,6 @@ hook.Add("PlayerLoadout","DisplayStatsForPlayers",function(ply)
 	end)
 end)
 
-DR.AddChatCommand("records",function(ply,args)
-	ply:ConCommand("deathrun_records_menu")
-end)
-
 concommand.Add("stats_test",function(ply,_,_)
 	PrintTable(DR.ReturnStats(ply) or {})
 end)

@@ -253,10 +253,6 @@ concommand.Add("zone_create",function(ply,cmd,args)
 	DR.SafeChatPrint(ply,msg)
 end)
 
-DR.AddChatCommand("createzone",function(ply,args)
-	ply:ConCommand("zone_create " .. (args[1] or "") .. " " .. (args[2] or ""))
-end)
-
 concommand.Add("zone_remove",function(ply,cmd,args)
 	-- e.g. zone_create endmap end
 	local name = args[1]
@@ -279,10 +275,6 @@ concommand.Add("zone_remove",function(ply,cmd,args)
 	hook.Run("DeathrunZonesUpdated")
 
 	DR.SafeChatPrint(ply,"Deleted zone \"" .. name .. "\"")
-end)
-
-DR.AddChatCommand("removezone",function(ply,args)
-	ply:ConCommand("zone_remove " .. (args[1] or ""))
 end)
 
 concommand.Add("zone_setpos",function(ply,cmd,args)
@@ -331,14 +323,6 @@ concommand.Add("zone_setpos",function(ply,cmd,args)
 	DR.SafeChatPrint(ply,msg)
 end)
 
-DR.AddChatCommand("setzonepos1",function(ply,args)
-	ply:ConCommand("zone_setpos " .. (args[1] or "") .. "1")
-end)
-
-DR.AddChatCommand("setzonepos2",function(ply,args)
-	ply:ConCommand("zone_setpos " .. (args[1] or "") .. "2")
-end)
-
 concommand.Add("zone_setcolor",function(ply,cmd,args)
 	-- RGBA e.g. zone_setcolor endmap 255 0 0 255
 	local name = args[1]
@@ -380,10 +364,6 @@ concommand.Add("zone_setcolor",function(ply,cmd,args)
 	DR.SafeChatPrint(ply,msg)
 end)
 
-DR.AddChatCommand("setzonecolor",function(ply,args)
-	ply:ConCommand("zone_setcolor " .. (args[1] or "") .. " " .. (args[2] or "") .. " " .. (args[3] or "") .. " " .. (args[4] or "") .. " " .. (args[5] or ""))
-end)
-
 concommand.Add("zone_settype",function(ply,cmd,args)
 	-- e.g. zone_settype endmap end
 	local name = args[1]
@@ -421,10 +401,6 @@ concommand.Add("zone_settype",function(ply,cmd,args)
 	end
 
 	DR.SafeChatPrint(ply,msg)
-end)
-
-DR.AddChatCommand("setzonetype",function(ply,args)
-	ply:ConCommand("zone_settype " .. (args[1] or "") .. " " .. (args[2] or ""))
 end)
 
 -- timing and rewards
@@ -511,4 +487,28 @@ hook.Add("DeathrunPlayerEnteredZone","DeathrunPlayerFinishMap",function(ply,name
 	end
 
 	hook.Run("DeathrunPlayerFinishMap",ply,name,zone,place,finishTime)
+end)
+
+DR.AddChatCommand("createzone",function(ply,args)
+	ply:ConCommand("zone_create " .. (args[1] or "") .. " " .. (args[2] or ""))
+end)
+
+DR.AddChatCommand("removezone",function(ply,args)
+	ply:ConCommand("zone_remove " .. (args[1] or ""))
+end)
+
+DR.AddChatCommand("setzonepos1",function(ply,args)
+	ply:ConCommand("zone_setpos " .. (args[1] or "") .. "1")
+end)
+
+DR.AddChatCommand("setzonepos2",function(ply,args)
+	ply:ConCommand("zone_setpos " .. (args[1] or "") .. "2")
+end)
+
+DR.AddChatCommand("setzonecolor",function(ply,args)
+	ply:ConCommand("zone_setcolor " .. (args[1] or "") .. " " .. (args[2] or "") .. " " .. (args[3] or "") .. " " .. (args[4] or "") .. " " .. (args[5] or ""))
+end)
+
+DR.AddChatCommand("setzonetype",function(ply,args)
+	ply:ConCommand("zone_settype " .. (args[1] or "") .. " " .. (args[2] or ""))
 end)

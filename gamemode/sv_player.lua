@@ -11,6 +11,11 @@ local CUSTOMOBS_ROAMING = 1
 local CUSTOMOBS_CHASE = 2
 local CUSTOMOBS_INEYE = 3
 
+function PlyMeta:Respawn()
+	self:KillSilent()
+	self:Spawn()
+end
+
 function PlyMeta:BeginSpectate()
 	local roundState = ROUND.GetCurrent()
 
@@ -47,18 +52,21 @@ function PlyMeta:StopSpectate()
 end
 
 -- set whether they should stay in spectator even when the round starts
-function PlyMeta:SetShouldStaySpectating(bool,noswitch)
+--- @param bool boolean
+--- @param noSwitch boolean
+function PlyMeta:SetShouldStaySpectating(bool,noSwitch)
 	self.StaySpectating = bool
 
 	if
 		not bool
-	or	noswitch
+	or	noSwitch
 	then return end
 
 	self:SetTeam(DR_TEAM_SPECTATOR)
 end
 
--- check if he should respawn
+-- check if they should respawn
+--- @return boolean
 function PlyMeta:ShouldStaySpectating()
 	return self.StaySpectating or false
 end
