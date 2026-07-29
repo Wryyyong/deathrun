@@ -567,7 +567,7 @@ local CvAutojumpAllowed = GetConVar("deathrun_allow_autojump")
 -- 32x32 text 18, 192x32 text 30
 -- 32x32 text 18, 192x32 text 30
 -- spacing of 4 between all
-function DR.DrawPlayerHUD(x,y,alpha)
+function DR.DrawPlayerHUDMain(x,y,alpha)
 	local localPly = LocalPlayer()
 	local ply = localPly
 
@@ -579,14 +579,15 @@ function DR.DrawPlayerHUD(x,y,alpha)
 	end
 
 	local isLocalPly = ply == localPly
+	local plyTeam = ply:Team()
 
 	local shouldDrawTime =
 		isLocalPly
 	and	CvHudTheme:GetInt() == HUDTHEME_DEFAULTTIMER
 	and	ROUND.GetCurrent() == DR_ROUND_ACTIVE
-	and	ply:Team() == DR_TEAM_RUNNER
+	and	plyTeam == DR_TEAM_RUNNER
 
-	local teamColor = team.GetColor(ply:Team())
+	local teamColor = team.GetColor(plyTeam)
 	local teamColorOrig = teamColor:Copy()
 	teamColor.a = alpha
 
@@ -619,7 +620,7 @@ function DR.DrawPlayerHUD(x,y,alpha)
 	local teamName
 
 	if isLocalPly then
-		teamName = team.GetName(ply:Team())
+		teamName = team.GetName(plyTeam)
 	else
 		teamName = ply:Nick()
 	end
@@ -679,6 +680,7 @@ function DR.DrawPlayerHUD(x,y,alpha)
 
 	-- HP bar
 	local hpCur = ply:Health()
+	local hpMax = ply:GetMaxHealth()
 
 	surface.SetDrawColor(ColorAlizarin)
 	surface.DrawRect(
@@ -722,7 +724,7 @@ function DR.DrawPlayerHUD(x,y,alpha)
 	surface.DrawRect(
 		xBar,
 		y,
-		DR.InverseLerp(hpCur,0,ply:GetMaxHealth()) * 192,
+		DR.InverseLerp(math.Clamp(hpCur,0,hpMax),0,hpMax) * 192,
 		32
 	)
 
@@ -753,7 +755,8 @@ function DR.DrawPlayerHUD(x,y,alpha)
 	y = y + 36 -- 32 + 4
 
 	-- Velocity bar
-	local velCur = ply:GetVelocity():Length2D() -- Try to figure out a way to use the squared value instead
+	-- TODO: Find a way to utitilize Length2DSqr instead
+	local velCur = ply:GetVelocity():Length2D()
 	local velStr =
 		velCur > VelocityMax
 	and	VelocityMaxStr
@@ -1337,20 +1340,24 @@ end
 local Avatar = vgui.Create("AvatarImage")
 DR.HudAvatar = Avatar
 
-Avatar:SetSize(46,46)
+Avatar:SetSize(48,48)
 Avatar:SetPos(0,0)
 Avatar:SetPlayer(LocalPlayer(),64)
 Avatar.Player = LocalPlayer()
 Avatar.Visible = true
-Avatar.DesiredPos = {-128,0}
+Avatar.DesiredPos = {
+	-128,
+	0,
+}
 
 function Avatar:Think()
 	local ply = LocalPlayer()
+	local desiredPos = self.DesiredPos
 
 	if
 		not (
 			IsValid(ply)
-		and	self.DesiredPos
+		and	desiredPos
 		)
 	then return end
 
@@ -1373,129 +1380,395 @@ function Avatar:Think()
 
 	local hudThemeIsSass = CvHudTheme:GetInt() == HUDTHEME_SASS
 	local posX,newVal
+	local isVisible = self.Visible
 
-	if hudThemeIsSass and not self.Visible then
-		posX = self.DesiredPos[1] or 0
+	if hudThemeIsSass and not isVisible then
+		posX = desiredPos[1] or 0
 		newVal = true
-	elseif not hudThemeIsSass and self.Visible then
+	elseif not hudThemeIsSass and isVisible then
 		posX = -128
 		newVal = false
 	else return end
 
-	self:SetPos(posX,self.DesiredPos[2] or 0)
+	self:SetPos(
+		posX,
+		desiredPos[2] or 0
+	)
+
 	self.Visible = newVal
 end
 
 local ColorDarkGrey = Colors.DarkGrey:Copy()
 local ColorLightGrey = Colors.LightGrey:Copy()
 
-function DR.DrawPlayerHUDMainSass(x,y,alpha)
-	-- dimensions:
-	-- 228 x 108
-	local ply = LocalPlayer()
-	if ply:GetObserverMode() ~= OBS_MODE_NONE then if IsValid(ply:GetObserverTarget()) then ply = ply:GetObserverTarget() end end
+-- dimensions:
+-- 228 x 108
+local SassHud_Width = 228
+local SassHud_WidthHalf = SassHud_Width * .5
 
-	local w,h = 228,108
-	local amul = alpha / 255
-	surface.SetDrawColor(255,0,0)
-	-- surface.DrawOutlinedRect( x,y,w,h )
-	ColorDarkGrey.a = alpha
-	surface.SetDrawColor(ColorDarkGrey)
-	-- size of avatar: 46x46
-	-- size of container: 48x48
-	draw.RoundedBox(2,x + 8,y + h * .5 - 24,48,48,ColorDarkGrey)
-	-- hp bar
-	-- width 228 - 16 - 48
-	-- height 20
-	ColorLightGrey.a = alpha * .5
-	draw.RoundedBox(2,x + 8 + 48,y + h * .5 - 10,228 - 16 - 48,20,ColorDarkGrey)
-	surface.SetDrawColor(ColorLightGrey)
-	surface.DrawRect(x + 8 + 48,y + h * .5 - 10 + 2,228 - 16 - 48 - 2,16)
-	-- velocity
-	draw.RoundedBox(2,x + 8 + 48,y + h * .5 + 8,228 - 16 - 48,10,ColorDarkGrey)
-	surface.SetDrawColor(ColorLightGrey)
-	surface.DrawRect(x + 8 + 48,y + h * .5 + 8 + 2,228 - 16 - 48 - 2,6)
-	local maxvel = 1500 -- yeah fuck yall
-	local curvel = math.Round(math.Clamp(ply:GetVelocity():Length2D(),0,maxvel))
-	local velfrac = DR.InverseLerp(curvel,0,maxvel)
-	surface.SetDrawColor(Color(50,50,255,alpha))
-	surface.DrawRect(x + 8 + 48,y + h * .5 + 8 + 2,(228 - 16 - 48 - 2) * velfrac,6)
-	surface.SetDrawColor(Color(255,255,255,5 * amul))
-	surface.DrawRect(x + 8 + 48,y + h * .5 + 8 + 2,(228 - 16 - 48 - 2) * velfrac,2)
-	local maxhp = 100 -- yeah fuck yall
-	local curhp = math.Clamp(ply:Health(),0,999)
-	local hpfrac = math.Clamp(DR.InverseLerp(curhp,0,maxhp),0,1)
-	surface.SetDrawColor(Color(50,255,50,alpha))
-	surface.DrawRect(x + 8 + 48,y + h * .5 - 10 + 2,(228 - 16 - 48 - 2) * hpfrac,16)
-	surface.SetDrawColor(Color(255,255,255,40 * amul))
-	surface.DrawRect(x + 8 + 48,y + h * .5 - 10 + 2,(228 - 16 - 48 - 2) * hpfrac,7)
-	-- HP TEXT
-	DR.ShadowTextSimple(tostring(curhp),"Deathrun_SassHUD_Large",x + 128,y + h * .5 + 2,Color(255,255,255,255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_CENTER,2)
-	DR.ShadowTextSimple("HP","Deathrun_SassHUD_Small",x + 132,y + h * .5 + 1,Color(255,255,255,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER,2)
-	DR.ShadowTextSimple(tostring(curvel) .. " VL","Deathrun_SassHUD_Small",x + w - 12,y + h * .5 + 24 + 1,Color(255,255,255,255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_TOP,2)
-	-- team text
-	local teamtext = team.GetName(ply:Team())
-	if ply ~= LocalPlayer() then -- must be spectating
-		teamtext = ply:Nick()
+local SassHud_BarOuter_Width = SassHud_Width - 64 -- 16 - 48
+local SassHud_BarInner_Width = SassHud_BarOuter_Width - 2
+
+local SassHud_Height = 108
+local SassHud_HeightHalf = SassHud_Height * .5
+
+function DR.DrawPlayerHUDMainSass(x,y,alpha)
+	local localPly = LocalPlayer()
+	local ply = localPly
+
+	if
+		ply:GetObserverMode() ~= OBS_MODE_NONE
+	and	IsValid(ply:GetObserverTarget())
+	then
+		ply = ply:GetObserverTarget()
 	end
 
-	DR.ShadowTextSimple(teamtext .. " - " .. string.ToMinutesSeconds(math.Clamp(ROUND.GetTimer(),0,99999)),"Deathrun_SassHUD_Small",x + 8,y + h * .5 + 24,color_white,TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,2)
-	-- position avatar
-	local avx,avy = Avatar:GetPos()
-	if avx ~= x + 9 or avy ~= y + h * .5 - 24 + 1 then Avatar:SetPos(x + 9,y + h * .5 - 23) end
+	local isLocalPly = ply == localPly
+	local plyTeam = ply:Team()
 
-	Avatar.DesiredPos = {avx,avy}
+	y = y + SassHud_HeightHalf
+
+	local alphaMult = alpha / 255
+
+	ColorDarkGrey.a = alpha
+	ColorLightGrey.a = alpha * .5
+
+	-- size of avatar: 48x48
+	-- size of container: 52x52
+	surface.SetDrawColor(ColorDarkGrey)
+	draw.RoundedBox(
+		2,
+		x + 4,
+		y - 34,
+		52,
+		52,
+		ColorDarkGrey
+	)
+
+	local xBar = x + 56
+
+	local yHpBar = y - 8
+	local yVelBar = y + 10
+
+	-- hp bar
+	-- width 164
+	-- height 20
+	draw.RoundedBox(
+		2,
+		xBar,
+		y - 10,
+		SassHud_BarOuter_Width,
+		20,
+		ColorDarkGrey
+	)
+
+	surface.SetDrawColor(ColorLightGrey)
+	surface.DrawRect(
+		xBar,
+		yHpBar,
+		SassHud_BarInner_Width,
+		16
+	)
+
+	-- velocity
+	draw.RoundedBox(
+		2,
+		xBar,
+		y + 8,
+		SassHud_BarOuter_Width,
+		10,
+		ColorDarkGrey
+	)
+
+	surface.SetDrawColor(ColorLightGrey)
+	surface.DrawRect(
+		xBar,
+		yVelBar,
+		SassHud_BarInner_Width,
+		6
+	)
+
+	-- TODO: Find a way to utitilize Length2DSqr instead
+	local velCur = ply:GetVelocity():Length2D()
+	local velCurBreaksCap = velCur > VelocityMax
+
+	local velCurCap =
+		velCurBreaksCap
+	and	VelocityMax
+	or	velCur
+
+	local velPercent = DR.InverseLerp(velCurCap,0,VelocityMax) * SassHud_BarInner_Width
+	local velStr =
+		(
+			velCurBreaksCap
+		and	VelocityMaxStr
+		or	math.floor(velCur)
+		)
+	..	" VL"
+
+	surface.SetDrawColor(50,50,255,alpha)
+	surface.DrawRect(
+		xBar,
+		yVelBar,
+		velPercent,
+		6
+	)
+
+	surface.SetDrawColor(255,255,255,5 * alphaMult)
+	surface.DrawRect(
+		xBar,
+		yVelBar,
+		velPercent,
+		2
+	)
+
+	local hpCur = ply:Health()
+	local hpMax = ply:GetMaxHealth()
+
+	local hpPercent = DR.InverseLerp(math.Clamp(hpCur,0,hpMax),0,hpMax) * SassHud_BarInner_Width
+
+	surface.SetDrawColor(50,255,50,alpha)
+	surface.DrawRect(
+		xBar,
+		yHpBar,
+		hpPercent,
+		16
+	)
+	surface.SetDrawColor(255,255,255,40 * alphaMult)
+	surface.DrawRect(
+		xBar,
+		yHpBar,
+		hpPercent,
+		7
+	)
+
+	local xLowerText = x + 216
+	local yLowerText = y + 25
+
+	-- HP TEXT
+	DR.ShadowTextSimple(
+		hpCur,
+		"Deathrun_SassHUD_Large",
+		xLowerText - 22,
+		y + 19,
+		color_white,
+		TEXT_ALIGN_RIGHT,
+		TEXT_ALIGN_BOTTOM,
+		2
+	)
+	DR.ShadowTextSimple(
+		"HP",
+		"Deathrun_SassHUD_Small",
+		xLowerText,
+		yVelBar,
+		color_white,
+		TEXT_ALIGN_RIGHT,
+		TEXT_ALIGN_BOTTOM,
+		2
+	)
+	DR.ShadowTextSimple(
+		velStr,
+		"Deathrun_SassHUD_Small",
+		xLowerText,
+		yLowerText,
+		color_white,
+		TEXT_ALIGN_RIGHT,
+		TEXT_ALIGN_TOP,
+		2
+	)
+
+	-- Team name
+	local teamName
+
+	if isLocalPly then
+		teamName = team.GetName(plyTeam)
+	else
+		teamName = ply:Nick()
+	end
+
+	DR.ShadowTextSimple(
+		teamName .. " - " .. string.ToMinutesSeconds(ROUND.GetTimer()),
+		"Deathrun_SassHUD_Small",
+		x + 8,
+		yLowerText,
+		color_white,
+		TEXT_ALIGN_LEFT,
+		TEXT_ALIGN_TOP,
+		2
+	)
+
+	-- position avatar
+	local avatarPosX,avatarPosY = Avatar:GetPos()
+
+	local xAvatar = x + 6
+	local yAvatar = y - 32
+
+	if
+		avatarPosX ~= xAvatar
+	or	avatarPosY ~= yAvatar
+	then
+		Avatar:SetPos(
+			xAvatar,
+			yAvatar
+		)
+	end
+
+	local desiredPos = Avatar.DesiredPos
+	desiredPos[1] = avatarPosX
+	desiredPos[2] = avatarPosY
 end
 
 function DR.DrawPlayerHUDAmmoSass(x,y)
-	local w,h = 228,108
-	surface.SetDrawColor(255,0,0)
-	local ply = LocalPlayer()
-	if ply:GetObserverMode() ~= OBS_MODE_NONE then if IsValid(ply:GetObserverTarget()) then ply = ply:GetObserverTarget() end end
+	local localPly = LocalPlayer()
+	local ply = localPly
 
-	local wep = ply:GetActiveWeapon()
-	if not IsValid(wep) then return end
-
-	local wepdata = GetWeaponHUDData(ply,wep)
-	local tcol = team.GetColor(ply:Team())
-	local dx,dy = x,y
-	if IsValid(wep) then
-		local frac = wepdata.Clip1 / wepdata.Clip1Max
-		frac = math.Clamp(frac,0,1)
-		-- print( wepdata.ShouldDrawHUD )
-		if wepdata.ShouldDrawHUD == true then
-			DR.ShadowTextSimple(wepdata.Name,"Deathrun_SassHUD_Small",x + w - 4,y + h - 68,Color(255,255,255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_BOTTOM,2)
-			DR.ShadowTextSimple(tostring(wepdata.Clip1) .. " +" .. tostring(wepdata.Remaining1),"Deathrun_SassHUD_Large",x + w - 4,y + h - 20,Color(255,255,255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_BOTTOM,2)
-		end
-	else
-		return
+	if
+		ply:GetObserverMode() ~= OBS_MODE_NONE
+	and	IsValid(ply:GetObserverTarget())
+	then
+		ply = ply:GetObserverTarget()
 	end
+
+	local weapon = ply:GetActiveWeapon()
+	if not IsValid(weapon) then return end
+
+	local weaponData = GetWeaponHUDData(ply,weapon)
+	if not weaponData.ShouldDrawHUD then return end
+
+	local xOffset = x + SassHud_Width - 4
+	local yOffset = y + SassHud_Height
+
+	DR.ShadowTextSimple(
+		weaponData.Name,
+		"Deathrun_SassHUD_Small",
+		xOffset,
+		yOffset - 68,
+		color_white,
+		TEXT_ALIGN_RIGHT,
+		TEXT_ALIGN_BOTTOM,
+		2
+	)
+	DR.ShadowTextSimple(
+		weaponData.Clip1 .. " +" .. weaponData.Remaining1,
+		"Deathrun_SassHUD_Large",
+		xOffset,
+		yOffset - 20,
+		color_white,
+		TEXT_ALIGN_RIGHT,
+		TEXT_ALIGN_BOTTOM,
+		2
+	)
 end
 
+local ClassicHud_Width = 204
+local ClassicHud_WidthHalf = ClassicHud_Width * .5
+local ClassicHud_WidthMinus8 = ClassicHud_Width - 8
+local ClassicHud_WidthQuar = ClassicHud_Width * .25
+
+local ClassicHud_Height = 36
+local ClassicHud_HeightMinus8 = ClassicHud_Height - 8
+local ClassicHud_HeightMod = SassHud_Height - ClassicHud_Height
+
+local ClassicHud_Timer_Height = ClassicHud_Height * 1.25
+
 function DR.DrawPlayerHUDClassic(x,y,alpha)
-	local ply = LocalPlayer()
-	if ply:GetObserverMode() ~= OBS_MODE_NONE then if IsValid(ply:GetObserverTarget()) then ply = ply:GetObserverTarget() end end
+	local localPly = LocalPlayer()
+	local ply = localPly
 
-	local w,h = 228,108
-	local amul = alpha / 255
-	local hw,hh = 204,36
-	draw.RoundedBox(4,x + w * .5 - hw * .5,y + h - hh,hw,hh,Color(44,44,44,175 * amul))
-	draw.RoundedBox(0,x + w * .5 - hw * .5 + 4,y + h - hh + 4,hw - 8,hh - 8,Color(180,80,80,255 * amul * amul))
-	local maxhp = 100 -- yeah fuck yall
-	local curhp = math.Clamp(ply:Health(),0,999)
-	local hpfrac = math.Clamp(DR.InverseLerp(curhp,0,maxhp),0,1)
-	draw.RoundedBox(0,x + w * .5 - hw * .5 + 4,y + h - hh + 4,(hw - 8) * hpfrac,hh - 8,Color(80,180,60,255 * amul))
-	DR.ShadowText(tostring(curhp > 999 and "dafuq" or math.max(curhp,0)),"Deathrun_ClassicHUD_Large",x + w * .5 - hw * .5 + 5,y + h - hh,Color(255,255,255),nil,nil,1)
+	if
+		ply:GetObserverMode() ~= OBS_MODE_NONE
+	and	IsValid(ply:GetObserverTarget())
+	then
+		ply = ply:GetObserverTarget()
+	end
+
+	x = x + SassHud_WidthHalf
+	y = y + ClassicHud_HeightMod
+
+	local xMinusWidthHalf = x - ClassicHud_WidthHalf
+	local xMinusWidthHalfPlus4 = xMinusWidthHalf + 4
+
+	local xMinusWidthQuar = x - ClassicHud_WidthQuar
+	local xMinusWidthQuarPlusClassicHudWidthQuar = xMinusWidthQuar + ClassicHud_WidthQuar
+
+	local yPlus4 = y + 4
+
+	local alphaMult = alpha / 255
+
+	draw.RoundedBox(
+		4,
+		xMinusWidthHalf,
+		y,
+		ClassicHud_Width,
+		ClassicHud_Height,
+		Color(44,44,44,175 * alphaMult)
+	)
+	draw.RoundedBox(
+		0,
+		xMinusWidthHalfPlus4,
+		yPlus4,
+		ClassicHud_WidthMinus8,
+		ClassicHud_HeightMinus8,
+		Color(180,80,80,255 * alphaMult ^ 2)
+	)
+
+	local hpCur = ply:Health()
+	local hpMax = ply:GetMaxHealth()
+
+	draw.RoundedBox(
+		0,
+		xMinusWidthHalfPlus4,
+		yPlus4,
+		DR.InverseLerp(math.Clamp(hpCur,0,hpMax),0,hpMax) * ClassicHud_WidthMinus8,
+		ClassicHud_HeightMinus8,
+		Color(80,180,60,255 * alphaMult)
+	)
+	DR.ShadowText(
+		hpCur,
+		"Deathrun_ClassicHUD_Large",
+		xMinusWidthHalf + 5,
+		y,
+		color_white,
+		nil,
+		nil,
+		1
+	)
+
 	-- timer
-	local timetext = string.ToMinutesSeconds(ROUND.GetTimer())
-	local tw,th = hw * .5,hh * 1.25
-	local tx,ty = x + w * .5 - tw * .5,y + h - hh - 4 - th
-	draw.RoundedBox(4,tx,ty,tw,th,Color(44,44,44,175 * amul))
-	DR.ShadowText(timetext,"Deathrun_ClassicHUD_Large",tx + tw * .5,ty + 4,Color(255,255,255),TEXT_ALIGN_CENTER,nil,1)
-	local spectext = ""
-	if ply ~= LocalPlayer() then spectext = ply:Nick() end
+	local timerY = y - 4 - ClassicHud_Timer_Height
 
-	DR.ShadowTextSimple(spectext,"Deathrun_ClassicHUD_Small",tx + tw * .5,ty,Color(255,255,255),TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1)
+	draw.RoundedBox(
+		4,
+		xMinusWidthQuar,
+		timerY,
+		ClassicHud_WidthHalf,
+		ClassicHud_Timer_Height,
+		Color(44,44,44,175 * alphaMult)
+	)
+	DR.ShadowText(
+		string.ToMinutesSeconds(ROUND.GetTimer()),
+		"Deathrun_ClassicHUD_Large",
+		xMinusWidthQuarPlusClassicHudWidthQuar,
+		timerY + 4,
+		color_white,
+		TEXT_ALIGN_CENTER,
+		nil,
+		1
+	)
+
+	DR.ShadowTextSimple(
+		ply == localPly
+	and	""
+	or	ply:Nick()
+		,
+		"Deathrun_ClassicHUD_Small",
+		xMinusWidthQuarPlusClassicHudWidthQuar,
+		timerY,
+		color_white,
+		TEXT_ALIGN_CENTER,
+		TEXT_ALIGN_CENTER,
+		1
+	)
 end
 
 hook.Add("DeathrunBeginActive","ResetStartTime",function()
@@ -1579,7 +1852,7 @@ local function CreateHudMetaTable(hudFuncMain,hudFuncAmmo)
 	return setmetatable({hudFuncMain,hudFuncAmmo},HudDrawFuncs_Meta)
 end
 
-local HudFuncTable_DefaultHUD = CreateHudMetaTable(DR.DrawPlayerHUD,DR.DrawPlayerHUDAmmo)
+local HudFuncTable_DefaultHUD = CreateHudMetaTable(DR.DrawPlayerHUDMain,DR.DrawPlayerHUDAmmo)
 
 --- @type HudDrawFuncTable[]
 local HudDrawFunctions = {

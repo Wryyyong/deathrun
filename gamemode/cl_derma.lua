@@ -27,12 +27,12 @@ end
 --- @param textFunc fun(text: string | any,font: string?,x: number?, y: number?,color: Color?,xAlign: number?,yAlign: number?)
 --- @param text string
 --- @param font string?
---- @param x number?
---- @param y number?
---- @param color Color?
+--- @param x number = 0
+--- @param y number = 0
+--- @param color Color = color_white
 --- @param xAlign number?
 --- @param yAlign number?
---- @param dist number?
+--- @param dist number = 1
 local function ShadowTextBase(textFunc,text,font,x,y,color,xAlign,yAlign,dist)
 	x = x or 0
 	y = y or 0
@@ -78,24 +78,24 @@ end
 
 --- @param text string
 --- @param font string?
---- @param x number?
---- @param y number?
---- @param color Color?
+--- @param x number = 0
+--- @param y number = 0
+--- @param color Color = color_white
 --- @param xAlign number?
 --- @param yAlign number?
---- @param dist number?
+--- @param dist number = 1
 function DR.ShadowText(text,font,x,y,color,xAlign,yAlign,dist)
 	ShadowTextBase(draw.DrawText,text,font,x,y,color,xAlign,nil,dist)
 end
 
 --- @param text string
 --- @param font string?
---- @param x number?
---- @param y number?
---- @param color Color?
+--- @param x number = 0
+--- @param y number = 0
+--- @param color Color = color_white
 --- @param xAlign number?
 --- @param yAlign number?
---- @param dist number?
+--- @param dist number = 1
 function DR.ShadowTextSimple(text,font,x,y,color,xAlign,yAlign,dist)
 	ShadowTextBase(draw.SimpleText,text,font,x,y,color,xAlign,yAlign,dist)
 end
