@@ -24,8 +24,18 @@ AddCSLuaFile("shared.lua")
 
 include("shared.lua")
 
+-- commands
+include("sv_commands.lua")
+
 -- fonts
 AddCSLuaFile("cl_fonts.lua")
+
+-- derma
+AddCSLuaFile("cl_derma.lua")
+
+for _,fileName in ipairs(file.Find("gamemodes/deathrun/gamemode/derma/dr_*.lua","GAME") or {}) do
+	AddCSLuaFile("derma/" .. fileName)
+end
 
 -- base
 AddCSLuaFile("cl_hud.lua")
@@ -40,16 +50,6 @@ AddCSLuaFile("mapvote/cl_mapvote.lua")
 
 include("mapvote/sh_mapvote.lua")
 include("mapvote/sv_mapvote.lua")
-
--- derma
-AddCSLuaFile("cl_derma.lua")
-
-for _,fileName in ipairs(file.Find("gamemodes/deathrun/gamemode/derma/dr_*.lua","GAME") or {}) do
-	AddCSLuaFile("derma/" .. fileName)
-end
-
--- commands
-include("sv_commands.lua")
 
 -- Round System
 AddCSLuaFile("roundsystem/sh_roundsystem.lua")
@@ -145,7 +145,7 @@ hook.Add("PlayerSpawn","DeathrunSetPlayerModels",function(ply)
 	if plyTeam == DR_TEAM_DEATH then
 		local mdl = CvDeathModel:GetString()
 
-		if string.sub(mdl,-4,-1) == ".mdl" then
+		if mdl:sub(-4,-1) == ".mdl" then
 			ply:SetModel(mdl)
 		else
 			print("The default death model is not a valid .mdl file ('" .. mdl .. "'). Please change the deathrun_death_model ConVar.")

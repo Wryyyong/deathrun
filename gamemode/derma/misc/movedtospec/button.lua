@@ -1,5 +1,5 @@
 --- @class DR_MovedToSpectatorButtonBase : DR_Button
---- @field Parent DR_MovedToSpectatorInner
+--- @field Parent DR_MovedToSpectatorInnerBase
 local DR_MovedToSpectatorButtonBase = {
 	["ButtonText"] = "",
 	["WidthMod"] = -1,

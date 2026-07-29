@@ -2,20 +2,6 @@ local DR = DR
 
 local Colors = DR.Colors
 
-GM.Name = "Deathrun"
-GM.Author = "Arizard"
-GM.Email = ""
-GM.Website = "http://vhs7.tv"
-
-DR.TimeStamp = 1462083778
-DR.TimeStampFormatted = os.date("%Y-%m-%d %H:%M:%S",DR.TimeStamp)
-
-for _,event in ipairs({
-	"player_connect",
-}) do
-	gameevent.Listen(event)
-end
-
 sound.Add({
 	["name"] = "Deathrun.PlayerDeath",
 	["sound"] = {
@@ -66,28 +52,6 @@ sound.Add({
 	["channel"] = CHAN_VOICE,
 	["level"] = 300,
 })
-
-function DR.EmptyFunction()
-end
-
---- @param max integer
---- @param min integer?
---- @param signed boolean?
---- @return integer
-function DR.CalcMaxBits(max,min,signed)
-	local useVal = math.max(max,math.abs(min or 0))
-
-	return
-		math.ceil(math.log(useVal + (useVal == max and 1 or 0),2))
-	+	(signed and 1 or 0)
-end
-
-DR_TEAM_RUNNER = 1
-DR_TEAM_DEATH = 2
-DR_TEAM_GHOST = 3
-DR_TEAM_SPECTATOR = TEAM_SPECTATOR
-
-DR_TEAM_BITS = DR.CalcMaxBits(DR_TEAM_SPECTATOR)
 
 function GM:CreateTeams()
 	team.SetUp(DR_TEAM_RUNNER,"Runners",Colors.RunnerTeam,false)
@@ -328,7 +292,7 @@ end)
 -- get rid of some default hooks
 hook.Remove("PlayerTick","TickWidgets")
 
-function DR.GetAccessLevel(ply)
+local function GetAccessLevel(ply)
 	if not IsValid(ply) then return -1 end
 
 	local access = DR.Ranks[ply:GetUserGroup()] or 1
@@ -342,5 +306,5 @@ function DR.GetAccessLevel(ply)
 end
 
 function DR.CanAccessCommand(ply,cmd)
-	return DR.GetAccessLevel(ply) >= (DR.Permissions[cmd] or math.huge)
+	return GetAccessLevel(ply) >= (DR.Permissions[cmd] or math.huge)
 end

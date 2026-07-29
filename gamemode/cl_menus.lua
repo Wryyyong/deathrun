@@ -192,33 +192,6 @@ hook.Add("InitPostEntity","DeathrunOpenQuickInfo",function()
 	OpenQuickInfo()
 end)
 
-function DR.GetWordWrapText(text,width,font)
-	local displayText = ""
-	local displayLine = ""
-
-	surface.SetFont(font)
-	text = string.Replace(text,"\n","")
-	text = string.Replace(text,"\t","")
-	text = string.Replace(text,[[\n]],"\n")
-	text = string.Replace(text,[[\t]],"\t")
-	text = string.Replace(text,[[\b]],"• ")
-
-	local args = string.Split(text," ")
-
-	for _,word in ipairs(args) do
-		local textWidth = surface.GetTextSize(displayLine .. word .. " ")
-
-		if textWidth > width then
-			displayText = displayText .. displayLine .. "\n"
-			displayLine = word .. " "
-		else
-			displayLine = displayLine .. word .. " "
-		end
-	end
-
-	return displayText .. displayLine
-end
-
 -- waiting menu
 function DR.OpenWaitingMenu()
 	local frame = vgui.Create("DR_WaitingMenuFrame")
@@ -245,3 +218,19 @@ end
 concommand.Add("deathrun_open_forcespectatormenu",WrapperFunctionForSpecMenuToAppeaseMyLangServer)
 
 net.Receive("DeathrunSpectatorNotification",WrapperFunctionForSpecMenuToAppeaseMyLangServer)
+
+hook.Add("PlayerButtonDown","DeathrunOpenMenus",function(ply,btn)
+	if not IsFirstTimePredicted() then return end
+
+	local command
+
+	if btn == KEY_F2 then
+		command = "deathrun_open_settings"
+	elseif btn == KEY_F4 then
+		command = "deathrun_open_crosshair_creator"
+	elseif btn == KEY_F9 then
+		command = "deathrun_open_zone_editor"
+	else return end
+
+	ply:ConCommand(command)
+end)

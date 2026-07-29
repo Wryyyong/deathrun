@@ -1,7 +1,5 @@
 print("Loading Config...")
 
-print("Creating global table DR...")
-
 DR.Colors = {
 	["GhostTeam"] = Color(255,204,0),
 	["DeathTeam"] = Color(242,108,79),

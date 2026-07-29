@@ -160,3 +160,61 @@ end
 
 -- initial round
 hook.Add("InitPostEntity","DeathrunInitialRoundState",function() ROUND.RoundSwitch(DR_ROUND_WAITING) end)
+
+local BalloonDir = Vector()
+local BalloonAngle = Angle()
+
+local BalloonEndPosMul = 92
+local BalloonDistCheck = 30 ^ 2
+
+local BalloonTraceCache = {
+	["start"] = vector_origin,
+	["endpos"] = vector_origin,
+	["mins"] = vector_origin,
+	["maxs"] = vector_origin,
+}
+
+hook.Add("DeathrunPlayerFinishMap","Balloons",function(ply)
+	local balloonCount = ConVars.FinishBalloons:GetInt()
+
+	if balloonCount <= 0 then return end
+
+	local shootPos = ply:GetShootPos()
+
+	for _ = 1,balloonCount do
+		local balloon = ents.Create("ent_deathrun_balloon") --- @cast balloon -NULL
+
+		balloon:Spawn()
+
+		BalloonDir:SetUnpacked(
+			math.Rand(-100,100),
+			math.Rand(-100,100),
+			math.Rand(-100,100)
+		)
+		BalloonDir:Normalize()
+		BalloonDir:Mul(BalloonEndPosMul)
+
+		BalloonAngle[2] = math.Rand(-180,180)
+		balloon:SetAngles(BalloonAngle)
+
+		BalloonTraceCache.start = shootPos
+		BalloonTraceCache.endpos = shootPos + BalloonDir
+		BalloonTraceCache.filter = ply
+		BalloonTraceCache.mins = balloon:OBBMins()
+		BalloonTraceCache.maxs = balloon:OBBMaxs()
+
+		local trace = util.TraceHull(BalloonTraceCache)
+		local hitPos = trace.HitPos
+
+		if hitPos:DistToSqr(shootPos) > BalloonDistCheck then
+			BalloonDir:Div(BalloonEndPosMul)
+			BalloonDir:Mul(2.5)
+
+			balloon:SetPos(hitPos)
+
+			balloon:GetPhysicsObject():ApplyForceCenter(BalloonDir)
+		else
+			balloon:Remove()
+		end
+	end
+end)

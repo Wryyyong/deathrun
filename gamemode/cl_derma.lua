@@ -100,6 +100,36 @@ function DR.ShadowTextSimple(text,font,x,y,color,xAlign,yAlign,dist)
 	ShadowTextBase(draw.SimpleText,text,font,x,y,color,xAlign,yAlign,dist)
 end
 
+--- @param text string
+--- @param width number
+--- @param font string
+function DR.GetWordWrapText(text,width,font)
+	local displayText = ""
+	local displayLine = ""
+
+	surface.SetFont(font)
+	text = text:Replace("\n","")
+	text = text:Replace("\t","")
+	text = text:Replace([[\n]],"\n")
+	text = text:Replace([[\t]],"\t")
+	text = text:Replace([[\b]],"• ")
+
+	local args = text:Split(" ")
+
+	for _,word in ipairs(args) do
+		local textWidth = surface.GetTextSize(displayLine .. word .. " ")
+
+		if textWidth > width then
+			displayText = displayText .. displayLine .. "\n"
+			displayLine = word .. " "
+		else
+			displayLine = displayLine .. word .. " "
+		end
+	end
+
+	return displayText .. displayLine
+end
+
 for _,panelName in ipairs({
 	-- AvatarImage
 	"scoreboard/player/avatar",

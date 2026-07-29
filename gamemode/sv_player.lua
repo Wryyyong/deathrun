@@ -228,9 +228,8 @@ concommand.Add("deathrun_set_spectate",function(ply,cmd,args)
 		ply:SetShouldStaySpectating(false)
 
 		if ROUND.GetCurrent() == DR_ROUND_WAITING then
-			ply:KillSilent()
 			ply:SetTeam(DR_TEAM_RUNNER)
-			ply:Spawn()
+			ply:Respawn()
 		end
 	end
 end)
