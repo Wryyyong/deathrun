@@ -354,6 +354,8 @@ function GM:PlayerDeath(ply,inflictor,attacker)
 	-- support for when traps kill players
 	hook.Run("DeathrunPlayerDeath",ply,inflictor,attacker)
 
+	local attackerName
+
 	if IsValid(attacker) then
 		if attacker:IsPlayer() then
 			attackerName = attacker:Nick()
