@@ -221,12 +221,14 @@ ROUND.AddState(
 			elseif #listOrdered > 0 then
 				local ply = listOrdered[1]
 
-				print("A death has been chosen through orderedpool: " .. ply:Nick())
+				if ply then
+					print("A death has been chosen through orderedpool: " .. ply:Nick())
 
-				deaths[#deaths + 1] = ply
+					deaths[#deaths + 1] = ply
 
-				table.remove(listOrdered,1)
-				table.RemoveByValue(pool,ply)
+					table.remove(listOrdered,1)
+					table.RemoveByValue(pool,ply)
+				end
 			else
 				local randNum = math.random(#pool)
 				local randPly = pool[randNum]
@@ -302,7 +304,7 @@ ROUND.AddState(
 
 local function AutoslayDelay()
 	for _,ply in ipairs(DR.GetAllPlaying()) do
-		local idleTime = DR.CheckIdleTime(ply)
+		local idleTime = DR.CheckIdleTime()
 
 		print(ply,idleTime)
 

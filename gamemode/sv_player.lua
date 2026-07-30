@@ -218,7 +218,7 @@ concommand.Add("deathrun_toggle_spectate",function(ply)
 	ply:SetShouldStaySpectating(isNotSpectating)
 end)
 
-concommand.Add("deathrun_set_spectate",function(ply,cmd,args)
+concommand.Add("deathrun_set_spectate",function(ply,_,args)
 	if tonumber(args[1]) == 1 then
 		ply:KillSilent()
 		ply:SetShouldStaySpectating(true,ply:Team() == DR_TEAM_DEATH)

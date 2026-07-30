@@ -363,12 +363,12 @@ end
 
 function DR.DeathNotification(msg,mod)
 	net.Start("DeathrunAddKillNote")
-		net.WriteString(msg or 'nil')
+		net.WriteString(msg or "nil")
 		net.WriteInt(mod or 1,8)
 	net.Broadcast()
 end
 
-function GM:PlayerDeathThink(ply)
+function GM:PlayerDeathThink()
 	return false
 end
 
@@ -506,6 +506,7 @@ function GM:GetFallDamage(ply,speed)
 	or 	math.max(0,math.ceil(.2418 * speed - 141.75))
 end
 
+--- @param ply Player
 function GM:OnPlayerHitGround(ply)
 	return ply:Team() == DR_TEAM_GHOST or nil
 end
@@ -585,7 +586,7 @@ hook.Add("SetupMove","DeathrunIdleCheck",function(ply,mv)
 end)
 
 -- return how long the player has been idle for
-function DR.CheckIdleTime(ply)
+function DR.CheckIdleTime()
 	-- hotfix to prevent autokick after 22-02-2016 update
 	return 0
 
@@ -598,7 +599,7 @@ timer.Create("CheckIdlePlayers",1,0,function()
 	local idleWarn = idleTimer - 20
 
 	for _,ply in ipairs(DR.GetAllPlaying()) do
-		local idlePly = DR.CheckIdleTime(ply)
+		local idlePly = DR.CheckIdleTime()
 
 		if math.floor(idlePly) == idleWarn then
 			ply:DeathrunChatPrint("If you do not move in 20 seconds, you will be forced into spectator for being idle.")
@@ -769,7 +770,7 @@ concommand.Add("deathrun_not_amused",function(ply)
 	ply.LastNotAmused = lastNotAmused
 end)
 
-net.Receive("DeathrunForceSpectator",function(len,ply)
+net.Receive("DeathrunForceSpectator",function(_,ply)
 	if DR.CanAccessCommand(ply,"deathrun_force_spectate") then
 		local target = net.ReadPlayer()
 		if not target then return end
