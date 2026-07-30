@@ -1,8 +1,11 @@
 local DR = DR
 
-local MapZones = ZONE.MapZones
+local RoundSystem = DR.RoundSystem
+local ZoneSystem = DR.ZoneSystem
 
-ZONE.StartTime = ZONE.StartTime or -1
+local MapZones = ZoneSystem.MapZones
+
+ZoneSystem.StartTime = ZoneSystem.StartTime or -1
 
 local ZoneDataDir = "deathrun/zones"
 local ZoneDataFilepath = ZoneDataDir .. "/" .. game.GetMap() .. ".json"
@@ -74,7 +77,7 @@ local function PlayerInCuboid(ply,min,max) -- check if vector is within cuboid
 end
 
 --- @param ply Player?
-function ZONE.SendZones(ply)
+function ZoneSystem.SendZones(ply)
 	net.Start("DeathrunSendZones")
 		net.WriteTable(MapZones)
 
@@ -88,12 +91,10 @@ end
 hook.Add("PlayerInitialSpawn","DeathrunSetupPlayerZones",function(ply)
 	ply.InZones = {}
 
-	ZONE.SendZones(ply)
-
-	print("Sent zones to player " .. ply:Nick())
+	ZoneSystem.SendZones(ply)
 end)
 
-function ZONE.Save()
+function ZoneSystem.Save()
 	file.Write(
 		ZoneDataFilepath,
 		util.TableToJSON(MapZones,true)
@@ -102,7 +103,7 @@ function ZONE.Save()
 	print("Zones were saved.")
 end
 
-function ZONE.Load()
+function ZoneSystem.Load()
 	if not file.Exists(ZoneDataDir,"DATA") then
 		file.CreateDir(ZoneDataDir)
 	end
@@ -120,14 +121,14 @@ function ZONE.Load()
 	print("Zones were loaded.")
 end
 
-ZONE.Load()
+ZoneSystem.Load()
 
 --- @param name string
 --- @param pos1 Vector
 --- @param pos2 Vector
 --- @param color Color
 --- @param force boolean
-function ZONE.Create(name,pos1,pos2,color,type,force)
+function ZoneSystem.Create(name,pos1,pos2,color,type,force)
 	local targetZone = MapZones[name]
 
 	-- empty table
@@ -143,7 +144,7 @@ function ZONE.Create(name,pos1,pos2,color,type,force)
 			["type"] = type,
 		}
 
-		ZONE.Save()
+		ZoneSystem.Save()
 
 		return true
 	end
@@ -235,9 +236,9 @@ concommand.Add("zone_create",function(ply,cmd,args)
 
 	local msg
 
-	if ZONE.Create(name,Vector(),Vector(),color_white,type,ply.LastZoneDenied == name) then
-		ZONE.Save()
-		ZONE.SendZones()
+	if ZoneSystem.Create(name,Vector(),Vector(),color_white,type,ply.LastZoneDenied == name) then
+		ZoneSystem.Save()
+		ZoneSystem.SendZones()
 
 		ply.LastZoneDenied = nil
 
@@ -269,8 +270,8 @@ concommand.Add("zone_remove",function(ply,cmd,args)
 
 	MapZones[name] = nil
 
-	ZONE.Save()
-	ZONE.SendZones()
+	ZoneSystem.Save()
+	ZoneSystem.SendZones()
 
 	hook.Run("DeathrunZonesUpdated")
 
@@ -307,8 +308,8 @@ concommand.Add("zone_setpos",function(ply,cmd,args)
 			local hitPos = ply:GetEyeTrace().HitPos
 			zone["pos" .. pos] = hitPos
 
-			ZONE.Save()
-			ZONE.SendZones()
+			ZoneSystem.Save()
+			ZoneSystem.SendZones()
 
 			msg = name .. ".pos" .. pos .. " set to " .. tostring(hitPos) .. "."
 
@@ -351,8 +352,8 @@ concommand.Add("zone_setcolor",function(ply,cmd,args)
 		color.b = colB
 		color.a = colA
 
-		ZONE.Save()
-		ZONE.SendZones()
+		ZoneSystem.Save()
+		ZoneSystem.SendZones()
 
 		msg = name .. ".color set to " .. colR .. " " .. colG .. " " .. colB .. " " .. colA .. "."
 
@@ -390,8 +391,8 @@ concommand.Add("zone_settype",function(ply,cmd,args)
 	if zone then
 		zone.type = type
 
-		ZONE.Save()
-		ZONE.SendZones()
+		ZoneSystem.Save()
+		ZoneSystem.SendZones()
 
 		msg = name .. ".type set to " .. type .. "."
 
@@ -417,7 +418,7 @@ hook.Add("DeathrunBeginPrep","DeathrunResetFinishers",function()
 end)
 
 hook.Add("DeathrunBeginActive","DeathrunResetZoneTimer",function()
-	ZONE.StartTime = CurTime()
+	ZoneSystem.StartTime = CurTime()
 end)
 
 hook.Add("DeathrunPlayerInsideZone","DeathrunPlayerDenyZones",function(ply,_,zone)
@@ -446,7 +447,7 @@ hook.Add("DeathrunPlayerEnteredZone","DeathrunPlayerFinishMap",function(ply,name
 	or	ply:GetSpectate()
 	or	ply:Team() ~= DR_TEAM_RUNNER
 	or	ply.HasFinishedMap
-	or	ROUND.GetCurrent() == DR_ROUND_WAITING
+	or	RoundSystem.GetCurrent() == DR_ROUND_WAITING
 	then return end
 
 	ply.HasFinishedMap = true
@@ -475,7 +476,7 @@ hook.Add("DeathrunPlayerEnteredZone","DeathrunPlayerFinishMap",function(ply,name
 		placeTxt = placeStr .. "th"
 	end
 
-	local finishTime = CurTime() - ZONE.StartTime
+	local finishTime = CurTime() - ZoneSystem.StartTime
 
 	DR.ChatBroadcast(ply:Nick() .. " has finished the map in " .. placeTxt .. " place with a time of " .. string.ToMinutesSecondsMilliseconds(finishTime) .. "!")
 

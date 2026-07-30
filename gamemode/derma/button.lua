@@ -14,7 +14,7 @@ local DR_Button = {
 	["Font"] = "Deathrun_Derma_Small",
 	["Text"] = "Label",
 	["TextColor"] = color_white,
-	["TextFunction"] = DR.ShadowTextSimple,
+	["TextFunction"] = DR.UI.ShadowTextSimple,
 	["ColorUp"] = DermaColors.NeutralDark,
 	["ColorHover"] = DermaColors.NeutralLow,
 

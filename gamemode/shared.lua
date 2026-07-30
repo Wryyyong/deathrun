@@ -1,6 +1,12 @@
 local DR = DR
 
 local Colors = DR.Colors
+local RoundSystem = DR.RoundSystem
+
+local ColorRunner = Colors.RunnerTeam
+local ColorDeath = Colors.DeathTeam
+local ColorGhost = Colors.GhostTeam
+local ColorSilver = Colors.Silver
 
 sound.Add({
 	["name"] = "Deathrun.PlayerDeath",
@@ -54,15 +60,15 @@ sound.Add({
 })
 
 function GM:CreateTeams()
-	team.SetUp(DR_TEAM_RUNNER,"Runners",Colors.RunnerTeam,false)
-	team.SetUp(DR_TEAM_DEATH,"Deaths",Colors.DeathTeam,false)
-	team.SetUp(DR_TEAM_GHOST,"Ghosts",Colors.GhostTeam,false)
+	team.SetUp(DR_TEAM_RUNNER,"Runners",ColorRunner,false)
+	team.SetUp(DR_TEAM_DEATH,"Deaths",ColorDeath,false)
+	team.SetUp(DR_TEAM_GHOST,"Ghosts",ColorGhost,false)
 
 	team.SetSpawnPoint(DR_TEAM_RUNNER,"info_player_counterterrorist")
 	team.SetSpawnPoint(DR_TEAM_DEATH,"info_player_terrorist")
 	team.SetSpawnPoint(DR_TEAM_GHOST,"info_player_counterterrorist")
 
-	team.SetColor(DR_TEAM_SPECTATOR,Colors.Silver)
+	team.SetColor(DR_TEAM_SPECTATOR,ColorSilver)
 end
 
 function DR.GetAllPlaying()
@@ -89,7 +95,7 @@ hook.Add("SetupMove","DeathrunDisableSpectatorSpacebar",function(ply,data,cmd)
 	if
 		not (
 			ply:Alive()
-		and	ROUND.GetCurrent() == DR_ROUND_PREP
+		and	RoundSystem.GetCurrent() == DR_ROUND_PREP
 		)
 	then return end
 

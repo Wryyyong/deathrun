@@ -19,6 +19,13 @@ AddCSLuaFile("convars/cl_convars.lua")
 include("convars/sh_convars.lua")
 include("convars/sv_convars.lua")
 
+-- Round System
+AddCSLuaFile("roundsystem/sh_roundsystem.lua")
+AddCSLuaFile("roundsystem/cl_roundsystem.lua")
+
+include("roundsystem/sh_roundsystem.lua")
+include("roundsystem/sv_roundsystem.lua")
+
 -- init
 AddCSLuaFile("shared.lua")
 
@@ -50,13 +57,6 @@ AddCSLuaFile("mapvote/cl_mapvote.lua")
 
 include("mapvote/sh_mapvote.lua")
 include("mapvote/sv_mapvote.lua")
-
--- Round System
-AddCSLuaFile("roundsystem/sh_roundsystem.lua")
-AddCSLuaFile("roundsystem/cl_roundsystem.lua")
-
-include("roundsystem/sh_roundsystem.lua")
-include("roundsystem/sv_roundsystem.lua")
 
 -- zones
 AddCSLuaFile("zones/sh_zone.lua")
@@ -101,13 +101,18 @@ RunConsoleCommand("sv_sticktoground",0)
 RunConsoleCommand("sv_airaccelerate",0)
 RunConsoleCommand("sv_gravity",800)
 
+local DR = DR
+
 local ConVars = DR.ConVars
+local RoundSystem = DR.RoundSystem
 
 local CvAllTalk = ConVars.AllTalk
 local CvDeathModel = ConVars.DeathModel
+local CvDeathSprint = ConVars.DeathSprint
+local CvDisableDefaultDeathSpeed = ConVars.DisableDefaultDeathSpeed
 local CvDrownTimer = ConVars.DrownTimer
 local CvIdleTimer = ConVars.IdleTimer
-local CvDisableDefaultDeathSpeed = DR.ConVars.DisableDefaultDeathSpeed
+local CvStartingWeapon = ConVars.StartingWeapon
 
 local PlayerModels = {
 	"models/player/group01/male_01.mdl",
@@ -211,10 +216,9 @@ hook.Add("PlayerSpawn","DeathrunPlayerSpawn",function(ply)
 	if ply.FirstSpawn then
 		ply.FirstSpawn = false
 
-		local roundState = ROUND.GetCurrent()
+		local roundState = RoundSystem.GetCurrent()
 
 		if roundState == DR_ROUND_ACTIVE or roundState == DR_ROUND_OVER then
-			--print("firstspawn, spawning as spectator.")
 			SpecBuffer[#SpecBuffer + 1] = ply
 
 			timer.Simple(0,FixSpecBuffer)
@@ -256,7 +260,7 @@ function GM:PlayerLoadout(ply)
 
 	ply:StripWeapons()
 	ply:RemoveAllAmmo()
-	ply:Give(ConVars.StartingWeapon:GetString() or "weapon_crowbar")
+	ply:Give(CvStartingWeapon:GetString() or "weapon_crowbar")
 
 	ply:SetPlayerColor(team.GetColor(plyTeam):ToVector())
 
@@ -266,7 +270,7 @@ function GM:PlayerLoadout(ply)
 	ply:SetJumpPower(290)
 
 	if plyTeam == DR_TEAM_DEATH then
-		ply:SetRunSpeed(ConVars.DeathSprint:GetFloat())
+		ply:SetRunSpeed(CvDeathSprint:GetFloat())
 	end
 
 	ply:DrawViewModel(true)
@@ -382,7 +386,7 @@ function GM:CanPlayerSuicide(ply)
 		)
 	or	plyTeam == DR_TEAM_DEATH -- never allow suicide on death team
 	or	plyTeam == DR_TEAM_GHOST -- never allow suicide on ghost team
-	or	ROUND.GetCurrent() == DR_ROUND_PREP -- players cannot suicide during round prep time
+	or	RoundSystem.GetCurrent() == DR_ROUND_PREP -- players cannot suicide during round prep time
 	then
 		return false
 	end
@@ -393,7 +397,7 @@ function GM:EntityTakeDamage(target,dmgInfo)
 	local dmgOrig = dmgInfo:GetDamage()
 
 	if target:IsPlayer() then
-		local roundState = ROUND.GetCurrent()
+		local roundState = RoundSystem.GetCurrent()
 
 		if
 			roundState == DR_ROUND_WAITING
@@ -637,12 +641,7 @@ end
 --- }
 
 --- @type table<string,DeathAvoiderData>
-local DeathAvoiders = DR.DeathAvoiders or util.JSONToTable(file.Read(DeathAvoidersFile,"DATA")) or {
-	["STEAMID_EXAMPLE"] = {
-		["RoundsLeft"] = 3,
-		["LastPunished"] = os.time(),
-	},
-}
+local DeathAvoiders = DR.DeathAvoiders or util.JSONToTable(file.Read(DeathAvoidersFile,"DATA")) or {}
 DR.DeathAvoiders = DeathAvoiders
 
 function DR.SaveDeathAvoiders()

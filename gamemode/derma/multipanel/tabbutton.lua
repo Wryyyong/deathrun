@@ -1,4 +1,6 @@
 local DermaColors = DR.Colors.Derma
+local DermaColorsGoodDark = DermaColors.GoodDark
+local DermaColorsGood = DermaColors.Good
 
 --- @class DR_MultiPanelTabButton : DR_Button
 --- @field Parent DR_MultiPanel
@@ -6,12 +8,12 @@ local DR_MultiPanelTabButton = {
 	["CornerRadius"] = 4,
 	["OriginalX"] = 0,
 	["Index"] = -1,
-	["TextFunction"] = DR.ShadowText,
+	["TextFunction"] = DR.UI.ShadowText,
 }
 
 function DR_MultiPanelTabButton:Init()
 	self:SetSize(92,24)
-	self:SetColors(DermaColors.GoodDark,DermaColors.Good)
+	self:SetColors(DermaColorsGoodDark,DermaColorsGood)
 end
 
 function DR_MultiPanelTabButton:DoClick()

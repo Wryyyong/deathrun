@@ -1,8 +1,9 @@
 local DR = DR
 
-local CvRenderZones = DR.ConVars.RenderZones
+local ZoneSystem = DR.ZoneSystem
+local MapZones = ZoneSystem.MapZones
 
-local MapZones = ZONE.MapZones
+local CvRenderZones = DR.ConVars.RenderZones
 
 local MatLine = Material("color.vmt")
 
@@ -22,7 +23,7 @@ local BeamPointCache = {
 	Vector(),
 }
 
-function ZONE.DrawCuboid(pos1,pos2,col,alt)
+function ZoneSystem.DrawCuboid(pos1,pos2,col,alt)
 	local posMin,posMax = DR.VectorMinMax(pos1,pos2)
 
 	local rangeX = posMax[1] - posMin[1]
@@ -133,7 +134,7 @@ hook.Add("PostDrawTranslucentRenderables","DeathrunZoneCuboidDrawing",function()
 			color.a * math.Clamp(DR.InverseLerp(dist,MaxRenderDist,MinRenderDist),0,1)
 		)
 
-		ZONE.DrawCuboid(
+		ZoneSystem.DrawCuboid(
 			pos1,
 			pos2,
 			ColorCache,

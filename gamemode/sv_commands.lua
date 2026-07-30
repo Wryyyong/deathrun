@@ -1,7 +1,10 @@
 local DR = DR
 
-local Colors = DR.Colors
 local Hulls = DR.Hulls
+local RoundSystem = DR.RoundSystem
+local Stats = DR.Stats
+
+local ColorTurq = DR.Colors.Turq
 
 local CvUnstuckCooldown = DR.ConVars.UnstuckCooldown
 
@@ -44,7 +47,7 @@ function DR.SafeChatPrint(ply,msg)
 	if IsValid(ply) then
 		ply:DeathrunChatPrint(msg)
 	else
-		MsgC(Colors.Turq,msg .. "\n")
+		MsgC(ColorTurq,msg .. "\n")
 	end
 end
 
@@ -75,7 +78,7 @@ concommand.Add("deathrun_respawn",function(ply,cmd,args)
 		if
 			(
 				canAccess
-			or	ROUND.GetCurrent() == DR_ROUND_WAITING
+			or	RoundSystem.GetCurrent() == DR_ROUND_WAITING
 			)
 		and	ply:Team() ~= DR_TEAM_SPECTATOR
 		then
@@ -95,7 +98,7 @@ concommand.Add("deathrun_cleanup",function(ply,cmd,args)
 
 	if
 		DR.CanAccessCommand(ply,cmd)
-	or	ROUND.GetCurrent() == DR_ROUND_WAITING
+	or	RoundSystem.GetCurrent() == DR_ROUND_WAITING
 	then
 		game.CleanUpMap()
 
@@ -119,7 +122,7 @@ concommand.Add("deathrun_get_stats",function(ply,cmd,args)
 			local target = targetList[1]
 
 			net.Start("DeathrunSendStats")
-				local data = DR.ReturnStats(target)
+				local data = Stats.ReturnStats(target)
 				data.Name = target:Nick()
 
 				net.WriteTable(data)
@@ -131,7 +134,7 @@ concommand.Add("deathrun_get_stats",function(ply,cmd,args)
 		end
 	else
 		net.Start("DeathrunSendStats")
-			local data = DR.ReturnStats(ply)
+			local data = Stats.ReturnStats(ply)
 			data.Name = ply:Nick()
 
 			net.WriteTable(data)

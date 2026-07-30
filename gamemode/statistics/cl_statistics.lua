@@ -3,6 +3,7 @@ local DR = DR
 local Colors = DR.Colors
 local ConVars = DR.ConVars
 local Stats = DR.Stats
+local UI = DR.UI
 
 local ColorClouds = Colors.Clouds
 local ColorGrey = Colors.Grey
@@ -195,7 +196,7 @@ local function DrawYourStats()
 			PopUp_Stats_Width,
 			80
 		)
-		DR.ShadowTextSimple(
+		UI.ShadowTextSimple(
 			"STATS",
 			"Deathrun_3D2D_Large",
 			0,
@@ -213,7 +214,7 @@ local function DrawYourStats()
 		for idx = 1,PopUp_Stats_LabelCount do
 			local offsetY = posYPlus100 + 70 * (idx - 1)
 
-			DR.ShadowTextSimple(
+			UI.ShadowTextSimple(
 				PopUp_Stats_Labels[idx],
 				"Deathrun_3D2D_Small",
 				posXPlus20,
@@ -223,7 +224,7 @@ local function DrawYourStats()
 				TEXT_ALIGN_TOP,
 				0
 			)
-			DR.ShadowTextSimple(
+			UI.ShadowTextSimple(
 				data[idx],
 				"Deathrun_3D2D_Small",
 				PopUp_Stats_PosX + PopUp_Stats_Width - 20,
@@ -269,7 +270,7 @@ local function DrawMapRecords()
 		PopUp_Records_Width,
 		80
 	)
-	DR.ShadowTextSimple(
+	UI.ShadowTextSimple(
 		"TOP 3 RECORDS",
 		"Deathrun_3D2D_Large",
 		0,
@@ -283,7 +284,7 @@ local function DrawMapRecords()
 	for idx,data in ipairs(MapRecordsCache) do
 		local offsetY = -150 + 100 * (idx - 1)
 
-		DR.ShadowTextSimple(
+		UI.ShadowTextSimple(
 			idx .. ". " .. (data.Name or "---"),
 			"Deathrun_3D2D_Large",
 			-700,
@@ -293,7 +294,7 @@ local function DrawMapRecords()
 			TEXT_ALIGN_TOP,
 			2
 		)
-		DR.ShadowTextSimple(
+		UI.ShadowTextSimple(
 			data.Seconds or "--:--:--",
 			"Deathrun_3D2D_Large",
 			700,
@@ -315,7 +316,7 @@ local function DrawMapRecords()
 
 	local offsetY = -150 + 100 * 4
 
-	DR.ShadowTextSimple(
+	UI.ShadowTextSimple(
 		"Personal Best",
 		"Deathrun_3D2D_Large",
 		-700,
@@ -325,7 +326,7 @@ local function DrawMapRecords()
 		TEXT_ALIGN_TOP,
 		2
 	)
-	DR.ShadowTextSimple(
+	UI.ShadowTextSimple(
 		Stats.PersonalBestCache,
 		"Deathrun_3D2D_Large",
 		700,

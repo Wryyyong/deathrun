@@ -1,11 +1,14 @@
 local DR = DR
 
 local ConVars = DR.ConVars
+local RoundSystem = DR.RoundSystem
+local HUD = DR.UI.HUD
+
 local CvHelpUrl = ConVars.HelpURL
 
-local MotD = ConVars.MotD
-local CvMotDTitle = MotD.Title
-local CvMotDUrl = MotD.URL
+local ConVarsMotD = ConVars.MotD
+local CvMotD_Title = ConVarsMotD.Title
+local CvMotD_Url = ConVarsMotD.URL
 
 --- @class DR_MenuFrame : DR_Frame
 local DR_MenuFrame = {
@@ -64,7 +67,7 @@ function DR_QuickInfoFrame:Init()
 	self.Width,self.Height = width,height
 
 	self:RefreshSettings()
-	self:SetTitle(CvMotDTitle:GetString())
+	self:SetTitle(CvMotD_Title:GetString())
 
 	local background = self:Add("DLabel")
 	background:SetText("Please wait while page loads...")
@@ -75,14 +78,14 @@ function DR_QuickInfoFrame:Init()
 	local html = self:Add("DHTML")
 	html:SetSize(width - 8,height - 44)
 	html:SetPos(4,32)
-	html:OpenURL(CvMotDUrl:GetString())
+	html:OpenURL(CvMotD_Url:GetString())
 	html:SetAllowLua(true)
 end
 
 function DR_QuickInfoFrame:OnClose()
-	if ROUND.GetCurrent() ~= DR_ROUND_WAITING then return end
+	if RoundSystem.GetCurrent() ~= DR_ROUND_WAITING then return end
 
-	DR.OpenWaitingMenu()
+	HUD.OpenWaitingMenu()
 end
 
 derma.DefineControl("DR_MenuFrame","",DR_MenuFrame,"DR_Frame")

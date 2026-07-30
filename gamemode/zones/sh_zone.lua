@@ -7,12 +7,24 @@ local DR = DR
 -- corner2
 -- color
 -- type <start|end>
-ZONE = ZONE or {} -- global table
+local ZoneSystem = DR.ZoneSystem or {}
+DR.ZoneSystem = ZoneSystem
 
-ZONE.ZoneTypes = {"start","end","deny_team_death","deny_team_runner","deny","custom1","custom2","custom3"}
+ZoneSystem.ZoneTypes = {
+	"start",
+	"end",
+
+	"deny",
+	"deny_team_death",
+	"deny_team_runner",
+
+	"custom1",
+	"custom2",
+	"custom3",
+}
 
 --- @type table
-ZONE.MapZones = ZONE.MapZones or {}
+ZoneSystem.MapZones = ZoneSystem.MapZones or {}
 
 function DR.VectorMinMax(vec1,vec2)
 	local min = Vector()

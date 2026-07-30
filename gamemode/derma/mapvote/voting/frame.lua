@@ -1,3 +1,5 @@
+local MapVote = DR.MapVote
+
 --- @class DR_MapVoteFrameVoting : DR_MenuFrame
 local DR_MapVoteFrameVoting = {
 	["Title"] = "Map List",
@@ -5,10 +7,12 @@ local DR_MapVoteFrameVoting = {
 }
 
 function DR_MapVoteFrameVoting:Init()
+	local maxMaps = MapVote.MaxMaps
+
 	self:RefreshSettings()
 
 	-- GOLDEN RATIO FIBONACCI SPIRAL OMG
-	self:SetTall(MV.MaxMaps * 24 + (MV.MaxMaps - 1) * 4 + 44)
+	self:SetTall(maxMaps * 24 + (maxMaps - 1) * 4 + 44)
 	self:SetPos(4,0)
 	self:CenterVertical()
 	self:SetTitle("Mapvote")

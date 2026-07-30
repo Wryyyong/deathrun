@@ -1,4 +1,4 @@
-local DermaColors = DR.Colors.Derma
+local ColorBad = DR.Colors.Derma.Bad
 
 --- @class DR_CloseButton : DR_Button
 --- @field Parent DR_Frame
@@ -15,7 +15,7 @@ function DR_CloseButton.PaintOver(self,width,height)
 		0,
 		width,
 		height,
-		DermaColors.Bad
+		ColorBad
 	)
 end
 

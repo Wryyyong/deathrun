@@ -1,6 +1,8 @@
 local DR = DR
 
 local Colors = DR.Colors
+local UI = DR.UI
+
 local ColorClouds = Colors.Clouds
 local ColorGrey = Colors.Grey
 
@@ -28,7 +30,7 @@ function DR_MovedToSpectatorInnerBase:Paint(width,height)
 		height
 	)
 
-	DR.ShadowText(
+	UI.ShadowText(
 		self.Text,
 		TextFont,
 		8,
@@ -43,7 +45,7 @@ end
 --- @class DR_MovedToSpectatorInnerAFK : DR_MovedToSpectatorInnerBase
 local DR_MovedToSpectatorInnerAFK = {}
 
-DR_MovedToSpectatorInnerAFK.Text = DR.GetWordWrapText(
+DR_MovedToSpectatorInnerAFK.Text = UI.GetWordWrapText(
 	"You have been moved to the Spectator team for being AFK." .. TextCommon,
 	TextWidth,
 	TextFont
@@ -52,7 +54,7 @@ DR_MovedToSpectatorInnerAFK.Text = DR.GetWordWrapText(
 --- @class DR_MovedToSpectatorInnerReturning : DR_MovedToSpectatorInnerBase
 local DR_MovedToSpectatorInnerReturning = {}
 
-DR_MovedToSpectatorInnerReturning.Text = DR.GetWordWrapText(
+DR_MovedToSpectatorInnerReturning.Text = UI.GetWordWrapText(
 	"You are currently in spectator mode." .. TextCommon,
 	TextWidth,
 	TextFont

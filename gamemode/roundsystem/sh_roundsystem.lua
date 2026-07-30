@@ -1,6 +1,17 @@
 local DR = DR
 
 local ConVars = DR.ConVars
+local MapVote = DR.MapVote
+
+local CvAutoslayDelay = ConVars.AutoslayDelay
+local CvDeathAvoidPunishment = ConVars.DeathAvoidPunishment
+local CvDeathMax = ConVars.DeathMax
+local CvDeathRatio = ConVars.DeathRatio
+local CvFinishDuration = ConVars.FinishDuration
+local CvPlayRoundCues = ConVars.PlayRoundCues
+local CvPrepDuration = ConVars.PrepDuration
+local CvRoundDuration = ConVars.RoundDuration
+local CvRoundLimit = ConVars.RoundLimit
 
 --- @class RoundStateData
 local RoundStateDefault = {
@@ -12,19 +23,22 @@ local KillfeedTbl_Meta = {
 	["__index"] = RoundStateDefault,
 }
 
-ROUND = ROUND or {}
+local RoundSystem = DR.RoundSystem or {}
+DR.RoundSystem = RoundSystem
 
 -- Create round state constants
-ROUND_CURRENT = ROUND_CURRENT or DR_ROUND_WAITING
+RoundSystem.CurrentState = RoundSystem.CurrentState or DR_ROUND_WAITING
 
+-- heheh
 --- @type RoundStateData[]
-ROUND_STATES = ROUND_STATES or {} -- heheh
+local States = RoundSystem.States or {}
+RoundSystem.States = States
 
 -- for the round timer
 -- have a shared ROUND_TIMER variable which continuously counts down each .2 second
 -- timer going every .2s updating ROUND_TIMER so we have a precision of 1/5th of a second ?????
 -- network each time the timer is set, but calculate the timer on server and client individually
-DR_ROUND_TIMER = DR_ROUND_TIMER or 0
+RoundSystem.RoundTimer = RoundSystem.RoundTimer or 0
 
 sound.Add({
 	["name"] = "Deathrun.RoundStart",
@@ -37,64 +51,63 @@ sound.Add({
 --- @param fOnEnter function?
 --- @param fOnThink function?
 --- @param fOnExit function?
-function ROUND.AddState(state,fOnEnter,fOnThink,fOnExit) -- constant int, and 3 functions
-	ROUND_STATES[state] = setmetatable({
+function RoundSystem.AddState(state,fOnEnter,fOnThink,fOnExit) -- constant int, and 3 functions
+	RoundSystem.States[state] = setmetatable({
 		["OnEnter"] = fOnEnter,
 		["OnThink"] = fOnThink,
 		["OnExit"] = fOnExit,
 	},KillfeedTbl_Meta)
 end
 
-function ROUND.RoundThink(state)
-	local roundTbl = ROUND_STATES[state]
+function RoundSystem.RoundThink(state)
+	local roundTbl = RoundSystem.States[state]
 	if not roundTbl then return end
 
 	roundTbl.OnThink()
 end
 
-function ROUND.GetCurrent()
-	return ROUND_CURRENT
+function RoundSystem.GetCurrent()
+	return RoundSystem.CurrentState
 end
 
 -- keep thinking for the current round, i.e. to check for living players
 hook.Add("Think","ROUND_THINK",function()
-	ROUND.RoundThink(ROUND_CURRENT)
+	RoundSystem.RoundThink(RoundSystem.CurrentState)
 end)
 
-function ROUND.GetTimer()
-	return DR_ROUND_TIMER or 0
+function RoundSystem.GetTimer()
+	return RoundSystem.RoundTimer or 0
 end
 
 local TimerInterval = .2
 
 timer.Create("DeathrunRoundTimerCalculate",TimerInterval,0,function()
-	DR_ROUND_TIMER = math.max(0,DR_ROUND_TIMER - TimerInterval)
+	RoundSystem.RoundTimer = math.max(0,RoundSystem.RoundTimer - TimerInterval)
 end)
 
-DR.RoundsPlayed = DR.RoundsPlayed or 0
+RoundSystem.RoundsPlayed = RoundSystem.RoundsPlayed or 0
 
-function ROUND.GetRoundsPlayed()
-	return DR.RoundsPlayed
+function RoundSystem.GetRoundsPlayed()
+	return RoundSystem.RoundsPlayed
 end
 
-local DeathTeamStreaks = DR.DeathTeamStreaks or {}
-local DeathTimes = DR.DeathTimes or {}
-DR.DeathTeamStreaks = DeathTeamStreaks
-DR.DeathTimes = DeathTimes
+local DeathTeamStreaks = RoundSystem.DeathTeamStreaks or {}
+RoundSystem.DeathTeamStreak = DeathTeamStreaks
+
+local DeathTimes = RoundSystem.DeathTimes or {}
+RoundSystem.DeathTimes = DeathTimes
 
 local function WaitingStateCheck()
 	if #DR.GetAllPlaying() < 2 then return end
 
-	ROUND.RoundSwitch(DR_ROUND_PREP)
+	DR.RoundSystem.RoundSwitch(DR_ROUND_PREP)
 
 	timer.Remove("DeathrunWaitingStateCheck")
 end
 
-ROUND.AddState(
+RoundSystem.AddState(
 	DR_ROUND_WAITING,
 	function()
-		print("Round State: WAITING")
-
 		hook.Run("DeathrunBeginWaiting")
 
 		if not SERVER then return end
@@ -108,22 +121,17 @@ ROUND.AddState(
 
 		timer.Create("DeathrunWaitingStateCheck",5,0,WaitingStateCheck)
 	end,
-	nil,
-	function()
-		print("Exiting: WAITING")
-	end
+	nil
 )
 
-ROUND.AddState(
+RoundSystem.AddState(
 	DR_ROUND_PREP,
 	function()
-		print("Round State: PREP")
-
 		hook.Run("DeathrunBeginPrep")
 
 		if CLIENT then
 			-- round start cue
-			if ConVars.PlayRoundCues:GetBool() then
+			if CvPlayRoundCues:GetBool() then
 				surface.PlaySound("Deathrun.RoundStart")
 			end
 
@@ -132,11 +140,11 @@ ROUND.AddState(
 
 		game.CleanUpMap()
 
-		timer.Simple(ConVars.PrepDuration:GetInt(),function()
-			ROUND.RoundSwitch(DR_ROUND_ACTIVE)
+		timer.Simple(CvPrepDuration:GetInt(),function()
+			DR.RoundSystem.RoundSwitch(DR_ROUND_ACTIVE)
 		end)
 
-		ROUND.SetTimer(ConVars.PrepDuration:GetInt())
+		DR.RoundSystem.SetTimer(CvPrepDuration:GetInt())
 
 		for _,ply in player.Iterator() do
 			-- for some reason we need to do this otherwise people spawn as spec when they shouldnt!
@@ -155,8 +163,8 @@ ROUND.AddState(
 		local plyList = DR.GetAllPlaying()
 		local pool = table.Copy(plyList)
 
-		local deathsNeeded = math.ceil(ConVars.DeathRatio:GetFloat() * #plyList)
-		local deathsMax = ConVars.DeathMax:GetInt()
+		local deathsNeeded = math.ceil(CvDeathRatio:GetFloat() * #plyList)
+		local deathsMax = CvDeathMax:GetInt()
 
 		if deathsNeeded > deathsMax then
 			deathsNeeded = deathsMax
@@ -184,9 +192,6 @@ ROUND.AddState(
 			listUnordered[lowestIdx] = nil
 		end
 
-		print("\nList of Death counters:")
-		PrintTable(listOrdered)
-
 		local poolPunishment = DR.GetOnlineDeathAvoiders()
 
 		-- remove players from orderedpool and pool if they have been death 2 rounds in a row
@@ -194,14 +199,9 @@ ROUND.AddState(
 			local streak = DeathTeamStreaks[ply] or 0
 			if streak <= 0 then continue end
 
-			print(ply:Nick() .. " has a streak greater than 0, removing from pool(s).")
-
 			table.RemoveByValue(listOrdered,ply)
 			table.RemoveByValue(pool,ply)
 		end
-
-		PrintTable(listOrdered)
-		PrintTable(pool)
 
 		local timesLooped = 0
 
@@ -222,8 +222,6 @@ ROUND.AddState(
 				local ply = listOrdered[1]
 
 				if ply then
-					print("A death has been chosen through orderedpool: " .. ply:Nick())
-
 					deaths[#deaths + 1] = ply
 
 					table.remove(listOrdered,1)
@@ -234,8 +232,6 @@ ROUND.AddState(
 				local randPly = pool[randNum]
 
 				if randPly then
-					print("A death has been chosen: " .. randPly)
-
 					deaths[#deaths + 1] = randPly
 
 					table.remove(pool,randNum)
@@ -243,10 +239,6 @@ ROUND.AddState(
 			end
 
 			timesLooped = timesLooped + 1
-		end
-
-		if timesLooped >= 100 then
-			print("---WARNING!!!!! WHILE LOOP EXCEEDED ALLOWED LOOP TIME!!!!-----")
 		end
 
 		-- Set our selected Deaths
@@ -279,42 +271,28 @@ ROUND.AddState(
 
 			DeathTimes[ply] = deathTime
 			DeathTeamStreaks[ply] = deathTeamStreak
-
-			print(ply:Nick(),team.GetName(ply:Team()))
 		end
-
-		print("\nDeathTimes table:")
 
 		for ply,time in pairs(DeathTimes) do
-			if not IsValid(ply) then
-				DeathTimes[ply] = nil
-			else
-				print(ply:Nick(),time)
-			end
-		end
+			if IsValid(ply) then continue end
 
-		print("\nDeathTeamStreaks:")
-		PrintTable(DeathTeamStreaks)
+			DeathTimes[ply] = nil
+		end
 	end,
-	nil,
-	function()
-		print("Exiting: PREP")
-	end
+	nil
 )
 
 local function AutoslayDelay()
 	for _,ply in ipairs(DR.GetAllPlaying()) do
 		local idleTime = DR.CheckIdleTime()
 
-		print(ply,idleTime)
-
-		if idleTime <= ConVars.AutoslayDelay:GetInt() then continue end
+		if idleTime <= CvAutoslayDelay:GetInt() then continue end
 
 		net.Start("DeathrunSpectatorNotification")
 		net.Send(ply)
 
 		if ply:Team() == DR_TEAM_DEATH then
-			DR.PunishDeathAvoid(ply,ConVars.DeathAvoidPunishment:GetInt())
+			DR.PunishDeathAvoid(ply,CvDeathAvoidPunishment:GetInt())
 
 			DR.ChatBroadcast("Player " .. ply:Nick() .. " went AFK during a Death round! They will be punished.")
 		end
@@ -323,18 +301,16 @@ local function AutoslayDelay()
 	end
 end
 
-ROUND.AddState(
+RoundSystem.AddState(
 	DR_ROUND_ACTIVE,
 	function()
-		print("Round State: ACTIVE")
-
 		hook.Run("DeathrunBeginActive")
 
 		if not SERVER then return end
 
-		ROUND.SetTimer(ConVars.RoundDuration:GetInt())
+		DR.RoundSystem.SetTimer(CvRoundDuration:GetInt())
 
-		timer.Create("DeathrunAutoslay",ConVars.AutoslayDelay:GetInt() + 5,1,AutoslayDelay)
+		timer.Create("DeathrunAutoslay",CvAutoslayDelay:GetInt() + 5,1,AutoslayDelay)
 	end,
 	function()
 		if not SERVER then return end
@@ -342,7 +318,7 @@ ROUND.AddState(
 		local playing = DR.GetAllPlaying()
 
 		if #playing < 2 then
-			ROUND.RoundSwitch(DR_ROUND_WAITING)
+			DR.RoundSystem.RoundSwitch(DR_ROUND_WAITING)
 
 			return
 		end
@@ -369,7 +345,7 @@ ROUND.AddState(
 		local allGoneRunners = #runners == 0
 		local winTeam
 
-		if allGoneDeaths and allGoneRunners or ROUND.GetTimer() == 0 then
+		if allGoneDeaths and allGoneRunners or DR.RoundSystem.GetTimer() == 0 then
 			winTeam = DR_WIN_STALEMATE
 		elseif allGoneDeaths then
 			winTeam = DR_WIN_RUNNERS
@@ -377,30 +353,25 @@ ROUND.AddState(
 			winTeam = DR_WIN_DEATHS
 		else return end
 
-		ROUND.FinishRound(winTeam)
-	end,
-	function()
-		print("Exiting: ACTIVE")
+		DR.RoundSystem.FinishRound(winTeam)
 	end
 )
 
 local function RestartRound()
-	ROUND.RoundSwitch(DR_ROUND_PREP)
+	DR.RoundSystem.RoundSwitch(DR_ROUND_PREP)
 end
 
-ROUND.AddState(
+RoundSystem.AddState(
 	DR_ROUND_OVER,
 	function()
-		print("Round State: OVER")
-
 		hook.Run("DeathrunBeginOver")
 
-		local roundsPlayed = DR.RoundsPlayed + 1
-		DR.RoundsPlayed = roundsPlayed
+		local roundsPlayed = RoundSystem.RoundsPlayed + 1
+		RoundSystem.RoundsPlayed = roundsPlayed
 
 		if not SERVER then return end
 
-		local roundLimit = ConVars.RoundLimit:GetInt()
+		local roundLimit = CvRoundLimit:GetInt()
 
 		if
 			not hook.Run("DeathrunShouldMapSwitch",roundsPlayed)
@@ -408,9 +379,9 @@ ROUND.AddState(
 		then
 			DR.ChatBroadcast("Round " .. roundsPlayed .. " over. " .. (roundLimit - roundsPlayed) .. " rounds to go!")
 
-			local finishDur = ConVars.FinishDuration:GetInt()
+			local finishDur = CvFinishDuration:GetInt()
 
-			ROUND.SetTimer(finishDur)
+			DR.RoundSystem.SetTimer(finishDur)
 
 			timer.Simple(finishDur,RestartRound)
 		else
@@ -419,12 +390,9 @@ ROUND.AddState(
 			timer.Simple(3,function()
 				if hook.Run("DeathrunStartMapvote",roundsPlayed) then return end
 
-				MV.BeginMapVote()
+				MapVote.BeginMapVote()
 			end)
 		end
 	end,
-	nil,
-	function()
-		print("Exiting: OVER")
-	end
+	nil
 )

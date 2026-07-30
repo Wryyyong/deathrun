@@ -1,4 +1,6 @@
 local DermaColors = DR.Colors.Derma
+local DermaColorsGoodDark = DermaColors.GoodDark
+local DermaColorsGood = DermaColors.Good
 
 --- @class DR_NavButtonBase : DR_Button
 --- @field Parent DR_MultiPanel
@@ -8,7 +10,7 @@ local DR_NavButtonBase = {
 }
 
 function DR_NavButtonBase:Init()
-	self:SetColors(DermaColors.GoodDark,DermaColors.Good)
+	self:SetColors(DermaColorsGoodDark,DermaColorsGood)
 	self:SetSize(24,24)
 	self:SetText(self.Text)
 	self:SetZPos(self.ZPos)

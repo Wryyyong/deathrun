@@ -1,6 +1,8 @@
 local DR = DR
 
+local RoundSystem = DR.RoundSystem
 local Stats = DR.Stats
+local ZoneSystem = DR.ZoneSystem
 
 --- @enum (key) DeathrunPlayerStats
 local StatColumns = {
@@ -67,7 +69,7 @@ sql.Query(
 	]]
 )
 
-function DR.ReturnStats(ply)
+function Stats.ReturnStats(ply)
 	return sql.QueryRow(
 		[[
 			SELECT
@@ -151,7 +153,6 @@ local function UpdateMapRecords(plyFinish)
 	) or {} --- @cast newRecords -boolean
 
 	MapRecordsCache = newRecords
-	PrintTable(MapRecordsCache)
 
 	net.Start("DeathrunSendMapRecords")
 		--- @type Vector
@@ -182,9 +183,9 @@ local function UpdateMapRecords(plyFinish)
 end
 
 local function FindEndZone()
-	if not ZONE.MapZones then return end
+	if not ZoneSystem.MapZones then return end
 
-	for _,zone in pairs(ZONE.MapZones) do
+	for _,zone in pairs(ZoneSystem.MapZones) do
 		if zone.type ~= "end" then continue end
 
 		EndZone = zone
@@ -249,7 +250,7 @@ hook.Add("player_connect","UpdatePlayerIDs",function(data)
 end)
 
 hook.Add("PlayerDeath","DeathrunUpdateKillDeathStats",function(victim,_,attacker)
-	if ROUND.GetCurrent() ~= DR_ROUND_ACTIVE then return end
+	if RoundSystem.GetCurrent() ~= DR_ROUND_ACTIVE then return end
 
 	local victimTeam = victim:Team()
 
@@ -290,10 +291,10 @@ hook.Add("DeathrunRoundWin","DeathrunUpdateWinStats",function(winningTeam)
 end)
 
 -- displays a player's stats in front of their face
-function DR.DisplayStats(ply)
+function Stats.DisplayStats(ply)
 	if not IsValid(ply) then return end
 
-	local data = DR.ReturnStats(ply)
+	local data = Stats.ReturnStats(ply)
 	if not data then return end
 
 	net.Start("DeathrunDisplayStats")
@@ -321,10 +322,10 @@ hook.Add("PlayerLoadout","DisplayStatsForPlayers",function(ply)
 	then return end
 
 	timer.Simple(.5,function()
-		DR.DisplayStats(ply)
+		Stats.DisplayStats(ply)
 	end)
 end)
 
 concommand.Add("stats_test",function(ply,_,_)
-	PrintTable(DR.ReturnStats(ply) or {})
+	PrintTable(Stats.ReturnStats(ply) or {})
 end)

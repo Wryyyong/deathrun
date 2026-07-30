@@ -1,8 +1,8 @@
-local Crosshair = DR.ConVars.Crosshair
-local CvCrosshairColorR = Crosshair.ColorR
-local CvCrosshairColorG = Crosshair.ColorG
-local CvCrosshairColorB = Crosshair.ColorB
-local CvCrosshairColorA = Crosshair.ColorA
+local ConVarsCrosshair = DR.ConVars.Crosshair
+local CvCrosshair_ColorR = ConVarsCrosshair.ColorR
+local CvCrosshair_ColorG = ConVarsCrosshair.ColorG
+local CvCrosshair_ColorB = ConVarsCrosshair.ColorB
+local CvCrosshair_ColorA = ConVarsCrosshair.ColorA
 
 --- @class DR_CrosshairColorMixer : DColorMixer
 local DR_CrosshairColorMixer = {}
@@ -10,10 +10,10 @@ local DR_CrosshairColorMixer = {}
 function DR_CrosshairColorMixer:Init()
 	self:SetWide(self:GetParent():GetWide())
 
-	self:SetConVarR(CvCrosshairColorR:GetName())
-	self:SetConVarG(CvCrosshairColorG:GetName())
-	self:SetConVarB(CvCrosshairColorB:GetName())
-	self:SetConVarA(CvCrosshairColorA:GetName())
+	self:SetConVarR(CvCrosshair_ColorR:GetName())
+	self:SetConVarG(CvCrosshair_ColorG:GetName())
+	self:SetConVarB(CvCrosshair_ColorB:GetName())
+	self:SetConVarA(CvCrosshair_ColorA:GetName())
 end
 
 derma.DefineControl("DR_CrosshairColorMixer","",DR_CrosshairColorMixer,"DColorMixer")

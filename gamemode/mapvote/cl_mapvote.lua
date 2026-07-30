@@ -1,40 +1,42 @@
-MV.Active = MV.Active or false
+local MapVote = DR.MapVote
+
+MapVote.Active = MapVote.Active or false
 
 --- @type string[]
-local MapList = MV.MapList or {}
-MV.MapList = MapList
+local MapList = MapVote.MapList or {}
+MapVote.MapList = MapList
 
 --- @type table<string,integer>
-local VotingMapList = MV.VotingMapList or {}
-MV.VotingMapList = VotingMapList
+local VotingMapList = MapVote.VotingMapList or {}
+MapVote.VotingMapList = VotingMapList
 
 --- @type string[]
-local VotingMapsNoVotes = MV.VotingMapsNoVotes or {}
-MV.VotingMapsNoVotes = VotingMapsNoVotes
+local VotingMapsNoVotes = MapVote.VotingMapsNoVotes or {}
+MapVote.VotingMapsNoVotes = VotingMapsNoVotes
 
-local Nominations = MV.Nominations or {}
-MV.Nominations = Nominations
+local Nominations = MapVote.Nominations or {}
+MapVote.Nominations = Nominations
 
-function MV.IsMapNominated(mapname)
+function MapVote.IsMapNominated(mapname)
 	return table.HasValue(Nominations,mapname)
 end
 
-function MV.OpenFullMapList()
+function MapVote.OpenFullMapList()
 	local frame = vgui.Create("DR_MapVoteMapListFrame")
 	local inner = frame:Add("DR_MapVoteInner")
 	local scroll = inner:Add("DR_MapVoteScrollPanel")
 	local list = scroll:Add("DR_MapVoteListMapList")
-	list.Maps = MV.MapList
+	list.Maps = MapVote.MapList
 
-	MV.AllMapsListList = list
+	MapVote.AllMapsListList = list
 
-	MV.RepopulateMapList()
+	MapVote.RepopulateMapList()
 end
 
-function MV.RepopulateMapList()
-	if not IsValid(MV.AllMapsListList) then return end
+function MapVote.RepopulateMapList()
+	if not IsValid(MapVote.AllMapsListList) then return end
 
-	local list = MV.AllMapsListList
+	local list = MapVote.AllMapsListList
 	local maps = list.Maps
 
 	list:Clear()
@@ -55,21 +57,21 @@ function MV.RepopulateMapList()
 end
 
 -- actual voting menu place
-function MV.OpenVotingPanel()
+function MapVote.OpenVotingPanel()
 	local frame = vgui.Create("DR_MapVoteFrameVoting")
 	local inner = frame:Add("DR_MenuInner")
 	local list = inner:Add("DR_MapVoteListVoting")
 
-	MV.VotingPanelDerma = frame
-	MV.VotingPanelDermaList = list
+	MapVote.VotingPanelDerma = frame
+	MapVote.VotingPanelDermaList = list
 
-	MV.RefreshVotingPanel()
+	MapVote.RefreshVotingPanel()
 end
 
-function MV.RefreshVotingPanel()
-	if not IsValid(MV.VotingPanelDermaList) then return end
+function MapVote.RefreshVotingPanel()
+	if not IsValid(MapVote.VotingPanelDermaList) then return end
 
-	local list = MV.VotingPanelDermaList
+	local list = MapVote.VotingPanelDermaList
 	list:Clear()
 
 	-- get the winning map
@@ -102,24 +104,24 @@ function MV.RefreshVotingPanel()
 end
 
 timer.Create("MapvoteCountdownTimer",.2,0,function()
-	if not MV.Active then return end
+	if not MapVote.Active then return end
 
-	MV.TimeLeft = MV.TimeLeft - .2
+	MapVote.TimeLeft = MapVote.TimeLeft - .2
 
-	if IsValid(MV.VotingPanelDerma) then
-		MV.VotingPanelDerma:SetTitle("Mapvote - " .. string.ToMinutesSeconds(MV.TimeLeft > 0 and MV.TimeLeft or 0))
+	if IsValid(MapVote.VotingPanelDerma) then
+		MapVote.VotingPanelDerma:SetTitle("Mapvote - " .. string.ToMinutesSeconds(MapVote.TimeLeft > 0 and MapVote.TimeLeft or 0))
 
-		if MV.TimeLeft <= 0 then
+		if MapVote.TimeLeft <= 0 then
 			timer.Simple(4,function()
-				if not IsValid(MV.VotingPanelDerma) then return end
+				if not IsValid(MapVote.VotingPanelDerma) then return end
 
-				MV.VotingPanelDerma:Close()
+				MapVote.VotingPanelDerma:Close()
 			end)
 		end
 	end
 
-	if MV.TimeLeft < 0 then
-		MV.TimeLeft = 0
+	if MapVote.TimeLeft < 0 then
+		MapVote.TimeLeft = 0
 	end
 end)
 
@@ -137,7 +139,7 @@ local KeyNums = {
 }
 
 hook.Add("SetupMove","MapvoteReceiveKeys",function()
-	if not MV.Active then return end
+	if not MapVote.Active then return end
 
 	for idx = 1,#KeyNums do
 		if not input.WasKeyPressed(KeyNums[idx]) then continue end
@@ -151,12 +153,12 @@ end)
 net.Receive("MapvoteUpdateMapList",function()
 	table.CopyFromTo(net.ReadTable(),VotingMapList)
 
-	MV.RefreshVotingPanel()
+	MapVote.RefreshVotingPanel()
 end)
 
 net.Receive("MapvoteSetActive",function()
 	local active = net.ReadBool()
-	MV.Active = active
+	MapVote.Active = active
 
 	local sourceTbl
 	local newTime
@@ -170,22 +172,22 @@ net.Receive("MapvoteSetActive",function()
 	end
 
 	table.CopyFromTo(sourceTbl,VotingMapList)
-	MV.TimeLeft = newTime
+	MapVote.TimeLeft = newTime
 
 	if not active then return end
 
-	MV.OpenVotingPanel()
-	MV.RefreshVotingPanel()
+	MapVote.OpenVotingPanel()
+	MapVote.RefreshVotingPanel()
 end)
 
 net.Receive("MapvoteSyncNominations",function()
 	table.CopyFromTo(net.ReadTable(),Nominations)
 
-	MV.RepopulateMapList()
+	MapVote.RepopulateMapList()
 end)
 
 net.Receive("MapvoteSendAllMaps",function()
 	table.CopyFromTo(net.ReadTable().maps,MapList)
 
-	MV.OpenFullMapList()
+	MapVote.OpenFullMapList()
 end)

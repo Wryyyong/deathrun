@@ -1,12 +1,14 @@
 local DR = DR
 
 local Colors = DR.Colors
+local UI = DR.UI
+
 local ColorClouds = Colors.Clouds
 local ColorGrey = Colors.Grey
 
 local TextWidth = 600 - 24
 local TextFont = "Deathrun_DefaultHUD_MediumLight"
-local MenuText = DR.GetWordWrapText(
+local MenuText = UI.GetWordWrapText(
 	[[Welcome to the server! Currently there are no players online.
 This means that you can explore the map at your own pace
 from the safety of godmode, so you can practice
@@ -32,7 +34,7 @@ function DR_WaitingMenuInner:Paint(width,height)
 		height
 	)
 
-	DR.ShadowText(
+	UI.ShadowText(
 		MenuText,
 		TextFont,
 		8,

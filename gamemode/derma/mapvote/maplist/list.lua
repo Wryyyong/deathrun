@@ -1,4 +1,8 @@
+local DR = DR
+
 local Colors = DR.Colors
+local MapVote = DR.MapVote
+
 local ColorGrey = Colors.Grey
 local ColorTurq = Colors.Turq
 
@@ -12,7 +16,7 @@ function DR_MapVoteListMapList:AddRow(map)
 	local row = self:Add("DR_MapVoteRowBase")
 	row.MapName = map
 
-	local isNominated = MV.IsMapNominated(map)
+	local isNominated = MapVote.IsMapNominated(map)
 
 	row.LabelColor =
 		isNominated

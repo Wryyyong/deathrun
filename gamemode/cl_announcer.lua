@@ -1,28 +1,17 @@
 local DR = DR
-local Colors = DR.Colors
 
-local CvAnnouncements_Enabled = DR.ConVars.Announcements.Enabled
-local CvAnnouncements_Interval = DR.ConVars.Announcements.Interval
+local Colors = DR.Colors
+local ColorAlizarin = Colors.Alizarin
+local ColorClouds = Colors.Clouds
+
+local ConVarsAnnouncements = DR.ConVars.Announcements
+local CvAnnouncements_Enabled = ConVarsAnnouncements.Enabled
+local CvAnnouncements_Interval = ConVarsAnnouncements.Interval
+
 local AnnouncementCounter = 1
 
 DR.AnnouncerName = DR.AnnouncerName or "HELP" -- incase the file refreshes
-DR.AnnouncerColor = DR.AnnouncerColor or Colors.Alizarin
-
-function DR.SetAnnouncerName(name)
-	DR.AnnouncerName = name
-end
-
-function DR.SetAnnouncerColor(col)
-	DR.AnnouncerColor = col
-end
-
-function DR.SetAnnouncerTable(tbl)
-	msgs = tbl
-end
-
-function DR.GetAnnouncerTable()
-	return msgs
-end
+DR.AnnouncerColor = DR.AnnouncerColor or ColorAlizarin
 
 local AnnouncementMessages = {
 	"Don't hesitate to ask the staff any questions, they are here to help.",
@@ -40,25 +29,28 @@ local AnnouncementMessages = {
 	"Disconnecting while on the Death team is not allowed and will be considered death avoidance. You will be forced to play extra rounds as Death.",
 }
 
-function DR.AddAnnouncement(ann)
-	table.insert(AnnouncementMessages,ann or "Blank Announcement")
+--- @param announcement string
+function DR.AddAnnouncement(announcement)
+	AnnouncementMessages[#AnnouncementMessages + 1] = announcement
 end
 
-local function DoAnnouncements()
+timer.Create("DeathrunAnnouncementTimer",CvAnnouncements_Interval:GetFloat(),0,function()
 	if not CvAnnouncements_Enabled:GetBool() then return end
 
-	chat.AddText(Colors.Clouds,"[",DR.AnnouncerColor,DR.AnnouncerName,Colors.Clouds,"] " .. AnnouncementMessages[AnnouncementCounter])
-	AnnouncementCounter = AnnouncementCounter + 1
+	chat.AddText(
+		ColorClouds,
+		"[",
+		DR.AnnouncerColor,
+		DR.AnnouncerName,
+		ColorClouds,
+		"] " .. AnnouncementMessages[AnnouncementCounter]
+	)
 
-	if AnnouncementCounter > #AnnouncementMessages then
-		AnnouncementCounter = 1
-	end
-end
+	AnnouncementCounter = next(AnnouncementMessages,AnnouncementCounter) or 1
+end)
 
 cvars.AddChangeCallback("deathrun_announcement_interval",function(_,_,new)
 	if not timer.Exists("DeathrunAnnouncementTimer") then return end
 
 	timer.Adjust("DeathrunAnnouncementTimer",tonumber(new))
 end,"DeathrunAnnouncementInterval")
-
-timer.Create("DeathrunAnnouncementTimer",CvAnnouncements_Interval:GetFloat(),0,DoAnnouncements)

@@ -1,8 +1,12 @@
+local DR = DR
+
 local Colors = DR.Colors
+local UI = DR.UI
+
 local ColorClouds = Colors.Clouds
 local ColorTurq = Colors.Turq
 
-local DermaColors = Colors.Derma
+local ColorNeutralHigh = Colors.Derma.NeutralHigh
 
 local MatBlur = Material("pp/blurscreen")
 
@@ -86,7 +90,7 @@ function DR_Frame:Paint(width,height)
 	local wide,tall = self:GetSize()
 	local heightInner = height - 8
 
-	surface.SetDrawColor(DermaColors.NeutralHigh)
+	surface.SetDrawColor(ColorNeutralHigh)
 	self:DrawPanelBlur(4)
 
 	surface.SetDrawColor(self:GetSecondaryColor())
@@ -123,7 +127,7 @@ function DR_Frame:Paint(width,height)
 	surface.DrawRect(0,heightInner,width,4)
 
 	-- title
-	DR.ShadowTextSimple(
+	UI.ShadowTextSimple(
 		self.Title,
 		"Deathrun_Derma_WindowTitle",
 		8,

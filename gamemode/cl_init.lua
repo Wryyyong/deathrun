@@ -5,6 +5,9 @@ include("config.lua")
 include("convars/sh_convars.lua")
 include("convars/cl_convars.lua")
 
+include("roundsystem/sh_roundsystem.lua")
+include("roundsystem/cl_roundsystem.lua")
+
 include("shared.lua")
 
 include("cl_fonts.lua")
@@ -19,9 +22,6 @@ include("cl_scoreboard.lua")
 include("mapvote/sh_mapvote.lua")
 include("mapvote/cl_mapvote.lua")
 
-include("roundsystem/sh_roundsystem.lua")
-include("roundsystem/cl_roundsystem.lua")
-
 include("zones/sh_zone.lua")
 include("zones/cl_zone.lua")
 
@@ -33,15 +33,28 @@ include("cl_announcer.lua")
 include("statistics/sh_statistics.lua")
 include("statistics/cl_statistics.lua")
 
-local CvThirdPerson_Enabled = DR.ConVars.ThirdPerson.Enabled
-local CvThirdPerson_OffsetX = DR.ConVars.ThirdPerson.OffsetX
-local CvThirdPerson_OffsetY = DR.ConVars.ThirdPerson.OffsetY
-local CvThirdPerson_OffsetZ = DR.ConVars.ThirdPerson.OffsetZ
-local CvThirdPerson_OffsetPitch = DR.ConVars.ThirdPerson.OffsetPitch
-local CvThirdPerson_OffsetYaw = DR.ConVars.ThirdPerson.OffsetYaw
-local CvThirdPerson_OffsetRoll = DR.ConVars.ThirdPerson.OffsetRoll
-local CvThirdPerson_Opacity = DR.ConVars.ThirdPerson.Opacity
-local CvThirdPerson_FadeDistance = DR.ConVars.ThirdPerson.FadeDistance
+local DR = DR
+
+local Colors = DR.Colors
+local ConVars = DR.ConVars
+
+local ColorClouds = Colors.Clouds
+local ColorTurq = Colors.Turq
+
+local CvSpectateOnly = ConVars.SpectateOnly
+
+local CvAutoJump_Enabled = ConVars.AutoJump.Enabled
+
+local ConVarsThirdPerson = ConVars.ThirdPerson
+local CvThirdPerson_Enabled = ConVarsThirdPerson.Enabled
+local CvThirdPerson_OffsetX = ConVarsThirdPerson.OffsetX
+local CvThirdPerson_OffsetY = ConVarsThirdPerson.OffsetY
+local CvThirdPerson_OffsetZ = ConVarsThirdPerson.OffsetZ
+local CvThirdPerson_OffsetPitch = ConVarsThirdPerson.OffsetPitch
+local CvThirdPerson_OffsetYaw = ConVarsThirdPerson.OffsetYaw
+local CvThirdPerson_OffsetRoll = ConVarsThirdPerson.OffsetRoll
+local CvThirdPerson_Opacity = ConVarsThirdPerson.Opacity
+local CvThirdPerson_FadeDistance = ConVarsThirdPerson.FadeDistance
 
 concommand.Add("deathrun_test_menu",function()
 	local frame = vgui.Create("Panel")
@@ -55,11 +68,11 @@ end)
 
 function DR.ChatMessage(msg)
 	chat.AddText(
-		DR.Colors.Clouds,
+		ColorClouds,
 		"[",
-		DR.Colors.Turq,
+		ColorTurq,
 		"DEATHRUN",
-		DR.Colors.Clouds,
+		ColorClouds,
 		"] ",
 		msg
 	)
@@ -216,11 +229,11 @@ cvars.AddChangeCallback("deathrun_autojump",function(_,_,new)
 	LocalPlayer().AutoJumpEnabled = tobool(new)
 end,"DeathrunAutoJumpConVarChange")
 
-RunConsoleCommand("deathrun_internal_set_autojump",DR.ConVars.AutoJump.Enabled:GetInt())
+RunConsoleCommand("deathrun_internal_set_autojump",CvAutoJump_Enabled:GetInt())
 
 -- in case some trickery happens on the client we'll sync this right up. They can probably destroy the timer but whatever
 timer.Create("DeathrunAutojumpSendToServer",5,0,function()
-	RunConsoleCommand("deathrun_internal_set_autojump",DR.ConVars.AutoJump.Enabled:GetInt())
+	RunConsoleCommand("deathrun_internal_set_autojump",CvAutoJump_Enabled:GetInt())
 end)
 
 cvars.AddChangeCallback("deathrun_spectate_only",function(_,_,new)
@@ -228,11 +241,11 @@ cvars.AddChangeCallback("deathrun_spectate_only",function(_,_,new)
 end)
 
 hook.Add("InitPostEntity","DeathrunSendSpectateConVarInfo",function()
-	RunConsoleCommand("deathrun_set_spectate",DR.ConVars.SpectateOnly:GetInt())
+	RunConsoleCommand("deathrun_set_spectate",CvSpectateOnly:GetInt())
 
-	if not DR.ConVars.SpectateOnly:GetBool() then return end
+	if not CvSpectateOnly:GetBool() then return end
 
-	DR.OpenMovedToSpectatorMenu(true)
+	DR.UI.OpenMovedToSpectatorMenu(true)
 end)
 
 function DR.SetClientHullSizes()

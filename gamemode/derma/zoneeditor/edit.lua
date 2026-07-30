@@ -1,3 +1,5 @@
+local ZoneSystem = DR.ZoneSystem
+
 --- @class DR_ZoneEditComboBox : DComboBox
 local DR_ZoneEditComboBox = {}
 
@@ -8,7 +10,7 @@ function DR_ZoneEditComboBox:Init()
 	)
 	self:SetValue(LocalPlayer().LastSelectZone or "Select Zone")
 
-	for name in pairs(ZONE.MapZones) do
+	for name in pairs(ZoneSystem.MapZones) do
 		self:AddChoice(name)
 	end
 end
@@ -19,7 +21,7 @@ function DR_ZoneEditComboBox:OnSelect(_,value)
 	local zoneData = self.ZoneData
 	if not zoneData then return end
 
-	local zone = ZONE.MapZones[value]
+	local zone = ZoneSystem.MapZones[value]
 	local cache = zoneData.InfoCache
 	local color = zone.color
 

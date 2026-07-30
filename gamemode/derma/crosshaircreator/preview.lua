@@ -1,3 +1,5 @@
+local HUD = DR.UI.HUD
+
 --- @class DR_CrosshairPreview : DPanel
 local DR_CrosshairPreview = {}
 
@@ -20,7 +22,7 @@ function DR_CrosshairPreview:Paint(width,height)
 		height
 	)
 
-	DR.DrawCrosshair(
+	HUD.DrawCrosshair(
 		width * .5,
 		height * .5
 	)

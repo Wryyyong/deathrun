@@ -1,5 +1,9 @@
 local DR = DR
 
+local UI = DR.UI
+
+local ColorTurq = DR.Colors.Turq
+
 --- @alias DeathrunScoreboardSpecial {
 --- 	Icon: string?,
 --- 	Color: Color?,
@@ -13,41 +17,44 @@ local Special_Meta = {
 	["__index"] = Special_Default,
 }
 
+local Scoreboard = UI.Scoreboard or {}
+UI.Scoreboard = Scoreboard
+
 --- @type table<string,DeathrunScoreboardSpecial>
-local ScoreboardSpecials = DR.ScoreboardSpecials or setmetatable({},{
+local Specials = Scoreboard.Specials or setmetatable({},{
 	["__index"] = function()
 		return Special_Default
 	end,
 })
-DR.ScoreboardSpecials = ScoreboardSpecials
+Scoreboard.Specials = Specials
 
-local ScoreboardPanel = DR.ScoreboardPanel
-DR.ScoreboardPanel = ScoreboardPanel
+local Panel = Scoreboard.Panel
+Scoreboard.Panel = Panel
 
 --- @param scoreboardNew DR_Scoreboard?
-function DR.SetScoreboard(scoreboardNew)
-	local scoreboardOld = DR.ScoreboardPanel
+function Scoreboard.Set(scoreboardNew)
+	local scoreboardOld = Scoreboard.Panel
 
 	if IsValid(scoreboardOld) then
 		scoreboardOld:Remove()
 	end
 
-	ScoreboardPanel = scoreboardNew
-	DR.ScoreboardPanel = ScoreboardPanel
+	Panel = scoreboardNew
+	Scoreboard.Panel = Panel
 end
 
-function DR.CreateScoreboard()
-	if IsValid(DR.ScoreboardPanel) then return end
+function Scoreboard.Create()
+	if IsValid(Scoreboard.Panel) then return end
 
 	local scoreboard = vgui.Create("DR_Scoreboard")
-	DR.SetScoreboard(scoreboard)
+	Scoreboard.Set(scoreboard)
 
 	local scroll = scoreboard:Add("DR_ScoreboardScrollPanel")
 	local list = scroll:Add("DR_ScoreboardList")
 
 	list:AddTop()
 
-	list:AddHeader("[Hint] Right Click to scroll and interact with scoreboard.",DR.Colors.Turq)
+	list:AddHeader("[Hint] Right Click to scroll and interact with scoreboard.",ColorTurq)
 
 	list:AddTeamGroup(DR_TEAM_DEATH)
 	list:AddTeamGroup(DR_TEAM_RUNNER)
@@ -61,33 +68,33 @@ function DR.CreateScoreboard()
 	scoreboard.IsOpen = true
 end
 
-function DR.DestroyScoreboard()
-	if not IsValid(ScoreboardPanel) then return end
+function Scoreboard.Destroy()
+	if not IsValid(Panel) then return end
 
-	ScoreboardPanel.IsOpen = false
+	Panel.IsOpen = false
 end
 
-GM.ScoreboardHide = DR.DestroyScoreboard
+GM.ScoreboardHide = Scoreboard.Destroy
 
-DR.DestroyScoreboard()
+Scoreboard.Destroy()
 
 function GM:ScoreboardShow()
 	-- return false to suppress scoreboard opening
 	if hook.Run("DeathrunOpenScoreboard") == false then return end
 
-	DR.CreateScoreboard()
+	Scoreboard.Create()
 end
 
 hook.Add("CreateMove","DeathrunScoreboardPopup",function(cmd)
 	if
 		not (
-			ScoreboardPanel
-		and	ScoreboardPanel.IsOpen
+			Panel
+		and	Panel.IsOpen
 		and	input.WasMousePressed(MOUSE_RIGHT)
 		)
 	then return end
 
-	ScoreboardPanel:MakePopup()
+	Panel:MakePopup()
 end)
 
 --- @param id64 string
@@ -95,8 +102,8 @@ end)
 --- @param color Color?
 --- @param tag string?
 --- @param rank integer?
-function DR.SetScoreboardDisplay(id64,icon,color,tag,rank) -- leave nil to use defaults
-	ScoreboardSpecials[id64] = setmetatable({
+function Scoreboard.SetDisplay(id64,icon,color,tag,rank) -- leave nil to use defaults
+	Specials[id64] = setmetatable({
 		["Icon"] = icon,
 		["Color"] = color,
 		["Tag"] = tag,
@@ -108,7 +115,7 @@ end
 local ColorCyan = Color(140,250,239)
 
 -- arizard
-DR.SetScoreboardDisplay(
+Scoreboard.SetDisplay(
 	"76561198020843439",
 	"icon16/cup.png",
 	Color(50,200,0),
@@ -116,7 +123,7 @@ DR.SetScoreboardDisplay(
 )
 
 -- zelpa
-DR.SetScoreboardDisplay(
+Scoreboard.SetDisplay(
 	"76561198018967904",
 	"icon16/rainbow.png",
 	Color(200,0,0),
@@ -124,7 +131,7 @@ DR.SetScoreboardDisplay(
 )
 
 -- krystal
-DR.SetScoreboardDisplay(
+Scoreboard.SetDisplay(
 	"76561198216519239",
 	"icon16/drink.png",
 	Color(255,200,255),
@@ -132,7 +139,7 @@ DR.SetScoreboardDisplay(
 )
 
 -- tarkus
-DR.SetScoreboardDisplay(
+Scoreboard.SetDisplay(
 	"76561198141687640",
 	"icon16/cup_error.png",
 	Color(0,150,0),
@@ -140,7 +147,7 @@ DR.SetScoreboardDisplay(
 )
 
 -- kaay
-DR.SetScoreboardDisplay(
+Scoreboard.SetDisplay(
 	"76561198254542787",
 	"icon16/anchor.png",
 	Color(166,107,190),
@@ -148,7 +155,7 @@ DR.SetScoreboardDisplay(
 )
 
 -- gamefresh
-DR.SetScoreboardDisplay(
+Scoreboard.SetDisplay(
 	"76561198089131001",
 	"icon16/map_go.png",
 	Color(153,255,51),
@@ -156,7 +163,7 @@ DR.SetScoreboardDisplay(
 )
 
 -- fich
-DR.SetScoreboardDisplay(
+Scoreboard.SetDisplay(
 	"76561198138707687",
 	"icon16/joystick.png",
 	ColorCyan,
@@ -164,7 +171,7 @@ DR.SetScoreboardDisplay(
 )
 
 -- haina
-DR.SetScoreboardDisplay(
+Scoreboard.SetDisplay(
 	"76561198104250962",
 	"icon16/tux.png",
 	ColorCyan,
@@ -172,7 +179,7 @@ DR.SetScoreboardDisplay(
 )
 
 -- josh
-DR.SetScoreboardDisplay(
+Scoreboard.SetDisplay(
 	"76561198132396847",
 	"icon16/lightning.png",
 	Color(255,18,18),
@@ -180,7 +187,7 @@ DR.SetScoreboardDisplay(
 )
 
 -- preck
-DR.SetScoreboardDisplay(
+Scoreboard.SetDisplay(
 	"76561198073959598",
 	"icon16/money.png",
 	Color(255,192,72),
@@ -189,5 +196,5 @@ DR.SetScoreboardDisplay(
 
 -- do not remove or i kill u
 hook.Add("GetScoreboardSpecial","DeathrunInternalGetScoreboardSpecial",function(ply)
-	return ScoreboardSpecials[ply:SteamID64()]
+	return Specials[ply:SteamID64()]
 end)

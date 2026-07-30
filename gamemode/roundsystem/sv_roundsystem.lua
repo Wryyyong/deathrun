@@ -1,15 +1,16 @@
 local DR = DR
 
 local ConVars = DR.ConVars
+local RoundSystem = DR.RoundSystem
 
 util.AddNetworkString("DeathrunUpdateRoundState")
 util.AddNetworkString("DeathrunSyncRoundTimer")
 util.AddNetworkString("DeathrunSendMVPs")
 
 -- send this each time round state changes so that the player can update themselves
-function ROUND.RoundSwitch(round) -- this can be used to switch or restart states
-	local roundTblOld = ROUND_STATES[ROUND_CURRENT]
-	local roundTblNew = ROUND_STATES[round]
+function RoundSystem.RoundSwitch(round) -- this can be used to switch or restart states
+	local roundTblOld = RoundSystem.States[RoundSystem.CurrentState]
+	local roundTblNew = RoundSystem.States[round]
 	if not roundTblNew then return end
 
 	if roundTblOld then
@@ -18,7 +19,7 @@ function ROUND.RoundSwitch(round) -- this can be used to switch or restart state
 
 	roundTblNew.OnEnter()
 
-	ROUND_CURRENT = round
+	RoundSystem.CurrentState = round
 
 	net.Start("DeathrunUpdateRoundState")
 		net.WriteUInt(round,16)
@@ -32,19 +33,19 @@ end
 concommand.Add("round_switch",function(ply,_,args)
 	if IsValid(ply) then return end
 
-	ROUND.RoundSwitch(tonumber(args[1]))
+	RoundSystem.RoundSwitch(tonumber(args[1]))
 end)
 
 hook.Add("PlayerInitialSpawn","RoundSyncCurrent",function(ply)
 	net.Start("DeathrunUpdateRoundState")
-		net.WriteUInt(ROUND.GetCurrent(),16)
+		net.WriteUInt(RoundSystem.GetCurrent(),16)
 	net.Send(ply)
 end)
 
 --- @param ply Player?
-function ROUND.SyncTimer(ply)
+function RoundSystem.SyncTimer(ply)
 	net.Start("DeathrunSyncRoundTimer")
-		net.WriteUInt(ROUND.GetTimer(),16)
+		net.WriteUInt(RoundSystem.GetTimer(),16)
 
 	if ply then
 		net.Send(ply)
@@ -54,14 +55,14 @@ function ROUND.SyncTimer(ply)
 end
 
 --- @param seconds number
-function ROUND.SetTimer(seconds)
-	DR_ROUND_TIMER = seconds
+function RoundSystem.SetTimer(seconds)
+	RoundSystem.RoundTimer = seconds
 
-	ROUND.SyncTimer()
+	RoundSystem.SyncTimer()
 end
 
 hook.Add("PlayerInitialSpawn","DeathrunCleanupSinglePlayer",function(ply)
-	ROUND.SyncTimer(ply)
+	RoundSystem.SyncTimer(ply)
 
 	if player.GetCount() > 1 then return end
 
@@ -72,7 +73,7 @@ end)
 
 -- handle death avoidance here, using the functions defined in init.lua
 hook.Add("PlayerDisconnected","DeathrunWatchDeathAvoid",function(ply)
-	local roundState = ROUND.GetCurrent()
+	local roundState = RoundSystem.GetCurrent()
 
 	if
 		not (
@@ -106,10 +107,8 @@ hook.Add("DeathrunBeginActive","DeathrunMVPs",function()
 	end
 end)
 
-function ROUND.FinishRound(winningTeam)
-	print(winningTeam)
-
-	ROUND.RoundSwitch(DR_ROUND_OVER)
+function RoundSystem.FinishRound(winningTeam)
+	RoundSystem.RoundSwitch(DR_ROUND_OVER)
 
 	DR.ChatBroadcast(
 		"Round over! " .. (
@@ -159,7 +158,7 @@ function ROUND.FinishRound(winningTeam)
 end
 
 -- initial round
-hook.Add("InitPostEntity","DeathrunInitialRoundState",function() ROUND.RoundSwitch(DR_ROUND_WAITING) end)
+hook.Add("InitPostEntity","DeathrunInitialRoundState",function() RoundSystem.RoundSwitch(DR_ROUND_WAITING) end)
 
 local BalloonDir = Vector()
 local BalloonAngle = Angle()

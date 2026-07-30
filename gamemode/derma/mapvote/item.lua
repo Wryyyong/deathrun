@@ -1,11 +1,11 @@
-local Colors = DR.Colors
+local ColorTurq = DR.Colors.Turq
 
 --- @class DR_MapVoteItemBase : DR_MenuItemBase
 --- @field Parent DR_MapVoteListBase
 local DR_MapVoteItemBase = {}
 
 function DR_MapVoteItemBase:Init()
-	self.TextColor = Colors.Turq
+	self.TextColor = ColorTurq
 
 	self:RefreshSettings()
 end

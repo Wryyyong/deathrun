@@ -1,3 +1,5 @@
+local UI = DR.UI
+
 local ShadowColorCache = {}
 
 --- @param color Color
@@ -26,13 +28,13 @@ end
 
 --- @param textFunc fun(text: string | any,font: string?,x: number?, y: number?,color: Color?,xAlign: number?,yAlign: number?)
 --- @param text string
---- @param font string?
---- @param x number = 0
---- @param y number = 0
---- @param color Color = color_white
---- @param xAlign number?
---- @param yAlign number?
---- @param dist number = 1
+--- @param font string? = "DermaDefault"
+--- @param x number? = 0
+--- @param y number? = 0
+--- @param color Color? = color_white
+--- @param xAlign number? = TEXT_ALIGN_LEFT
+--- @param yAlign number? = TEXT_ALIGN_TOP
+--- @param dist number? = 1
 local function ShadowTextBase(textFunc,text,font,x,y,color,xAlign,yAlign,dist)
 	x = x or 0
 	y = y or 0
@@ -77,33 +79,33 @@ local function ShadowTextBase(textFunc,text,font,x,y,color,xAlign,yAlign,dist)
 end
 
 --- @param text string
---- @param font string?
---- @param x number = 0
---- @param y number = 0
---- @param color Color = color_white
---- @param xAlign number?
---- @param yAlign number?
---- @param dist number = 1
-function DR.ShadowText(text,font,x,y,color,xAlign,yAlign,dist)
+--- @param font string? = "DermaDefault"
+--- @param x number? = 0
+--- @param y number? = 0
+--- @param color Color? = color_white
+--- @param xAlign number? = TEXT_ALIGN_LEFT
+--- @param yAlign number? = nil
+--- @param dist number? = 1
+function UI.ShadowText(text,font,x,y,color,xAlign,yAlign,dist)
 	ShadowTextBase(draw.DrawText,text,font,x,y,color,xAlign,nil,dist)
 end
 
 --- @param text string
---- @param font string?
---- @param x number = 0
---- @param y number = 0
---- @param color Color = color_white
---- @param xAlign number?
---- @param yAlign number?
---- @param dist number = 1
-function DR.ShadowTextSimple(text,font,x,y,color,xAlign,yAlign,dist)
+--- @param font string? = "DermaDefault"
+--- @param x number? = 0
+--- @param y number? = 0
+--- @param color Color? = color_white
+--- @param xAlign number? = TEXT_ALIGN_LEFT
+--- @param yAlign number? = TEXT_ALIGN_TOP
+--- @param dist number? = 1
+function UI.ShadowTextSimple(text,font,x,y,color,xAlign,yAlign,dist)
 	ShadowTextBase(draw.SimpleText,text,font,x,y,color,xAlign,yAlign,dist)
 end
 
 --- @param text string
 --- @param width number
 --- @param font string
-function DR.GetWordWrapText(text,width,font)
+function UI.GetWordWrapText(text,width,font)
 	local displayText = ""
 	local displayLine = ""
 

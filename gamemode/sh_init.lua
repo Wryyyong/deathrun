@@ -1,6 +1,8 @@
 print("Creating global table DR...")
 DR = DR or {}
 
+DR.UI = DR.UI or {}
+
 GM.Name = "Deathrun"
 GM.Author = "Arizard"
 GM.Email = ""
@@ -53,3 +55,8 @@ DR_WIN_DEATHS = DR_TEAM_DEATH
 DR_WIN_STALEMATE = 3
 
 DR_WINNER_BITS = DR.CalcMaxBits(DR_WIN_STALEMATE)
+
+-- don't touch this otherwise shit will hit the fan and your custom colors won't work
+hook.Add("InitPostEntity","DeathrunChangeColors",function()
+	hook.Run("DeathrunChangeColors")
+end)

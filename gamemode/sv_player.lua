@@ -1,9 +1,10 @@
 local DR = DR
 
-local Colors = DR.Colors
-local ConVars = DR.ConVars
+local RoundSystem = DR.RoundSystem
 
-local CvDeathAvoidPunishment = ConVars.DeathAvoidPunishment
+local ColorTurq = DR.Colors.Turq
+
+local CvDeathAvoidPunishment = DR.ConVars.DeathAvoidPunishment
 
 local PlyMeta = FindMetaTable("Player")
 
@@ -17,7 +18,7 @@ function PlyMeta:Respawn()
 end
 
 function PlyMeta:BeginSpectate()
-	local roundState = ROUND.GetCurrent()
+	local roundState = RoundSystem.GetCurrent()
 
 	if
 		self:Team() == DR_TEAM_DEATH
@@ -227,7 +228,7 @@ concommand.Add("deathrun_set_spectate",function(ply,_,args)
 	else
 		ply:SetShouldStaySpectating(false)
 
-		if ROUND.GetCurrent() == DR_ROUND_WAITING then
+		if RoundSystem.GetCurrent() == DR_ROUND_WAITING then
 			ply:SetTeam(DR_TEAM_RUNNER)
 			ply:Respawn()
 		end
@@ -244,7 +245,7 @@ function PlyMeta:DeathrunChatPrint(msg)
 	local printMsg = "Server to " .. self:Nick() .. ": " .. msg .. "\n"
 	if printMsg == LastMsg then return end
 
-	MsgC(Colors.Turq,printMsg)
+	MsgC(ColorTurq,printMsg)
 
 	LastMsg = printMsg
 end
@@ -254,7 +255,7 @@ function DR.ChatBroadcast(msg)
 		net.WriteString(msg)
 	net.Broadcast()
 
-	MsgC(Colors.Turq,"Server Broadcast: " .. msg .. "\n")
+	MsgC(ColorTurq,"Server Broadcast: " .. msg .. "\n")
 end
 
 timer.Create("MoveSpectatorsToCorrectTeam",5,0,function()

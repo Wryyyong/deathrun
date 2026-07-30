@@ -1,7 +1,36 @@
-print("Loading cl_hud.lua")
-
 local DR = DR
+
 local Colors = DR.Colors
+local ConVars = DR.ConVars
+local RoundSystem = DR.RoundSystem
+local UI = DR.UI
+
+local ColorClouds = Colors.Clouds
+local ColorGrey = Colors.Grey
+
+local CvFinishDuration = ConVars.FinishDuration
+local CvPlayRoundCues = ConVars.PlayRoundCues
+
+local CvAutoJump_Allowed = ConVars.AutoJump.Allow
+
+local ConVarsCrosshair = ConVars.Crosshair
+local CvCrosshair_Thickness = ConVarsCrosshair.Thickness
+local CvCrosshair_Gap = ConVarsCrosshair.Gap
+local CvCrosshair_Size = ConVarsCrosshair.Size
+local CvCrosshair_ColorR = ConVarsCrosshair.ColorR
+local CvCrosshair_ColorG = ConVarsCrosshair.ColorG
+local CvCrosshair_ColorB = ConVarsCrosshair.ColorB
+local CvCrosshair_ColorA = ConVarsCrosshair.ColorA
+
+local ConVarsHud = ConVars.Hud
+local CvHud_Alpha = ConVarsHud.Alpha
+local CvHud_PosAmmo = ConVarsHud.PosAmmo
+local CvHud_PosMain = ConVarsHud.PosMain
+local CvHud_TargetIdFadeTime = ConVarsHud.TargetIdFadeTime
+local CvHud_Theme = ConVarsHud.Theme
+local CvHud_Vhs7Mode = ConVarsHud.Vhs7Mode
+
+local CvThirdPerson_Enabled = ConVars.ThirdPerson.Enabled
 
 local HUDTHEME_DEFAULT = 1
 local HUDTHEME_DEFAULTTIMER = 2
@@ -20,28 +49,8 @@ local HUDPOS_RIGHT_TOP     = 3
 local HUDPOS_RIGHT_MIDDLE  = 6
 local HUDPOS_RIGHT_BOTTOM  = 9
 
-local CvFinishDuration = DR.ConVars.FinishDuration
-
-local CvThirdPerson_Enabled = DR.ConVars.ThirdPerson.Enabled
-
-local CvCrosshairThickness = DR.ConVars.Crosshair.Thickness
-local CvCrosshairGap = DR.ConVars.Crosshair.Gap
-local CvCrosshairSize = DR.ConVars.Crosshair.Size
-local CvCrosshairColorR = DR.ConVars.Crosshair.ColorR
-local CvCrosshairColorG = DR.ConVars.Crosshair.ColorG
-local CvCrosshairColorB = DR.ConVars.Crosshair.ColorB
-local CvCrosshairColorA = DR.ConVars.Crosshair.ColorA
-
--- start and end cues
-local CvPlayRoundCues = DR.ConVars.PlayRoundCues
-
--- different themes
-local CvHudTheme = DR.ConVars.Hud.Theme
-local CvHudAlpha = DR.ConVars.Hud.Alpha
-
--- convars to adjust hud positioning
-local CvHudMainPos = DR.ConVars.Hud.PosMain
-local CvHudAmmoPos = DR.ConVars.Hud.PosAmmo
+local HUD = UI.HUD or {}
+UI.HUD = HUD
 
 local HideElements = {
 	["CHudAmmo"] = false,
@@ -52,7 +61,7 @@ local HideElements = {
 }
 
 hook.Add("HUDPaint","FixCHudAmmo",function()
-	HideElements["CHudAmmo"] = CvHudTheme:GetInt() == HUDTHEME_CLASSIC
+	HideElements["CHudAmmo"] = CvHud_Theme:GetInt() == HUDTHEME_CLASSIC
 
 	hook.Remove("HUDPaint","FixCHudAmmo")
 end)
@@ -116,10 +125,10 @@ local KillfeedTbl_Meta = {
 }
 
 net.Receive("DeathrunAddKillNote",function()
-	DR.AddKillNote(net.ReadString(),net.ReadInt(8))
+	HUD.AddKillNote(net.ReadString(),net.ReadInt(8))
 end)
 
-function DR.AddKillNote(msg,mod)
+function HUD.AddKillNote(msg,mod)
 	table.insert(KillfeedQueue,1,setmetatable({
 		["text"] = msg,
 		["mode"] = mod,
@@ -132,7 +141,7 @@ local KillfeedModeColors = {
 	Color(255,0,0),
 }
 
-function DR.DrawKillfeed(x,y)
+function HUD.DrawKillfeed(x,y)
 	local dy = 0
 
 --[[
@@ -156,9 +165,8 @@ function DR.DrawKillfeed(x,y)
 	--local queueCountHalf = #KillfeedQueue * .5 * Distance
 
 	for idx,obj in ipairs(KillfeedQueue) do
-		obj.hp = obj.hp - Distance
-
-		local hp = obj.hp
+		local hp = obj.hp - Distance
+		obj.hp = hp
 
 		if hp <= 0 then
 			KillfeedsToCleanup[idx] = true
@@ -179,7 +187,7 @@ function DR.DrawKillfeed(x,y)
 		dy = dy + 24 * fade
 
 		surface.SetAlphaMultiplier(fade * .75)
-		DR.ShadowTextSimple(
+		UI.ShadowTextSimple(
 			obj.text,
 			"Deathrun_DefaultHUD_Medium",
 			x,
@@ -203,7 +211,7 @@ function DR.DrawKillfeed(x,y)
 end
 
 concommand.Add("deathrun_testkillnote",function()
-	DR.AddKillNote("Hello World",1)
+	HUD.AddKillNote("Hello World",1)
 end)
 
 local RoundNames = {
@@ -344,23 +352,23 @@ end
 hook.Add("OnScreenSizeChanged","Deathrun_UpdateHudPositions",UpdateScreenSize)
 UpdateScreenSize(nil,nil,ScrW(),ScrH())
 
-function DR.DrawCrosshair(x,y)
-	local thick = CvCrosshairThickness:GetFloat()
+function HUD.DrawCrosshair(x,y)
+	local thick = CvCrosshair_Thickness:GetFloat()
 	local thickHalf = thick * .5
 	local thickModX = x - thickHalf
 	local thickModY = y - thickHalf
 
-	local gap = CvCrosshairGap:GetFloat()
+	local gap = CvCrosshair_Gap:GetFloat()
 	local gapHalf = gap * .5
 
-	local size = CvCrosshairSize:GetFloat()
+	local size = CvCrosshair_Size:GetFloat()
 	local sizeMod = size + gapHalf
 
 	surface.SetDrawColor(
-		CvCrosshairColorR:GetInt(),
-		CvCrosshairColorG:GetInt(),
-		CvCrosshairColorB:GetInt(),
-		CvCrosshairColorA:GetInt()
+		CvCrosshair_ColorR:GetInt(),
+		CvCrosshair_ColorG:GetInt(),
+		CvCrosshair_ColorB:GetInt(),
+		CvCrosshair_ColorA:GetInt()
 	)
 	surface.DrawRect(
 		thickModX,
@@ -388,24 +396,24 @@ function DR.DrawCrosshair(x,y)
 	)
 end
 
-DR.TargetIDAlpha = 0
+DR.TargetIDAlpha = 255
+DR.TargetIDColor = color_white:Copy()
 DR.TargetIDName = ""
-DR.TargetIDColor = Color(255,255,255)
+DR.TargetIDPlayer =  NULL
 
-local LastTargetCycle = CurTime()
-local CvHudTargetIdFadeTime = DR.ConVars.Hud.TargetIdFadeTime
-
-function DR.DrawTargetID()
+function HUD.DrawTargetID()
 	local localPly = LocalPlayer()
-	local curTime = CurTime()
+	if not IsValid(localPly) then return end
 
-	local dt = curTime - LastTargetCycle
-	LastTargetCycle = curTime
+	local framesPerSecond = 1 / FrameTime()
+	local fadeMultiplier = 100 / framesPerSecond
 
-	local fps = 1 / dt
-	local fmul = 100 / fps
+	local alpha = DR.TargetIDAlpha
+	local color = DR.TargetIDColor
+	local name
+	local ply
 
-	local trace = localPly and localPly:GetEyeTrace() or {}
+	local trace = localPly:GetEyeTrace()
 	local ent = trace.Entity
 
 	if
@@ -413,59 +421,47 @@ function DR.DrawTargetID()
 	and	ent:IsPlayer()
 	and	ent:Team() ~= DR_TEAM_GHOST
 	then
-		DR.TargetIDAlpha = 255
-		DR.TargetIDPlayer = ent
-		DR.TargetIDName = ent:Nick()
-		DR.TargetIDColor = team.GetColor(ent:Team())
+		alpha = 255
+		ply = ent
+	else
+		ply = DR.TargetIDPlayer
 	end
 
-	local ply = DR.TargetIDPlayer
+	if
+		alpha > 0
+	and	IsValid(ply)
+	then
+		name = ply:Nick()
 
-	local x = ScrW() * .5
-	local y = ScrH() * .5 + 16
+		color = team.GetColor(ply:Team())
+		color.a = alpha ^ .3 * 255 / 255 ^ .3
 
-	local alpha = DR.TargetIDAlpha ^ .3 * 255 / 255 ^ .3
-	DR.TargetIDColor.a = alpha
-
-	local tidText =
-		DR.TargetIDName
-	..	(
-			IsValid(ply)
-		and	" - " .. tostring(math.Round(ply:Health() / ply:GetMaxHealth() * 100)) .. "%"
-		or	""
+		UI.ShadowText(
+			name .. "\n" .. math.Round(ply:Health() / ply:GetMaxHealth() * 100) .. "%",
+			"Deathrun_DefaultHUD_Medium",
+			DR.ScreenWidth * .5,
+			DR.ScreenHeight * .5 + 16,
+			color,
+			TEXT_ALIGN_CENTER
 		)
-
-	DR.ShadowTextSimple(
-		tidText,
-		"Deathrun_DefaultHUD_Medium",
-		x,
-		y,
-		DR.TargetIDColor,
-		TEXT_ALIGN_CENTER,
-		TEXT_ALIGN_CENTER,
-		1
-	)
-	DR.ShadowTextSimple(
-		tidText,
-		"Deathrun_DefaultHUD_Medium",
-		x,
-		y,
-		Color(255,255,255,alpha * .2),
-		TEXT_ALIGN_CENTER,
-		TEXT_ALIGN_CENTER
-	)
+	else
+		ply = NULL
+	end
 
 	-- our benchmark is 100fps
 	-- e.g. our fade time is 3s
 	-- so each frame at 100fps the alpha is: alpha - 1 / (3s * 100f) * 255 * fmul
-	DR.TargetIDAlpha = math.Clamp(DR.TargetIDAlpha - (1 / (CvHudTargetIdFadeTime:GetFloat() * 100)) * 255 * fmul,0,255)
+	DR.TargetIDAlpha = math.Clamp(alpha - (1 / (CvHud_TargetIdFadeTime:GetFloat() * 100)) * 255 * fadeMultiplier,0,255)
+	DR.TargetIDColor = color
+	DR.TargetIDName = name
+	DR.TargetIDPlayer = ply
 end
 
 local ColorDummyPlayerName = color_white:Copy()
 local FadeOutDist_Start = 200 ^ 2
 local FadeOutDist_End   = 750 ^ 2
 
-function DR.DrawPlayerNames()
+function HUD.DrawPlayerNames()
 	local localPly = LocalPlayer()
 
 	-- draw floating names if you're on the Death team and they are not a ghost
@@ -532,7 +528,7 @@ function DR.DrawPlayerNames()
 		local x = data.x
 		local y = data.y
 
-		DR.ShadowTextSimple(
+		UI.ShadowTextSimple(
 			ply:Nick(),
 			"Deathrun_DefaultHUD_Medium",
 			x,
@@ -541,7 +537,7 @@ function DR.DrawPlayerNames()
 			TEXT_ALIGN_CENTER,
 			TEXT_ALIGN_CENTER
 		)
-		DR.ShadowTextSimple(
+		UI.ShadowTextSimple(
 			team.GetName(ply:Team()),
 			"Deathrun_DefaultHUD_Small",
 			x,
@@ -554,20 +550,24 @@ function DR.DrawPlayerNames()
 end
 
 -- store these separately so we can edit their alpha values
-local ColorClouds = Colors.Clouds:Copy()
-local ColorAlizarin = Colors.Alizarin:Copy()
-local ColorTurq = Colors.Turq:Copy()
+local DefaultHud_Alizarin = Colors.Alizarin:Copy()
+local DefaultHud_Turq = Colors.Turq:Copy()
+
+local DefaultHud_Clouds_Main = ColorClouds:Copy()
+local DefaultHud_Clouds_Ammo = ColorClouds:Copy()
+
+local DefaultHud_Orange = Colors.Orange:Copy()
+local DefaultHud_Orange_Transparent = Colors.Orange:Copy()
 
 local VelocityMax = 1000
 local VelocityMaxStr = ">" .. VelocityMax
-local CvAutojumpAllowed = GetConVar("deathrun_allow_autojump")
 
 -- 228x16 text size 12
 -- 228x16 text size 12
 -- 32x32 text 18, 192x32 text 30
 -- 32x32 text 18, 192x32 text 30
 -- spacing of 4 between all
-function DR.DrawPlayerHUDMain(x,y,alpha)
+local function DrawPlayerHUDMain(x,y,alpha)
 	local localPly = LocalPlayer()
 	local ply = localPly
 
@@ -583,8 +583,8 @@ function DR.DrawPlayerHUDMain(x,y,alpha)
 
 	local shouldDrawTime =
 		isLocalPly
-	and	CvHudTheme:GetInt() == HUDTHEME_DEFAULTTIMER
-	and	ROUND.GetCurrent() == DR_ROUND_ACTIVE
+	and	CvHud_Theme:GetInt() == HUDTHEME_DEFAULTTIMER
+	and	RoundSystem.GetCurrent() == DR_ROUND_ACTIVE
 	and	plyTeam == DR_TEAM_RUNNER
 
 	local teamColor = team.GetColor(plyTeam)
@@ -595,9 +595,9 @@ function DR.DrawPlayerHUDMain(x,y,alpha)
 		y = y - 36 -- 32 - 4
 	end
 
-	ColorClouds.a = alpha
-	ColorAlizarin.a = alpha
-	ColorTurq.a = alpha
+	DefaultHud_Clouds_Main.a = alpha
+	DefaultHud_Alizarin.a = alpha
+	DefaultHud_Turq.a = alpha
 
 	-- Team box
 	surface.SetDrawColor(teamColor)
@@ -625,12 +625,12 @@ function DR.DrawPlayerHUDMain(x,y,alpha)
 		teamName = ply:Nick()
 	end
 
-	DR.ShadowTextSimple(
+	UI.ShadowTextSimple(
 		teamName:upper(),
 		"Deathrun_DefaultHUD_Small",
 		x + 114, -- 228 * .5
 		y + 8, -- 16 * .5
-		Colors.Clouds,
+		ColorClouds,
 		TEXT_ALIGN_CENTER,
 		TEXT_ALIGN_CENTER,
 		1
@@ -639,7 +639,7 @@ function DR.DrawPlayerHUDMain(x,y,alpha)
 	y = y + 20 -- 16 + 4
 
 	-- Time Left
-	surface.SetDrawColor(ColorClouds)
+	surface.SetDrawColor(DefaultHud_Clouds_Main)
 	surface.DrawRect(
 		x,
 		y,
@@ -647,10 +647,10 @@ function DR.DrawPlayerHUDMain(x,y,alpha)
 		16
 	)
 
-	local roundState = RoundNames[ROUND.GetCurrent()]
+	local roundState = RoundNames[RoundSystem.GetCurrent()]
 	local yTimeLeftText = y + 8 -- 16 * .5
 
-	DR.ShadowTextSimple(
+	UI.ShadowTextSimple(
 		roundState and roundState:upper() or "TIME LEFT",
 		"Deathrun_DefaultHUD_Small",
 		x + 4,
@@ -659,8 +659,8 @@ function DR.DrawPlayerHUDMain(x,y,alpha)
 		TEXT_ALIGN_LEFT,
 		TEXT_ALIGN_CENTER
 	)
-	DR.ShadowTextSimple(
-		string.ToMinutesSeconds(ROUND.GetTimer()),
+	UI.ShadowTextSimple(
+		string.ToMinutesSeconds(RoundSystem.GetTimer()),
 		"Deathrun_DefaultHUD_Small",
 		x + 224, -- 228 - 4
 		yTimeLeftText,
@@ -682,7 +682,7 @@ function DR.DrawPlayerHUDMain(x,y,alpha)
 	local hpCur = ply:Health()
 	local hpMax = ply:GetMaxHealth()
 
-	surface.SetDrawColor(ColorAlizarin)
+	surface.SetDrawColor(DefaultHud_Alizarin)
 	surface.DrawRect(
 		x,
 		y,
@@ -698,7 +698,7 @@ function DR.DrawPlayerHUDMain(x,y,alpha)
 		32
 	)
 
-	surface.SetDrawColor(ColorAlizarin)
+	surface.SetDrawColor(DefaultHud_Alizarin)
 	surface.DrawRect(
 		x,
 		y,
@@ -720,7 +720,7 @@ function DR.DrawPlayerHUDMain(x,y,alpha)
 		32
 	)
 
-	surface.SetDrawColor(ColorAlizarin)
+	surface.SetDrawColor(DefaultHud_Alizarin)
 	surface.DrawRect(
 		xBar,
 		y,
@@ -731,22 +731,22 @@ function DR.DrawPlayerHUDMain(x,y,alpha)
 	-- HP text
 	local yHpText = y + textPosShared
 
-	DR.ShadowTextSimple(
+	UI.ShadowTextSimple(
 		"HP",
 		"Deathrun_DefaultHUD_Medium",
 		xText,
 		yHpText,
-		Colors.Clouds,
+		ColorClouds,
 		TEXT_ALIGN_CENTER,
 		TEXT_ALIGN_CENTER,
 		1
 	)
-	DR.ShadowTextSimple(
+	UI.ShadowTextSimple(
 		hpCur,
 		"Deathrun_DefaultHUD_Large",
 		xBarLarge,
 		yHpText,
-		Colors.Clouds,
+		ColorClouds,
 		TEXT_ALIGN_LEFT,
 		TEXT_ALIGN_CENTER,
 		1
@@ -764,12 +764,12 @@ function DR.DrawPlayerHUDMain(x,y,alpha)
 
 	if
 		ply.AutoJumpEnabled
-	and	CvAutojumpAllowed:GetBool()
+	and	CvAutoJump_Allowed:GetBool()
 	then
 		velStr = velStr .. " AUTO"
 	end
 
-	surface.SetDrawColor(ColorTurq)
+	surface.SetDrawColor(DefaultHud_Turq)
 	surface.DrawRect(
 		x,
 		y,
@@ -785,7 +785,7 @@ function DR.DrawPlayerHUDMain(x,y,alpha)
 		32
 	)
 
-	surface.SetDrawColor(ColorTurq)
+	surface.SetDrawColor(DefaultHud_Turq)
 	surface.DrawRect(
 		x,
 		y,
@@ -807,7 +807,7 @@ function DR.DrawPlayerHUDMain(x,y,alpha)
 		32
 	)
 
-	surface.SetDrawColor(ColorTurq)
+	surface.SetDrawColor(DefaultHud_Turq)
 	surface.DrawRect(
 		xBar,
 		y,
@@ -818,22 +818,22 @@ function DR.DrawPlayerHUDMain(x,y,alpha)
 	-- Velocity text
 	local yVelText = y + textPosShared
 
-	DR.ShadowTextSimple(
+	UI.ShadowTextSimple(
 		"VL",
 		"Deathrun_DefaultHUD_Medium",
 		xText,
 		yVelText,
-		Colors.Clouds,
+		ColorClouds,
 		TEXT_ALIGN_CENTER,
 		TEXT_ALIGN_CENTER,
 		1
 	)
-	DR.ShadowTextSimple(
+	UI.ShadowTextSimple(
 		velStr,
 		"Deathrun_DefaultHUD_Large",
 		xBarLarge,
 		yVelText,
-		Colors.Clouds,
+		ColorClouds,
 		TEXT_ALIGN_LEFT,
 		TEXT_ALIGN_CENTER,
 		1
@@ -884,38 +884,34 @@ function DR.DrawPlayerHUDMain(x,y,alpha)
 	-- Time text
 	local yTimeText = y + textPosShared
 
-	DR.ShadowTextSimple(
+	UI.ShadowTextSimple(
 		"TM",
 		"Deathrun_DefaultHUD_Medium",
 		xText,
 		yTimeText,
-		Colors.Clouds,
+		ColorClouds,
 		TEXT_ALIGN_CENTER,
 		TEXT_ALIGN_CENTER,
 		1
 	)
-	DR.ShadowTextSimple(
+	UI.ShadowTextSimple(
 		string.ToMinutesSecondsMilliseconds(CurTime() - (ply.StartTime or 0)),
 		"Deathrun_DefaultHUD_Large",
 		xBarLarge,
 		yTimeText,
-		Colors.Clouds,
+		ColorClouds,
 		TEXT_ALIGN_LEFT,
 		TEXT_ALIGN_CENTER,
 		1
 	)
 end
 
-local ColorOrange = Colors.Orange:Copy()
-local ColorOrangeTrans = Colors.Orange:Copy()
-local ColorCloudsAmmo = Colors.Clouds:Copy()
-
 -- 228x16 text size 12
 -- 228x16 text size 12
 -- 32x32 text 18, 192x32 text 30
 -- 32x32 text 18, 192x32 text 30
 -- spacing of 4 between all
-function DR.DrawPlayerHUDAmmo(x,y,alpha)
+local function DrawPlayerHUDAmmo(x,y,alpha)
 	local localPly = LocalPlayer()
 	local ply = localPly
 
@@ -945,11 +941,11 @@ function DR.DrawPlayerHUDAmmo(x,y,alpha)
 
 	local xBar = x + 36 -- 32 + 4
 
-	ColorOrange.a = alpha
-	ColorCloudsAmmo.a = alpha
-	ColorOrangeTrans.a = alphaPercent * 200
+	DefaultHud_Orange.a = alpha
+	DefaultHud_Clouds_Ammo.a = alpha
+	DefaultHud_Orange_Transparent.a = alphaPercent * 200
 
-	surface.SetDrawColor(ColorCloudsAmmo)
+	surface.SetDrawColor(DefaultHud_Clouds_Ammo)
 	surface.DrawRect(
 		x,
 		y,
@@ -957,7 +953,7 @@ function DR.DrawPlayerHUDAmmo(x,y,alpha)
 		16
 	)
 
-	surface.SetDrawColor(ColorOrangeTrans)
+	surface.SetDrawColor(DefaultHud_Orange_Transparent)
 	surface.DrawRect(
 		x,
 		y,
@@ -968,7 +964,7 @@ function DR.DrawPlayerHUDAmmo(x,y,alpha)
 	y = y + 20 -- 16 + 4
 
 	-- Weapon name
-	surface.SetDrawColor(ColorOrange)
+	surface.SetDrawColor(DefaultHud_Orange)
 	surface.DrawRect(
 		x,
 		y,
@@ -984,19 +980,19 @@ function DR.DrawPlayerHUDAmmo(x,y,alpha)
 		32
 	)
 
-	surface.SetDrawColor(ColorOrange)
+	surface.SetDrawColor(DefaultHud_Orange)
 	surface.DrawRect(
 		x,
 		y,
 		228,
 		32
 	)
-	DR.ShadowTextSimple(
+	UI.ShadowTextSimple(
 		weaponData.Name,
 		"Deathrun_DefaultHUD_Large",
 		x + 224,
 		y + textPosSharedMinusOne,
-		Colors.Clouds,
+		ColorClouds,
 		TEXT_ALIGN_RIGHT,
 		TEXT_ALIGN_CENTER,
 		1
@@ -1005,7 +1001,7 @@ function DR.DrawPlayerHUDAmmo(x,y,alpha)
 	y = y + 36 -- 32 + 4
 
 	local clipPercent = math.Clamp(weaponData.Clip1 / weaponData.Clip1Max,0,1)
-	surface.SetDrawColor(ColorOrange)
+	surface.SetDrawColor(DefaultHud_Orange)
 	surface.DrawRect(
 		x,
 		y,
@@ -1021,7 +1017,7 @@ function DR.DrawPlayerHUDAmmo(x,y,alpha)
 		32
 	)
 
-	surface.SetDrawColor(ColorOrange)
+	surface.SetDrawColor(DefaultHud_Orange)
 	surface.DrawRect(
 		x,
 		y,
@@ -1043,31 +1039,31 @@ function DR.DrawPlayerHUDAmmo(x,y,alpha)
 		32
 	)
 
-	surface.SetDrawColor(ColorOrange)
+	surface.SetDrawColor(DefaultHud_Orange)
 	surface.DrawRect(
 		xBar,
 		y,
 		clipPercent * 192,
 		32
 	)
-	DR.ShadowTextSimple(
+	UI.ShadowTextSimple(
 		"AM",
 		"Deathrun_DefaultHUD_Medium",
 		x + textPosShared,
 		y + textPosShared,
-		Colors.Clouds,
+		ColorClouds,
 		TEXT_ALIGN_CENTER,
 		TEXT_ALIGN_CENTER,
 		1
 	)
 
 	if weaponData.ShouldDrawHUD then
-		DR.ShadowTextSimple(
+		UI.ShadowTextSimple(
 			weaponData.Clip1 .. " +" .. weaponData.Remaining1,
 			"Deathrun_DefaultHUD_Large",
 			xBar + 192,
 			y + textPosSharedMinusOne,
-			Colors.Clouds,
+			ColorClouds,
 			TEXT_ALIGN_RIGHT,
 			TEXT_ALIGN_CENTER,
 			1
@@ -1076,7 +1072,7 @@ function DR.DrawPlayerHUDAmmo(x,y,alpha)
 
 	y = y + 36 -- 32 + 4
 
-	surface.SetDrawColor(ColorCloudsAmmo)
+	surface.SetDrawColor(DefaultHud_Clouds_Ammo)
 	surface.DrawRect(
 		x,
 		y,
@@ -1084,7 +1080,7 @@ function DR.DrawPlayerHUDAmmo(x,y,alpha)
 		16
 	)
 
-	surface.SetDrawColor(ColorOrangeTrans)
+	surface.SetDrawColor(DefaultHud_Orange_Transparent)
 	surface.DrawRect(
 		x,
 		y,
@@ -1112,18 +1108,6 @@ local NotificationTbl_Meta = {
 	["__index"] = NotificationTbl_Default,
 }
 
---[[
-function dirac(x,a)
-	if a <= .001 then a = .001 end
-
-	return (1 / (a * math.sqrt(math.pi))) * math.exp(-x ^ 2 / a ^ 2)
-end
-
-net.Receive("DeathrunNotification",function()
-	DR.AddNotification(net.ReadString(),ScrW() - 32,ScrH() / 6,0,-.35,0,-.00025,10)
-end)
---]]
-
 local ColorNotif = Color(0,255,0)
 
 --- @param msg string
@@ -1134,7 +1118,7 @@ local ColorNotif = Color(0,255,0)
 --- @param ddx number
 --- @param ddy number
 --- @param dur number
-function DR.AddNotification(msg,x,y,dx,dy,ddx,ddy,dur)
+function HUD.AddNotification(msg,x,y,dx,dy,ddx,ddy,dur)
 	msg = msg:Replace("%newline%","\n")
 
 	NotificationQueue[#NotificationQueue + 1] = setmetatable({
@@ -1159,7 +1143,7 @@ concommand.Add("deathrun_test_notification",function(_,_,args)
 		msg = msg .. args[idx] .. " "
 	end
 
-	DR.AddNotification(
+	HUD.AddNotification(
 		msg,
 		ScrW() * .5,
 		ScrH() * .5,
@@ -1176,7 +1160,7 @@ local LastCycle = CurTime()
 local ColorNotifBlack = color_black:Copy()
 local ColorNotifWhite = color_white:Copy()
 
-function DR.DrawNotifications()
+function HUD.DrawNotifications()
 	local curTime = CurTime()
 
 	local fadeMul = 100 / (1 / (curTime - LastCycle))
@@ -1194,7 +1178,7 @@ function DR.DrawNotifications()
 		ColorNotifBlack.a = fadeIn
 		ColorNotifWhite.a = fadeIn
 
-		DR.ShadowTextSimple(
+		UI.ShadowTextSimple(
 			text,
 			"Deathrun_DefaultHUD_Medium",
 			x + 1,
@@ -1203,7 +1187,7 @@ function DR.DrawNotifications()
 			TEXT_ALIGN_RIGHT,
 			TEXT_ALIGN_BOTTOM
 		)
-		DR.ShadowTextSimple(
+		UI.ShadowTextSimple(
 			text,
 			"Deathrun_DefaultHUD_Medium",
 			x,
@@ -1245,13 +1229,15 @@ local WinnerMhHalfMinusOne = WinnerMhHalf - 1
 
 local WinnerGapMh = WinnerGap + WinnerMh
 
-local ColorStalemate = Colors.Grey
-
-function DR.DrawWinners(winteam,tbl_mvps,x,y,stalemate)
-	local teamColor = stalemate and ColorStalemate or team.GetColor(winteam)
+local function DrawWinners(winteam,tbl_mvps,x,y,stalemate)
+	local teamColor =
+		stalemate
+	and	ColorGrey
+	or	team.GetColor(winteam)
 
 	local xWidthHalf = x + WinnerWidth * .5
 	local yHeightGap = y + WinnerHeightGap
+	local yHeightGapPlusMhHalfMinusOne = yHeightGap + WinnerMhHalfMinusOne
 
 	surface.SetDrawColor(teamColor)
 	surface.DrawRect(
@@ -1260,29 +1246,29 @@ function DR.DrawWinners(winteam,tbl_mvps,x,y,stalemate)
 		WinnerWidth,
 		WinnerHeight
 	)
-	DR.ShadowTextSimple(
+	UI.ShadowTextSimple(
 		stalemate and "STALEMATE!" or (team.GetName(winteam) .. " win the round!"):upper(),
 		"Deathrun_DefaultHUD_ExtraLarge",
 		xWidthHalf,
 		y + WinnerHeightHalf,
-		Colors.Clouds,
+		ColorClouds,
 		TEXT_ALIGN_CENTER,
 		TEXT_ALIGN_CENTER,
 		1
 	)
 
-	surface.SetDrawColor(Colors.Clouds)
+	surface.SetDrawColor(ColorClouds)
 	surface.DrawRect(
 		x,
 		yHeightGap,
 		WinnerWidth,
 		WinnerMh
 	)
-	DR.ShadowTextSimple(
+	UI.ShadowTextSimple(
 		stalemate and "YOU'RE ALL TERRIBLE!" or "MOST VALUABLE PLAYERS",
 		"Deathrun_DefaultHUD_Medium",
 		xWidthHalf,
-		yHeightGap + WinnerMhHalfMinusOne,
+		yHeightGapPlusMhHalfMinusOne,
 		teamColor,
 		TEXT_ALIGN_CENTER,
 		TEXT_ALIGN_CENTER,
@@ -1291,14 +1277,23 @@ function DR.DrawWinners(winteam,tbl_mvps,x,y,stalemate)
 
 	if stalemate then return end
 
-	surface.SetDrawColor(Colors.Clouds)
+	surface.SetDrawColor(ColorClouds)
 	surface.DrawRect(
 		x,
 		yHeightGap,
 		WinnerWidth,
 		WinnerMh
 	)
-	-- DR.ShadowTextSimple( "NOTABLE PLAYERS", "Deathrun_DefaultHUD_Medium", x + w/2, y + h + gap +mh/2 - 1, col, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1 )
+	UI.ShadowTextSimple(
+		"MOST VALUABLE PLAYERS",
+		"Deathrun_DefaultHUD_Medium",
+		xWidthHalf,
+		yHeightGapPlusMhHalfMinusOne,
+		ColorGrey,
+		TEXT_ALIGN_CENTER,
+		TEXT_ALIGN_CENTER,
+		1
+	)
 
 	-- Draw MVPs
 	surface.SetDrawColor(teamColor)
@@ -1312,12 +1307,12 @@ function DR.DrawWinners(winteam,tbl_mvps,x,y,stalemate)
 			WinnerWidth,
 			WinnerMh
 		)
-		DR.ShadowTextSimple(
+		UI.ShadowTextSimple(
 			mvp,
 			"Deathrun_DefaultHUD_Medium",
 			xWidthHalf,
 			offsetY + WinnerMhHalfMinusOne,
-			Colors.Clouds,
+			ColorClouds,
 			TEXT_ALIGN_CENTER,
 			TEXT_ALIGN_CENTER,
 			1
@@ -1326,11 +1321,11 @@ function DR.DrawWinners(winteam,tbl_mvps,x,y,stalemate)
 end
 
 function GM:HUDWeaponPickedUp(wep)
-	DR.AddKillNote("+ " .. (wep.PrintName or "Weapon"),2)
+	HUD.AddKillNote("+ " .. (wep.PrintName or "Weapon"),2)
 end
 
 function GM:HUDAmmoPickedUp(name,amt)
-	DR.AddKillNote("+ " .. (amt or 0) .. " " .. (name or "Ammo"),2)
+	HUD.AddKillNote("+ " .. (amt or 0) .. " " .. (name or "Ammo"),2)
 end
 
 if IsValid(DR.HudAvatar) then
@@ -1376,9 +1371,9 @@ function Avatar:Think()
 		self:SetPlayer(ply,64)
 	end
 
-	self:SetAlpha(CvHudAlpha:GetInt())
+	self:SetAlpha(CvHud_Alpha:GetInt())
 
-	local hudThemeIsSass = CvHudTheme:GetInt() == HUDTHEME_SASS
+	local hudThemeIsSass = CvHud_Theme:GetInt() == HUDTHEME_SASS
 	local posX,newVal
 	local isVisible = self.Visible
 
@@ -1398,8 +1393,8 @@ function Avatar:Think()
 	self.Visible = newVal
 end
 
-local ColorDarkGrey = Colors.DarkGrey:Copy()
-local ColorLightGrey = Colors.LightGrey:Copy()
+local SassHud_DarkGrey = Colors.DarkGrey:Copy()
+local SassHud_LightGrey = Colors.LightGrey:Copy()
 
 -- dimensions:
 -- 228 x 108
@@ -1412,7 +1407,7 @@ local SassHud_BarInner_Width = SassHud_BarOuter_Width - 2
 local SassHud_Height = 108
 local SassHud_HeightHalf = SassHud_Height * .5
 
-function DR.DrawPlayerHUDMainSass(x,y,alpha)
+local function DrawPlayerHUDMainSass(x,y,alpha)
 	local localPly = LocalPlayer()
 	local ply = localPly
 
@@ -1430,19 +1425,19 @@ function DR.DrawPlayerHUDMainSass(x,y,alpha)
 
 	local alphaMult = alpha / 255
 
-	ColorDarkGrey.a = alpha
-	ColorLightGrey.a = alpha * .5
+	SassHud_DarkGrey.a = alpha
+	SassHud_LightGrey.a = alpha * .5
 
 	-- size of avatar: 48x48
 	-- size of container: 52x52
-	surface.SetDrawColor(ColorDarkGrey)
+	surface.SetDrawColor(SassHud_DarkGrey)
 	draw.RoundedBox(
 		2,
 		x + 4,
 		y - 34,
 		52,
 		52,
-		ColorDarkGrey
+		SassHud_DarkGrey
 	)
 
 	local xBar = x + 56
@@ -1459,10 +1454,10 @@ function DR.DrawPlayerHUDMainSass(x,y,alpha)
 		y - 10,
 		SassHud_BarOuter_Width,
 		20,
-		ColorDarkGrey
+		SassHud_DarkGrey
 	)
 
-	surface.SetDrawColor(ColorLightGrey)
+	surface.SetDrawColor(SassHud_LightGrey)
 	surface.DrawRect(
 		xBar,
 		yHpBar,
@@ -1477,10 +1472,10 @@ function DR.DrawPlayerHUDMainSass(x,y,alpha)
 		y + 8,
 		SassHud_BarOuter_Width,
 		10,
-		ColorDarkGrey
+		SassHud_DarkGrey
 	)
 
-	surface.SetDrawColor(ColorLightGrey)
+	surface.SetDrawColor(SassHud_LightGrey)
 	surface.DrawRect(
 		xBar,
 		yVelBar,
@@ -1546,7 +1541,7 @@ function DR.DrawPlayerHUDMainSass(x,y,alpha)
 	local yLowerText = y + 25
 
 	-- HP TEXT
-	DR.ShadowTextSimple(
+	UI.ShadowTextSimple(
 		hpCur,
 		"Deathrun_SassHUD_Large",
 		xLowerText - 22,
@@ -1556,7 +1551,7 @@ function DR.DrawPlayerHUDMainSass(x,y,alpha)
 		TEXT_ALIGN_BOTTOM,
 		2
 	)
-	DR.ShadowTextSimple(
+	UI.ShadowTextSimple(
 		"HP",
 		"Deathrun_SassHUD_Small",
 		xLowerText,
@@ -1566,7 +1561,7 @@ function DR.DrawPlayerHUDMainSass(x,y,alpha)
 		TEXT_ALIGN_BOTTOM,
 		2
 	)
-	DR.ShadowTextSimple(
+	UI.ShadowTextSimple(
 		velStr,
 		"Deathrun_SassHUD_Small",
 		xLowerText,
@@ -1586,8 +1581,8 @@ function DR.DrawPlayerHUDMainSass(x,y,alpha)
 		teamName = ply:Nick()
 	end
 
-	DR.ShadowTextSimple(
-		teamName .. " - " .. string.ToMinutesSeconds(ROUND.GetTimer()),
+	UI.ShadowTextSimple(
+		teamName .. " - " .. string.ToMinutesSeconds(RoundSystem.GetTimer()),
 		"Deathrun_SassHUD_Small",
 		x + 8,
 		yLowerText,
@@ -1618,7 +1613,7 @@ function DR.DrawPlayerHUDMainSass(x,y,alpha)
 	desiredPos[2] = avatarPosY
 end
 
-function DR.DrawPlayerHUDAmmoSass(x,y)
+local function DrawPlayerHUDAmmoSass(x,y)
 	local localPly = LocalPlayer()
 	local ply = localPly
 
@@ -1638,7 +1633,7 @@ function DR.DrawPlayerHUDAmmoSass(x,y)
 	local xOffset = x + SassHud_Width - 4
 	local yOffset = y + SassHud_Height
 
-	DR.ShadowTextSimple(
+	UI.ShadowTextSimple(
 		weaponData.Name,
 		"Deathrun_SassHUD_Small",
 		xOffset,
@@ -1648,7 +1643,7 @@ function DR.DrawPlayerHUDAmmoSass(x,y)
 		TEXT_ALIGN_BOTTOM,
 		2
 	)
-	DR.ShadowTextSimple(
+	UI.ShadowTextSimple(
 		weaponData.Clip1 .. " +" .. weaponData.Remaining1,
 		"Deathrun_SassHUD_Large",
 		xOffset,
@@ -1671,7 +1666,11 @@ local ClassicHud_HeightMod = SassHud_Height - ClassicHud_Height
 
 local ClassicHud_Timer_Height = ClassicHud_Height * 1.25
 
-function DR.DrawPlayerHUDClassic(x,y,alpha)
+local ClassicHud_Background = Color(44,44,44)
+local ClassicHud_HpBar_Bg = Color(180,80,80)
+local ClassicHud_HpBar_Fg = Color(80,180,60)
+
+local function DrawPlayerHUDClassic(x,y,alpha)
 	local localPly = LocalPlayer()
 	local ply = localPly
 
@@ -1695,13 +1694,17 @@ function DR.DrawPlayerHUDClassic(x,y,alpha)
 
 	local alphaMult = alpha / 255
 
+	ClassicHud_Background.a = 175 * alphaMult
+	ClassicHud_HpBar_Bg.a = 255 * alphaMult ^ 2
+	ClassicHud_HpBar_Fg.a = 255 * alphaMult
+
 	draw.RoundedBox(
 		4,
 		xMinusWidthHalf,
 		y,
 		ClassicHud_Width,
 		ClassicHud_Height,
-		Color(44,44,44,175 * alphaMult)
+		ClassicHud_Background
 	)
 	draw.RoundedBox(
 		0,
@@ -1709,7 +1712,7 @@ function DR.DrawPlayerHUDClassic(x,y,alpha)
 		yPlus4,
 		ClassicHud_WidthMinus8,
 		ClassicHud_HeightMinus8,
-		Color(180,80,80,255 * alphaMult ^ 2)
+		ClassicHud_HpBar_Bg
 	)
 
 	local hpCur = ply:Health()
@@ -1721,9 +1724,9 @@ function DR.DrawPlayerHUDClassic(x,y,alpha)
 		yPlus4,
 		DR.InverseLerp(math.Clamp(hpCur,0,hpMax),0,hpMax) * ClassicHud_WidthMinus8,
 		ClassicHud_HeightMinus8,
-		Color(80,180,60,255 * alphaMult)
+		ClassicHud_HpBar_Fg
 	)
-	DR.ShadowText(
+	UI.ShadowText(
 		hpCur,
 		"Deathrun_ClassicHUD_Large",
 		xMinusWidthHalf + 5,
@@ -1743,10 +1746,10 @@ function DR.DrawPlayerHUDClassic(x,y,alpha)
 		timerY,
 		ClassicHud_WidthHalf,
 		ClassicHud_Timer_Height,
-		Color(44,44,44,175 * alphaMult)
+		ClassicHud_Background
 	)
-	DR.ShadowText(
-		string.ToMinutesSeconds(ROUND.GetTimer()),
+	UI.ShadowText(
+		string.ToMinutesSeconds(RoundSystem.GetTimer()),
 		"Deathrun_ClassicHUD_Large",
 		xMinusWidthQuarPlusClassicHudWidthQuar,
 		timerY + 4,
@@ -1756,7 +1759,7 @@ function DR.DrawPlayerHUDClassic(x,y,alpha)
 		1
 	)
 
-	DR.ShadowTextSimple(
+	UI.ShadowTextSimple(
 		ply == localPly
 	and	""
 	or	ply:Nick()
@@ -1775,8 +1778,6 @@ hook.Add("DeathrunBeginActive","ResetStartTime",function()
 	LocalPlayer().StartTime = CurTime()
 end)
 
-local CvVhs7Mode = DR.ConVars.Hud.Vhs7Mode
-
 local function RenderVhs7Mode()
 	DrawSharpen(1.1,1.7)
 	DrawMotionBlur(.4,.8,.005)
@@ -1789,7 +1790,7 @@ local function UpdateVhs7Mode()
 		hook.Remove("RenderScreenspaceEffects","DeathrunTVBorder")
 	end
 
-	if not CvVhs7Mode:GetBool() then return end
+	if not CvHud_Vhs7Mode:GetBool() then return end
 
 	local tvBorder = vgui.Create("DHTML")
 	DR.TVBorder = tvBorder
@@ -1831,8 +1832,8 @@ end)
 -- leftfunc and rightfunc are both passed the parameters x and y, designating the position of their top-left corner
 -- width and height should be within the values 228 and 108 respectively, e.g. 228 wide and 108 high, otherwise some clipping may occur with the edges of the screen.
 
---- @alias HudDrawFunc fun(x: number,y: number,alpha: number)
---- @alias HudDrawFuncTable HudDrawFunc[]
+--- @alias DeathrunDrawFunc fun(x: number,y: number,alpha: number)
+--- @alias DeathrunDrawFuncTable DeathrunDrawFunc[]
 
 --- @param x number
 --- @param y number
@@ -1840,34 +1841,34 @@ end)
 local function HudDrawDefault(x,y,alpha)
 end
 
---- @type HudDrawFuncTable
+--- @type DeathrunDrawFuncTable
 local HudDrawFuncs_Default = {HudDrawDefault,HudDrawDefault}
 local HudDrawFuncs_Meta = {
 	["__index"] = HudDrawFuncs_Default,
 }
 
---- @param hudFuncMain HudDrawFunc?
---- @param hudFuncAmmo HudDrawFunc?
+--- @param hudFuncMain DeathrunDrawFunc?
+--- @param hudFuncAmmo DeathrunDrawFunc?
 local function CreateHudMetaTable(hudFuncMain,hudFuncAmmo)
 	return setmetatable({hudFuncMain,hudFuncAmmo},HudDrawFuncs_Meta)
 end
 
-local HudFuncTable_DefaultHUD = CreateHudMetaTable(DR.DrawPlayerHUDMain,DR.DrawPlayerHUDAmmo)
+local HudFuncTable_DefaultHUD = CreateHudMetaTable(DrawPlayerHUDMain,DrawPlayerHUDAmmo)
 
---- @type HudDrawFuncTable[]
-local HudDrawFunctions = {
+--- @type DeathrunDrawFuncTable[]
+local DrawFunctions = {
 	[HUDTHEME_DEFAULT]      = HudFuncTable_DefaultHUD,
 	[HUDTHEME_DEFAULTTIMER] = HudFuncTable_DefaultHUD,
-	[HUDTHEME_SASS]         = CreateHudMetaTable(DR.DrawPlayerHUDMainSass,DR.DrawPlayerHUDAmmoSass),
-	[HUDTHEME_CLASSIC]      = CreateHudMetaTable(DR.DrawPlayerHUDClassic),
+	[HUDTHEME_SASS]         = CreateHudMetaTable(DrawPlayerHUDMainSass,DrawPlayerHUDAmmoSass),
+	[HUDTHEME_CLASSIC]      = CreateHudMetaTable(DrawPlayerHUDClassic),
 }
-DR.HudDrawFunctions = HudDrawFunctions
+HUD.DrawFunctions = DrawFunctions
 
 -- make it easy to add new HUDs
---- @param hudFuncMain HudDrawFunc? health, velocity
---- @param hudFuncAmmo HudDrawFunc? ammo, points
-function DR.AddCustomHUD(hudFuncMain,hudFuncAmmo)
-	HudDrawFunctions[#HudDrawFunctions + 1] = CreateHudMetaTable(hudFuncMain,hudFuncAmmo)
+--- @param hudFuncMain DeathrunDrawFunc? health, velocity
+--- @param hudFuncAmmo DeathrunDrawFunc? ammo, points
+function HUD.AddCustomHUD(hudFuncMain,hudFuncAmmo)
+	DrawFunctions[#DrawFunctions + 1] = CreateHudMetaTable(hudFuncMain,hudFuncAmmo)
 end
 
 local TWO_THIRDS = 2 / 3
@@ -1898,18 +1899,18 @@ function GM:HUDPaint()
 		y = scrH * .5
 	end
 
-	DR.DrawCrosshair(x,y)
-	DR.DrawTargetID()
-	DR.DrawPlayerNames()
-	DR.DrawNotifications()
-	DR.DrawKillfeed(scrW_Half,scrH * TWO_THIRDS)
+	HUD.DrawCrosshair(x,y)
+	HUD.DrawTargetID()
+	HUD.DrawPlayerNames()
+	HUD.DrawNotifications()
+	HUD.DrawKillfeed(scrW_Half,scrH * TWO_THIRDS)
 
-	local hudTheme = HudDrawFunctions[CvHudTheme:GetInt()]
+	local hudTheme = DrawFunctions[CvHud_Theme:GetInt()]
 
 	if hudTheme then
-		local hudMainPos = HudPositions[CvHudMainPos:GetInt()] --- @cast hudMainPos -?
-		local hudAmmoPos = HudPositions[CvHudAmmoPos:GetInt()] --- @cast hudAmmoPos -?
-		local alpha = CvHudAlpha:GetInt()
+		local hudMainPos = HudPositions[CvHud_PosMain:GetInt()] --- @cast hudMainPos -?
+		local hudAmmoPos = HudPositions[CvHud_PosAmmo:GetInt()] --- @cast hudAmmoPos -?
+		local alpha = CvHud_Alpha:GetInt()
 
 		hudTheme[1](hudMainPos[1],hudMainPos[2],alpha)
 		hudTheme[2](hudAmmoPos[1],hudAmmoPos[2],alpha)
@@ -1917,7 +1918,7 @@ function GM:HUDPaint()
 
 	-- check if it's stalemate, and don't do the thing, zhu li!
 	if RoundEndData.Active then
-		DR.DrawWinners(
+		DrawWinners(
 			RoundEndData.winteam,
 			RoundEndData.mvps,
 			scrW_Half - WinnerOffset,
@@ -1925,7 +1926,6 @@ function GM:HUDPaint()
 			RoundEndData.winteam == DR_WIN_STALEMATE
 		)
 
-		print(curTime,RoundEndData.BeginTime + CvFinishDuration:GetInt())
 		if curTime > RoundEndData.BeginTime + CvFinishDuration:GetInt() then
 			RoundEndData.Active = false
 		end

@@ -1,8 +1,8 @@
 local DR = DR
 
-local ButtonClaims = DR.ButtonClaims
-local ButtonEnts = ButtonClaims.ButtonEnts
-local ClaimRadius = ButtonClaims.ClaimRadius
+local ButtonClaimSystem = DR.ButtonClaimSystem
+local ButtonEnts = ButtonClaimSystem.ButtonEnts
+local ClaimRadius = ButtonClaimSystem.ClaimRadius
 
 util.AddNetworkString("DeathrunButtonEntsUpdateFull")
 util.AddNetworkString("DeathrunButtonEntsUpdateSimple")
@@ -25,14 +25,14 @@ hook.Add("InitPostEntity","SetupButtonEntData",function()
 		}
 	end
 
-	ButtonClaims.EntBits = DR.CalcMaxBits(maxId)
+	ButtonClaimSystem.EntBits = DR.CalcMaxBits(maxId)
 end)
 
 --- @param mapId integer
 --- @param data ButtonEntData
 local function SingleUpdate(mapId,data)
 	net.Start("DeathrunButtonEntsUpdateSimple")
-		net.WriteUInt(mapId,ButtonClaims.EntBits)
+		net.WriteUInt(mapId,ButtonClaimSystem.EntBits)
 
 		local claimed = data.Claimed
 		net.WriteBool(claimed)
@@ -44,7 +44,7 @@ local function SingleUpdate(mapId,data)
 end
 
 net.Receive("DeathrunButtonEntsClientReady",function(_,ply)
-	local entBits = ButtonClaims.EntBits
+	local entBits = ButtonClaimSystem.EntBits
 
 	net.Start("DeathrunButtonEntsUpdateFull")
 		net.WriteUInt(entBits,16)

@@ -1,4 +1,8 @@
+local DR = DR
+
 local Colors = DR.Colors
+local UI = DR.UI
+
 local ColorClouds = Colors.Clouds
 local ColorGrey = Colors.Grey
 local ColorTurq = Colors.Turq
@@ -55,7 +59,7 @@ function DR_ScoreboardTop:Paint(width,height)
 	fontWidth = fontWidth + 64 -- 64 pixel gap
 
 	if fontWidth > width then
-		DR.ShadowTextSimple(
+		UI.ShadowTextSimple(
 			hostName,
 			"Deathrun_Derma_Large",
 			4 + fontWidth - self.Counter * fontWidth,
@@ -65,7 +69,7 @@ function DR_ScoreboardTop:Paint(width,height)
 			TEXT_ALIGN_CENTER,
 			1
 		)
-		DR.ShadowTextSimple(
+		UI.ShadowTextSimple(
 			hostName,
 			"Deathrun_Derma_Large",
 			4 - self.Counter * fontWidth,
@@ -76,7 +80,7 @@ function DR_ScoreboardTop:Paint(width,height)
 			1
 		)
 	else
-		DR.ShadowTextSimple(
+		UI.ShadowTextSimple(
 			hostName,
 			"Deathrun_Derma_Large",
 			width * .5,

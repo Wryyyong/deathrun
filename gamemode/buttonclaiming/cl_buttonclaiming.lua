@@ -1,8 +1,8 @@
 local DR = DR
 
-local ButtonClaims = DR.ButtonClaims
-local ButtonEnts = ButtonClaims.ButtonEnts
-local ClaimRadius = ButtonClaims.ClaimRadius
+local ButtonClaimSystem = DR.ButtonClaimSystem
+local ButtonEnts = ButtonClaimSystem.ButtonEnts
+local ClaimRadius = ButtonClaimSystem.ClaimRadius
 
 local FadeOutRadius = ClaimRadius * 3
 
@@ -18,7 +18,7 @@ end)
 
 net.Receive("DeathrunButtonEntsUpdateFull",function(len)
 	local entBits = net.ReadUInt(16)
-	ButtonClaims.EntBits = entBits
+	ButtonClaimSystem.EntBits = entBits
 
 	while net.ReadBool() do
 		local mapId = net.ReadUInt(entBits)
@@ -38,7 +38,7 @@ net.Receive("DeathrunButtonEntsUpdateFull",function(len)
 end)
 
 net.Receive("DeathrunButtonEntsUpdateSimple",function(len)
-	local data = ButtonEnts[net.ReadUInt(ButtonClaims.EntBits)]
+	local data = ButtonEnts[net.ReadUInt(ButtonClaimSystem.EntBits)]
 
 	local claimed = net.ReadBool()
 	data.Claimed = claimed

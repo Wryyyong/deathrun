@@ -1,9 +1,10 @@
-MV = MV or {}
+local MapVote = DR.MapVote or {}
+DR.MapVote = MapVote
 
-MV.MaxMaps = 5 -- maximum number of maps on the mapvote when synced
-MV.VotingTime = 20 -- how many seconds the player has to vote
+MapVote.MaxMaps = 5 -- maximum number of maps on the mapvote when synced
+MapVote.VotingTime = 20 -- how many seconds the player has to vote
 
-MV.Filter = { -- map names need to start with these in order to be valid
+MapVote.Filter = { -- map names need to start with these in order to be valid
 	"deathrun_",
 	"dr_",
 }
