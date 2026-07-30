@@ -32,7 +32,7 @@ end
 hook.Add("SetupMove","DeathrunDisableSpectatorSpacebar",function(ply,mv,cmd)
 	if ply:GetObserverMode() ~= OBS_MODE_NONE then mv:SetButtons(bit.band(mv:GetButtons(),bit.bnot(IN_JUMP))) end
 	if ply:Alive() then
-		if ROUND:GetCurrent() == ROUND_PREP then
+		if ROUND.GetCurrent() == ROUND_PREP then
 			--mv:SetButtons( bit.band( mv:GetButtons(), bit.bnot( IN_JUMP ) ) )
 			local block = hook.Call("DeathrunPreventPreptimeMovement") or true
 			if block == true and ply:Team() == TEAM_RUNNER then -- block movement for runners
@@ -44,15 +44,23 @@ hook.Add("SetupMove","DeathrunDisableSpectatorSpacebar",function(ply,mv,cmd)
 	end
 end)
 
-function QuadLerp(frac,p1,p2)
-	local y = (p1 - p2) * (frac - 1) ^ 2 + p2
-	return y
+--- @param frac number
+--- @param p1 number
+--- @param p2 number
+function DR.QuadLerp(frac,p1,p2)
+	return (p1 - p2) * (frac - 1) ^ 2 + p2
 end
 
-function InverseLerp(pos,p1,p2)
-	local range = 0
-	range = p2 - p1
-	if range == 0 then return 1 end
+--- @param pos number
+--- @param p1 number
+--- @param p2 number
+function DR.InverseLerp(pos,p1,p2)
+	local range = p2 - p1
+
+	if range == 0 then
+		return 1
+	end
+
 	return (pos - p1) / range
 end
 

@@ -1,9 +1,17 @@
 include("sh_round.lua")
-net.Receive("ROUND_STATE",function(len,ply)
-	local old = ROUND_CURRENT
-	local new = net.ReadInt(16)
-	if not ROUND_TABLE[new] then return end
-	if ROUND_TABLE[old] then ROUND_TABLE[old].OnExit() end
-	ROUND_TABLE[new].OnEnter()
-	ROUND_CURRENT = new
+
+net.Receive("ROUND_STATE",function()
+	local round = net.ReadUInt(16)
+
+	local roundTblOld = ROUND_TABLE[ROUND_CURRENT]
+	local roundTblNew = ROUND_TABLE[round]
+	if not roundTblNew then return end
+
+	if roundTblOld then
+		roundTblOld.OnExit()
+	end
+
+	roundTblNew.OnEnter()
+
+	ROUND_CURRENT = round
 end)

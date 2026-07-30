@@ -7,7 +7,7 @@ function PLAYER:BeginSpectate()
 	--print(self:Nick(),"deathteam",self:Team(), TEAM_DEATH, "voluntary:", self.VoluntarySpec)
 	local avoided = (self:Team() == TEAM_DEATH and self.VoluntarySpec == true) and true or false
 	print("Checking death avoid...",self:Nick(),avoided)
-	if avoided == true and (ROUND:GetCurrent() == ROUND_PREP or ROUND:GetCurrent() == ROUND_ACTIVE) and #player.GetAllPlaying() > 1 then
+	if avoided == true and (ROUND.GetCurrent() == ROUND_PREP or ROUND.GetCurrent() == ROUND_ACTIVE) and #player.GetAllPlaying() > 1 then
 		print("Punish death avoider..")
 		DR:PunishDeathAvoid(self,DR.DeathAvoidPunishment:GetInt())
 		DR:ChatBroadcast("Player " .. self:Nick() .. " will be punished for attempting to avoid being on the Death team!")
@@ -158,7 +158,7 @@ concommand.Add("deathrun_set_spectate",function(self,cmd,args)
 	else
 		self:SetShouldStaySpectating(false)
 		self:EndSpectate()
-		if ROUND:GetCurrent() == ROUND_WAITING then
+		if ROUND.GetCurrent() == ROUND_WAITING then
 			self:KillSilent()
 			self:SetTeam(TEAM_RUNNER)
 			self:Spawn()

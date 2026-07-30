@@ -101,7 +101,7 @@ hook.Add("PrePlayerDraw","TransparencyPlayers",function(ply)
 	local eyedist = LocalPlayer():EyePos():Distance(ply:EyePos())
 	local col = ply:GetColor()
 	if eyedist < fadedistance and LocalPlayer() ~= ply then
-		local frac = InverseLerp(eyedist,5,fadedistance)
+		local frac = DR.InverseLerp(eyedist,5,fadedistance)
 		col.a = Lerp(frac,20,255)
 		if ply:Team() ~= LocalPlayer():Team() then col.a = 255 end
 		ply:SetColor(col)
@@ -118,7 +118,7 @@ function GM:PreDrawViewModel(vm,ply,wep)
 	if LocalPlayer():GetObserverMode() == OBS_MODE_CHASE or LocalPlayer():GetObserverMode() == OBS_MODE_ROAMING then
 		return true
 	elseif wep and wep.PreDrawViewModel then
-		return wep:PreDrawViewModel(vm,wep,ply)
+		return wep:PreDrawViewModel(vm,wep,ply,STUDIO_RENDER)
 	end
 end
 

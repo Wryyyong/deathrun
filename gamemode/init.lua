@@ -123,7 +123,7 @@ hook.Add("PlayerSpawn","DeathrunPlayerSpawn",function(ply)
 	ply:SetLagCompensated(true)
 	if ply.FirstSpawn == true then
 		ply.FirstSpawn = false
-		if ROUND:GetCurrent() == ROUND_ACTIVE or ROUND:GetCurrent() == ROUND_OVER then
+		if ROUND.GetCurrent() == ROUND_ACTIVE or ROUND.GetCurrent() == ROUND_OVER then
 			--print("firstspawn, spawning as spectator.")
 			table.insert(DR.SpecBuffer,ply)
 			timer.Simple(0,function()
@@ -313,7 +313,7 @@ function GM:CanPlayerSuicide(ply)
 		return false
 	end
 
-	if ROUND:GetCurrent() == ROUND_PREP then -- players cannot suicide during round prep time
+	if ROUND.GetCurrent() == ROUND_PREP then -- players cannot suicide during round prep time
 		return false
 	end
 	return self.BaseClass:CanPlayerSuicide(ply)
@@ -324,7 +324,7 @@ function GM:EntityTakeDamage(target,dmginfo)
 	local ply = target
 	local attacker = dmginfo:GetAttacker()
 	if target:IsPlayer() then
-		if ROUND:GetCurrent() == ROUND_WAITING or ROUND:GetCurrent() == ROUND_PREP then
+		if ROUND.GetCurrent() == ROUND_WAITING or ROUND.GetCurrent() == ROUND_PREP then
 			target:DeathrunChatPrint("You took " .. tostring(dmginfo:GetDamage()) .. " damage.")
 			dmginfo:SetDamage(0)
 		end

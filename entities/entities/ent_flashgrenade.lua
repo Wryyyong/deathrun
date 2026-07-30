@@ -82,7 +82,7 @@ if CLIENT then
 
 		ply.FlashTime = math.Clamp( ply.FlashTime, 0, 10 )
 
-		local alpha = InverseLerp( ply.FlashTime, 0, 1 )
+		local alpha = DR.InverseLerp( ply.FlashTime, 0, 1 )
 		alpha = math.Clamp( alpha, 0, 1 )
 
 		if alpha > 0 then
@@ -108,7 +108,7 @@ if CLIENT then
 
 		-- falloff is 1024 units
 		--if dist < 1024 then
-		local flashmul = InverseLerp( dist, 1024, 0 )
+		local flashmul = DR.InverseLerp( dist, 1024, 0 )
 		flashmul = math.Clamp( flashmul, 0.1, 1 )
 
 		local td = {

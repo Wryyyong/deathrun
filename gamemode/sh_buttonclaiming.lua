@@ -102,14 +102,14 @@ if CLIENT then
 			local dist = v.pos:Distance(LocalPlayer():EyePos())
 			if dist < claim_radius * 3 then
 				local alpha = 255
-				if dist > claim_radius then alpha = Lerp(InverseLerp(dist,claim_radius,claim_radius * 3),255,0) end
+				if dist > claim_radius then alpha = Lerp(DR.InverseLerp(dist,claim_radius,claim_radius * 3),255,0) end
 				local x,y = v.pos:ToScreen().x,v.pos:ToScreen().y
 				local claimtext = "Unclaimed"
 				for _,ply in ipairs(team.GetPlayers(TEAM_DEATH)) do
 					if ply:SteamID() == v.claimedPlayer then claimtext = "Claimed by " .. ply:Nick() end
 				end
 
-				draw.SimpleText(claimtext,"deathrun_derma_Tiny",x,y,Color(v.claimed and 255 or 100,not v.claimed and 255 or 100,100,alpha),TEXT_ALIGN_CENTER)
+				draw.SimpleText(claimtext,"DeathrunDermaTiny",x,y,Color(v.claimed and 255 or 100,not v.claimed and 255 or 100,100,alpha),TEXT_ALIGN_CENTER)
 			end
 		end
 	end)

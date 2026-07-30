@@ -38,7 +38,7 @@ function DR:CreateScoreboard()
 			local lerpspeed = .0005
 			local dur = .2 -- 2 seconds
 			self.dt = math.Clamp(self.dt + (DR.ScoreboardIsOpen and dt or -dt),0,dur)
-			self:SetPos(x,QuadLerp(math.Clamp(InverseLerp(self.dt,0,dur),0,1),ScrH() + 50,50))
+			self:SetPos(x,DR.QuadLerp(math.Clamp(DR.InverseLerp(self.dt,0,dur),0,1),ScrH() + 50,50))
 			if DR.ScoreboardIsOpen == false and y > ScrH() then self:Remove() end
 		end
 
@@ -50,7 +50,7 @@ function DR:CreateScoreboard()
 	function scoreboard:Paint(w,h)
 		surface.SetDrawColor(DR.Colors.Clouds)
 		--surface.DrawRect(0,0,w,h)
-		--DR:DrawPanelBlur( self, 6 )
+		--DR.DrawPanelBlur( self, 6 )
 	end
 
 	local scr = vgui.Create("DScrollPanel",scoreboard)
@@ -74,17 +74,17 @@ function DR:CreateScoreboard()
 		surface.SetDrawColor(0,0,0,100)
 		surface.DrawRect(0,h - 3,w,3)
 		-- make the hostname scroll left and right
-		surface.SetFont("deathrun_derma_Large")
+		surface.SetFont("DeathrunDermaLarge")
 		local cycle = 12
 		self.counter = self.counter + FrameTime() / cycle
 		local fw,fh = surface.GetTextSize(GetHostName())
 		fw = fw + 64 -- 64 pixel gap
 		if self.counter > 1 then self.counter = 0 end
 		if fw > self:GetWide() then
-			deathrunShadowTextSimple(GetHostName(),"deathrun_derma_Large",4 + fw - self.counter * fw,h / 2 - 2,DR.Colors.Text.Clouds,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER,1)
-			deathrunShadowTextSimple(GetHostName(),"deathrun_derma_Large",4 - self.counter * fw,h / 2 - 2,DR.Colors.Text.Clouds,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER,1)
+			DR.ShadowTextSimple(GetHostName(),"DeathrunDermaLarge",4 + fw - self.counter * fw,h / 2 - 2,DR.Colors.Text.Clouds,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER,1)
+			DR.ShadowTextSimple(GetHostName(),"DeathrunDermaLarge",4 - self.counter * fw,h / 2 - 2,DR.Colors.Text.Clouds,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER,1)
 		else
-			deathrunShadowTextSimple(GetHostName(),"deathrun_derma_Large",w / 2,h / 2 - 2,DR.Colors.Text.Clouds,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1)
+			DR.ShadowTextSimple(GetHostName(),"DeathrunDermaLarge",w / 2,h / 2 - 2,DR.Colors.Text.Clouds,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1)
 		end
 	end
 
@@ -114,7 +114,7 @@ function DR:CreateScoreboard()
 	end
 
 	local options = DR:NewScoreboardSpacer({""},dlist:GetWide(),24,HexColor("#303030"))
-	local sizetog = vgui.Create("AuToggle_Deathrun",options)
+	local sizetog = vgui.Create("DR_AuToggle",options)
 	sizetog:SetConVar("deathrun_scoreboard_small")
 	sizetog:SetText("Small Text")
 	sizetog:SizeToContents()
@@ -145,11 +145,11 @@ function DR:NewScoreboardSpacer(tbl_cols,w,h,customColor) -- static columns
 		label:SetText(columns[i])
 		label:SetTextColor(customColor)
 		local small = GetConVar("deathrun_scoreboard_small"):GetBool()
-		label:SetFont(small and "deathrun_derma_Tiny" or "deathrun_derma_Small")
+		label:SetFont(small and "DeathrunDermaTiny" or "DeathrunDermaSmall")
 		label:SizeToContents()
 		label:SetPos(#columns > 1 and 4 + (k * ((panel:GetWide() - 8) / (#columns - 1)) - label:GetWide() * align) or (panel:GetWide() - 8) / 2 - label:GetWide() / 2,0)
 		label:CenterVertical()
-		--draw.SimpleText( , "deathrun_derma_Small", k * (w/(#columns-1)),h/2, , align , TEXT_ALIGN_CENTER )
+		--draw.SimpleText( , "DeathrunDermaSmall", k * (w/(#columns-1)),h/2, , align , TEXT_ALIGN_CENTER )
 	end
 	return panel
 end
@@ -183,7 +183,7 @@ function DR:NewScoreboardPlayer(ply,w,h)
 			if not self.ply:Alive() then
 				surface.SetDrawColor(Color(255,255,255,100))
 				surface.DrawRect(0,0,w,h)
-				draw.SimpleText("✖","deathrun_derma_Medium",w / 2,h / 2 - 1,DR.Colors.Alizarin,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
+				draw.SimpleText("✖","DeathrunDermaMedium",w / 2,h / 2 - 1,DR.Colors.Alizarin,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
 			end
 		end
 
@@ -238,12 +238,12 @@ function DR:NewScoreboardPlayer(ply,w,h)
 		label:SetText(columnFunctions[i](ply))
 		label:SetTextColor(plyscorecol)
 		local small = GetConVar("deathrun_scoreboard_small"):GetBool()
-		label:SetFont(small and "deathrun_derma_Tiny" or "deathrun_derma_Small")
 		label:SetExpensiveShadow(1)
+		label:SetFont(small and "DeathrunDermaTiny" or "DeathrunDermaSmall")
 		label:SizeToContents()
 		label:SetPos(k * ((data:GetWide() - 8) / (#columns - 1)) - label:GetWide() * align,0)
 		label:CenterVertical()
-		--draw.SimpleText( , "deathrun_derma_Small", k * (w/(#columns-1)),h/2, , align , TEXT_ALIGN_CENTER )
+		--draw.SimpleText( , "DeathrunDermaSmall", k * (w/(#columns-1)),h/2, , align , TEXT_ALIGN_CENTER )
 	end
 
 	local but = vgui.Create("DButton",panel)

@@ -66,7 +66,7 @@ local DeathTimes = {}
 local function checkdeathavoid(ply)
 	print("Checking for death avoid... " .. ply:Nick())
 	local avoided = (ply:Team() == TEAM_DEATH and ply:Alive()) and true or false
-	if avoided == true and (ROUND:GetCurrent() == ROUND_PREP or ROUND:GetCurrent() == ROUND_ACTIVE) and #player.GetAllPlaying() > 2 then
+	if avoided == true and (ROUND.GetCurrent() == ROUND_PREP or ROUND.GetCurrent() == ROUND_ACTIVE) and #player.GetAllPlaying() > 2 then
 		DR:PunishDeathAvoid(ply,GetConVarNumber("deathrun_death_avoid_punishment"))
 		DR:ChatBroadcast("Player " .. ply:Nick() .. " will be punished for attempting to avoid being on the Death team!")
 	end
@@ -81,7 +81,7 @@ hook.Add("PlayerInitialSpawn","DeathrunCleanupSinglePlayer",function(ply)
 	end
 end)
 
-ROUND:AddState(ROUND_WAITING,function()
+ROUND.AddState(ROUND_WAITING,function()
 	print("Round State: WAITING")
 	hook.Call("DeathrunBeginWaiting",nil)
 	if SERVER then
@@ -94,7 +94,7 @@ ROUND:AddState(ROUND_WAITING,function()
 
 		timer.Create("DeathrunWaitingStateCheck",5,0,function()
 			if #player.GetAllPlaying() >= 2 then
-				ROUND:RoundSwitch(ROUND_PREP)
+				ROUND.RoundSwitch(ROUND_PREP)
 				timer.Destroy("DeathrunWaitingStateCheck")
 			end
 		end)
@@ -103,7 +103,7 @@ end,function()
 	--thinking
 end,function() print("Exiting: WAITING") end)
 
-ROUND:AddState(ROUND_PREP,function()
+ROUND.AddState(ROUND_PREP,function()
 	print("Round State: PREP")
 	hook.Call("DeathrunBeginPrep",nil)
 	if CLIENT then
@@ -114,7 +114,7 @@ ROUND:AddState(ROUND_PREP,function()
 
 	if SERVER then
 		game.CleanUpMap()
-		timer.Simple(PrepDuration:GetInt(),function() ROUND:RoundSwitch(ROUND_ACTIVE) end)
+		timer.Simple(PrepDuration:GetInt(),function() ROUND.RoundSwitch(ROUND_ACTIVE) end)
 		ROUND:SetTimer(PrepDuration:GetInt())
 		for k,ply in ipairs(player.GetAll()) do
 			if not ply:ShouldStaySpectating() then -- for some reason we need to do this otherwise people spawn as spec when they shouldnt!
@@ -244,7 +244,7 @@ ROUND:AddState(ROUND_PREP,function()
 	end
 end,function() end,function() print("Exiting: PREP") end)
 
-ROUND:AddState(ROUND_ACTIVE,function()
+ROUND.AddState(ROUND_ACTIVE,function()
 	print("Round State: ACTIVE")
 	hook.Call("DeathrunBeginActive",nil)
 	if SERVER then
@@ -270,7 +270,7 @@ end,function()
 	if SERVER then
 		local playing = player.GetAllPlaying()
 		if #playing < 2 then
-			ROUND:RoundSwitch(ROUND_WAITING)
+			ROUND.RoundSwitch(ROUND_WAITING)
 			return
 		end
 
@@ -296,7 +296,7 @@ end,function()
 	end
 end,function() print("Exiting: ACTIVE") end)
 
-ROUND:AddState(ROUND_OVER,function()
+ROUND.AddState(ROUND_OVER,function()
 	print("Round State: OVER")
 	hook.Call("DeathrunBeginOver",nil)
 	rounds_played = rounds_played + 1
@@ -304,7 +304,7 @@ ROUND:AddState(ROUND_OVER,function()
 		if not hook.Call("DeathrunShouldMapSwitch",nil,rounds_played) and rounds_played < GetConVarNumber("deathrun_round_limit") then
 			DR:ChatBroadcast("Round " .. tostring(rounds_played) .. " over. " .. tostring(GetConVarNumber("deathrun_round_limit") - rounds_played) .. " rounds to go!")
 			ROUND:SetTimer(GetConVarNumber("deathrun_finishtime_duration"))
-			timer.Simple(GetConVarNumber("deathrun_finishtime_duration"),function() ROUND:RoundSwitch(ROUND_PREP) end)
+			timer.Simple(GetConVarNumber("deathrun_finishtime_duration"),function() ROUND.RoundSwitch(ROUND_PREP) end)
 		else
 			--DR:ChatBroadcast("Round limit reached. Initiating RTV...")
 			timer.Simple(3,function() if not hook.Call("DeathrunStartMapvote",nil,rounds_played) then MV:BeginMapVote() end end)
@@ -329,7 +329,7 @@ if SERVER then
 	end)
 
 	function ROUND:FinishRound(winteam)
-		ROUND:RoundSwitch(ROUND_OVER)
+		ROUND.RoundSwitch(ROUND_OVER)
 		DR:ChatBroadcast("Round over! " .. (winteam == WIN_RUNNER and team.GetName(TEAM_RUNNER) .. " win!" or winteam == WIN_DEATH and team.GetName(TEAM_DEATH) .. " win!" or "Stalemate! Unbelievable!"))
 		--calculate MVPs
 		net.Start("DeathrunSendMVPs")
@@ -360,7 +360,7 @@ if SERVER then
 	end
 
 	--initial round
-	hook.Add("InitPostEntity","DeathrunInitialRoundState",function() ROUND:RoundSwitch(ROUND_WAITING) end)
+	hook.Add("InitPostEntity","DeathrunInitialRoundState",function() ROUND.RoundSwitch(ROUND_WAITING) end)
 end
 
 CreateConVar("deathrun_finish_balloons","12",defaultFlags,"How many balloons to spawn when the player finishes the map?")

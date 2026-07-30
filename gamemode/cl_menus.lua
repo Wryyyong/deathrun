@@ -1,7 +1,7 @@
 print("Loaded cl_menus.lua...")
 local crosshair_convars = {{"header","Crosshair Dimensions"},{"number","deathrun_crosshair_thickness",0,16,"Stroke Thickness"},{"number","deathrun_crosshair_gap",0,32,"Inner Gap"},{"number","deathrun_crosshair_size",0,32,"Stroke Length"},{"header","Crosshair Color"},{"number","deathrun_crosshair_red",0,255,"Red"},{"number","deathrun_crosshair_green",0,255,"Green"},{"number","deathrun_crosshair_blue",0,255,"Blue"},{"number","deathrun_crosshair_alpha",0,255,"Transparency"},}
 function DR:OpenCrosshairCreator()
-	local frame = vgui.Create("deathrun_window")
+	local frame = vgui.Create("DR_Window")
 	frame:SetSize(640,480)
 	frame:Center()
 	frame:MakePopup()
@@ -70,7 +70,7 @@ function DR:OpenCrosshairCreator()
 	dlist:SetSpaceX(0)
 	dlist:SetSpaceY(4)
 	local lbl = vgui.Create("DLabel")
-	lbl:SetFont("deathrun_derma_Medium")
+	lbl:SetFont("DeathrunDermaMedium")
 	lbl:SetTextColor(DR.Colors.Text.Turq)
 	lbl:SetText("Crosshair Options")
 	lbl:SizeToContents()
@@ -87,7 +87,7 @@ function DR:OpenCrosshairCreator()
 
 			dlist:Add(pnl)
 			local lbl = vgui.Create("DLabel")
-			lbl:SetFont("deathrun_derma_Small")
+			lbl:SetFont("DeathrunDermaSmall")
 			lbl:SetTextColor(DR.Colors.Text.Turq)
 			lbl:SetText(v[2])
 			lbl:SizeToContents()
@@ -95,13 +95,13 @@ function DR:OpenCrosshairCreator()
 			dlist:Add(lbl)
 		elseif ty == "boolean" then
 			local lbl = vgui.Create("DLabel") -- label
-			lbl:SetFont("deathrun_derma_Tiny")
+			lbl:SetFont("DeathrunDermaTiny")
 			lbl:SetTextColor(DR.Colors.Text.Grey3)
 			lbl:SetText(v[3])
 			lbl:SizeToContents()
 			lbl:SetWide(dlist:GetWide())
 			dlist:Add(lbl)
-			local check = vgui.Create("AuToggle_Deathrun")
+			local check = vgui.Create("DR_AuToggle")
 			check:SetValue(GetConVar(v[2]):GetBool())
 			check:SetText("Enabled")
 			check:SetTextColor(DR.Colors.Text.Grey3)
@@ -110,7 +110,7 @@ function DR:OpenCrosshairCreator()
 			dlist:Add(check)
 		elseif ty == "number" then
 			local lbl = vgui.Create("DLabel") -- label
-			lbl:SetFont("deathrun_derma_Tiny")
+			lbl:SetFont("DeathrunDermaTiny")
 			lbl:SetTextColor(DR.Colors.Text.Grey3)
 			lbl:SetText(v[5])
 			lbl:SizeToContents()
@@ -134,14 +134,14 @@ end
 
 concommand.Add("deathrun_open_crosshair_creator",function() DR:OpenCrosshairCreator() end)
 function DR:OpenHelp()
-	local frame = vgui.Create("deathrun_window")
+	local frame = vgui.Create("DR_Window")
 	frame:SetSize(ScrW(),ScrH())
 	frame:Center()
 	frame:MakePopup()
 	frame:SetTitle("Deathrun Help")
 	local lbl = vgui.Create("DLabel",frame)
 	lbl:SetText("Please wait while page loads...")
-	lbl:SetFont("deathrun_derma_Large")
+	lbl:SetFont("DeathrunDermaLarge")
 	lbl:SizeToContents()
 	lbl:Center()
 	local html = vgui.Create("DHTML",frame)
@@ -163,7 +163,7 @@ end
 --end)
 --end)
 function DR:OpenSettings()
-	local frame = vgui.Create("deathrun_window")
+	local frame = vgui.Create("DR_Window")
 	frame:SetSize(480,640)
 	frame:Center()
 	frame:MakePopup()
@@ -203,7 +203,7 @@ function DR:OpenSettings()
 	dlist:SetSpaceX(0)
 	dlist:SetSpaceY(8)
 	local lbl = vgui.Create("DLabel")
-	lbl:SetFont("deathrun_derma_Medium")
+	lbl:SetFont("DeathrunDermaMedium")
 	lbl:SetTextColor(DR.Colors.Text.Turq)
 	lbl:SetText("Local Settings")
 	lbl:SizeToContents()
@@ -220,7 +220,7 @@ function DR:OpenSettings()
 
 			dlist:Add(pnl)
 			local lbl = vgui.Create("DLabel")
-			lbl:SetFont("deathrun_derma_Small")
+			lbl:SetFont("DeathrunDermaSmall")
 			lbl:SetTextColor(DR.Colors.Text.Turq)
 			lbl:SetText(v[2])
 			lbl:SizeToContents()
@@ -235,13 +235,13 @@ function DR:OpenSettings()
 
 			dlist:Add(pnl)
 			local lbl = vgui.Create("DLabel") -- label
-			lbl:SetFont("deathrun_derma_Tiny")
+			lbl:SetFont("DeathrunDermaTiny")
 			lbl:SetTextColor(DR.Colors.Text.Grey3)
 			lbl:SetText(v[3])
 			lbl:SizeToContents()
 			lbl:SetWide(dlist:GetWide())
 			dlist:Add(lbl)
-			local check = vgui.Create("AuToggle_Deathrun")
+			local check = vgui.Create("DR_AuToggle")
 			check:SetValue(GetConVar(v[2]):GetInt())
 			check:SetText("Enabled")
 			check:SetTextColor(DR.Colors.Text.Grey3)
@@ -257,7 +257,7 @@ function DR:OpenSettings()
 
 			dlist:Add(pnl)
 			local lbl = vgui.Create("DLabel") -- label
-			lbl:SetFont("deathrun_derma_Tiny")
+			lbl:SetFont("DeathrunDermaTiny")
 			lbl:SetTextColor(DR.Colors.Text.Grey3)
 			lbl:SetText(v[5])
 			lbl:SizeToContents()
@@ -288,7 +288,7 @@ function DR:OpenSettings()
 
 	dlist:Add(pnl)
 	local lbl = vgui.Create("DLabel")
-	lbl:SetFont("deathrun_derma_Tiny")
+	lbl:SetFont("DeathrunDermaTiny")
 	lbl:SetTextColor(DR.Colors.Text.Turq)
 	lbl:SetText(os.date("%H:%M:%S on %d/%m/%Y",DR.TimeStamp or os.time()))
 	lbl:SizeToContents()
@@ -298,7 +298,7 @@ end
 
 concommand.Add("deathrun_open_settings",function() DR:OpenSettings() end)
 function DR:OpenZoneEditor()
-	local frame = vgui.Create("deathrun_window")
+	local frame = vgui.Create("DR_Window")
 	frame:SetSize(320,480)
 	frame:Center()
 	frame:MakePopup()
@@ -338,14 +338,14 @@ function DR:OpenZoneEditor()
 	dlist:SetSpaceX(4)
 	dlist:SetSpaceY(8)
 	local lbl = vgui.Create("DLabel")
-	lbl:SetFont("deathrun_derma_Small")
+	lbl:SetFont("DeathrunDermaSmall")
 	lbl:SetTextColor(DR.Colors.Text.Turq)
 	lbl:SetText("Create Zone")
 	lbl:SizeToContents()
 	lbl:SetWide(dlist:GetWide())
 	dlist:Add(lbl)
 	local lbl = vgui.Create("DLabel")
-	lbl:SetFont("deathrun_derma_Tiny")
+	lbl:SetFont("DeathrunDermaTiny")
 	lbl:SetTextColor(DR.Colors.Text.Grey3)
 	lbl:SetText("Zone Name:")
 	lbl:SizeToContents()
@@ -356,7 +356,7 @@ function DR:OpenZoneEditor()
 	te:SetText("new_zone")
 	dlist:Add(te)
 	local lbl = vgui.Create("DLabel")
-	lbl:SetFont("deathrun_derma_Tiny")
+	lbl:SetFont("DeathrunDermaTiny")
 	lbl:SetTextColor(DR.Colors.Text.Grey3)
 	lbl:SetText("Zone Type:")
 	lbl:SizeToContents()
@@ -370,11 +370,11 @@ function DR:OpenZoneEditor()
 	end
 
 	dlist:Add(dd)
-	local sbmt = vgui.Create("deathrun_button")
+	local sbmt = vgui.Create("DR_Button")
 	sbmt:SetSize(dlist:GetWide(),18)
 	sbmt:SetText("Create Zone")
-	sbmt:SetFont("deathrun_derma_Tiny")
-	sbmt:SetOffsets(0,0)
+	sbmt:SetFont("DeathrunDermaTiny")
+	sbmt:SetOffsets()
 	dlist:Add(sbmt)
 	sbmt.te = te
 	te.sbmt = sbmt
@@ -390,7 +390,7 @@ function DR:OpenZoneEditor()
 
 	--edit zones
 	local lbl = vgui.Create("DLabel")
-	lbl:SetFont("deathrun_derma_Small")
+	lbl:SetFont("DeathrunDermaSmall")
 	lbl:SetTextColor(DR.Colors.Text.Turq)
 	lbl:SetText("Modify Zone")
 	lbl:SizeToContents()
@@ -420,7 +420,7 @@ function DR:OpenZoneEditor()
 				local info = {"Zone Name: " .. self.dd:GetValue(),"Zone Type: " .. zone.type,"Pos1: " .. tostring(zone.pos1),"Pos2: " .. tostring(zone.pos2),"Color:" .. " " .. tostring(col.r) .. " " .. tostring(col.g) .. " " .. tostring(col.b) .. " " .. tostring(col.a),}
 				for i = 1,#info do
 					local k = i - 1
-					draw.SimpleText(info[i],"deathrun_derma_Tiny",0,14 * k,HexColor("#303030"))
+					draw.SimpleText(info[i],"DeathrunDermaTiny",0,14 * k,HexColor("#303030"))
 				end
 			end
 		end
@@ -435,11 +435,11 @@ function DR:OpenZoneEditor()
 	Mixer:SetColor(Color(255,255,255)) --Set the default color
 	Mixer.dd = dd
 	dlist:Add(Mixer)
-	local but = vgui.Create("deathrun_button")
+	local but = vgui.Create("DR_Button")
 	but:SetSize(dlist:GetWide(),18)
 	but:SetText("Set zone color")
-	but:SetFont("deathrun_derma_Tiny")
-	but:SetOffsets(0,0)
+	but:SetFont("DeathrunDermaTiny")
+	but:SetOffsets()
 	but.dd = dd
 	but.mixer = Mixer
 	dlist:Add(but)
@@ -448,33 +448,33 @@ function DR:OpenZoneEditor()
 		LocalPlayer():ConCommand("zone_setcolor " .. self.dd:GetValue() .. " " .. tostring(col.r) .. " " .. tostring(col.g) .. " " .. tostring(col.b) .. " " .. tostring(col.a))
 	end
 
-	local but = vgui.Create("deathrun_button")
+	local but = vgui.Create("DR_Button")
 	but:SetSize(dlist:GetWide(),18)
 	but:SetText("Set Pos1 to eyetrace")
-	but:SetFont("deathrun_derma_Tiny")
-	but:SetOffsets(0,0)
+	but:SetFont("DeathrunDermaTiny")
+	but:SetOffsets()
 	but.dd = dd
 	dlist:Add(but)
 	function but:DoClick()
 		LocalPlayer():ConCommand("zone_setpos1 " .. self.dd:GetValue() .. " eyetrace")
 	end
 
-	local but = vgui.Create("deathrun_button")
+	local but = vgui.Create("DR_Button")
 	but:SetSize(dlist:GetWide(),18)
 	but:SetText("Set Pos2 to eyetrace")
-	but:SetFont("deathrun_derma_Tiny")
-	but:SetOffsets(0,0)
+	but:SetFont("DeathrunDermaTiny")
+	but:SetOffsets()
 	but.dd = dd
 	dlist:Add(but)
 	function but:DoClick()
 		LocalPlayer():ConCommand("zone_setpos2 " .. self.dd:GetValue() .. " eyetrace")
 	end
 
-	local but = vgui.Create("deathrun_button")
+	local but = vgui.Create("DR_Button")
 	but:SetSize(dlist:GetWide(),18)
 	but:SetText("Remove this zone")
-	but:SetFont("deathrun_derma_Tiny")
-	but:SetOffsets(0,0)
+	but:SetFont("DeathrunDermaTiny")
+	but:SetOffsets()
 	but.dd = dd
 	dlist:Add(but)
 	function but:DoClick()
@@ -513,18 +513,18 @@ function DR:SetMOTDPage(url)
 end
 
 function DR:OpenQuickInfo()
-	local frame = vgui.Create("deathrun_window")
+	local frame = vgui.Create("DR_Window")
 	frame:SetSize(DR.MOTDWidth,DR.MOTDHeight)
 	frame:Center()
 	frame:MakePopup()
 	frame:SetTitle(DR.MOTDTitle)
 	function frame:OnClose()
-		if ROUND:GetCurrent() == ROUND_WAITING then DR:OpenWaitingMenu() end
+		if ROUND.GetCurrent() == ROUND_WAITING then DR:OpenWaitingMenu() end
 	end
 
 	local lbl = vgui.Create("DLabel",frame)
 	lbl:SetText("Please wait while page loads...")
-	lbl:SetFont("deathrun_derma_Large")
+	lbl:SetFont("DeathrunDermaLarge")
 	lbl:SizeToContents()
 	lbl:Center()
 	local html = vgui.Create("DHTML",frame)
@@ -579,7 +579,7 @@ end
 
 -- waiting menu
 function DR:OpenWaitingMenu()
-	local frame = vgui.Create("deathrun_window")
+	local frame = vgui.Create("DR_Window")
 	frame:SetSize(600,270)
 	frame:Center()
 	frame:MakePopup()
@@ -592,9 +592,9 @@ function DR:OpenWaitingMenu()
 		surface.SetDrawColor(DR.Colors.Clouds)
 		surface.DrawRect(x,y,w,h)
 		local ix,iy,iw,ih = x + 8,y + 8,w - 16,h - 16
-		local info = [[Welcome to the server! Currently there are no players online. 
-		This means that you can explore the map at your own pace 
-		from the safety of godmode, so you can practice 
+		local info = [[Welcome to the server! Currently there are no players online.
+		This means that you can explore the map at your own pace
+		from the safety of godmode, so you can practice
 		your Bhop and check for auto-traps with ease.\n\n
 		Some useful commands:\n
 		\t\b !respawn - Respawn yourself.\n
@@ -602,13 +602,13 @@ function DR:OpenWaitingMenu()
 		\t\b !help - View the help menu.\n\n
 		Enjoy, and have fun!]]
 		info = DR:GetWordWrapText(info,iw,"deathrun_hud_Medium_light")
-		deathrunShadowText(info,"deathrun_hud_Medium_light",ix,iy,HexColor("#303030"),nil,nil,0)
+		DR.ShadowText(info,"deathrun_hud_Medium_light",ix,iy,HexColor("#303030"),nil,nil,0)
 	end
 end
 
 concommand.Add("deathrun_open_waitingmenu",function() DR:OpenWaitingMenu() end)
 function DR:OpenForcedSpectatorMenu(msg)
-	local frame = vgui.Create("deathrun_window")
+	local frame = vgui.Create("DR_Window")
 	frame:SetSize(640,200)
 	frame:Center()
 	frame:SetTitle("Moved to Spectator")
@@ -621,16 +621,16 @@ function DR:OpenForcedSpectatorMenu(msg)
 		surface.SetDrawColor(DR.Colors.Text.Clouds)
 		surface.DrawRect(x,y,w,h)
 		local ix,iy,iw,ih = x + 8,y + 8,w - 16,h - 16
-		local info = [[You have been moved to the Spectator team for being AFK. 
-		To move back, either click on one of the buttons below or visit the 
+		local info = [[You have been moved to the Spectator team for being AFK.
+		To move back, either click on one of the buttons below or visit the
 		Spectator section of the F2 menu.
 		\n\nWould you like to move back into to the game?]]
 		if msg then info = msg end
 		info = DR:GetWordWrapText(info,iw,"deathrun_hud_Medium_light")
-		deathrunShadowText(info,"deathrun_hud_Medium_light",ix,iy,HexColor("#303030"),nil,nil,0)
+		DR.ShadowText(info,"deathrun_hud_Medium_light",ix,iy,HexColor("#303030"),nil,nil,0)
 	end
 
-	local cont = vgui.Create("deathrun_button",panel)
+	local cont = vgui.Create("DR_Button",panel)
 	cont:SetSize((panel:GetWide() - 3 * 4) / 2,32)
 	cont:SetPos(4,panel:GetTall() - 32 - 4)
 	cont:SetText("No, I'm okay with this.")
@@ -638,7 +638,7 @@ function DR:OpenForcedSpectatorMenu(msg)
 		self:GetParent():GetParent():Close()
 	end
 
-	local back = vgui.Create("deathrun_button",panel)
+	local back = vgui.Create("DR_Button",panel)
 	back:SetSize((panel:GetWide() - 3 * 4) / 2,32)
 	back:SetPos(8 + (panel:GetWide() - 3 * 4) / 2,panel:GetTall() - 32 - 4)
 	back:SetText("Yes, please move me back.")

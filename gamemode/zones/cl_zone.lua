@@ -55,7 +55,7 @@ hook.Add("PostDrawTranslucentRenderables","DeathrunZoneCuboidDrawing",function()
 			if dist < 1000 then
 				if GetConVar("deathrun_zones_visibility"):GetBool() == true then
 					local tempcolor = table.Copy(z.color)
-					local frac = math.Clamp(InverseLerp(dist,1000,400),0,1)
+					local frac = math.Clamp(DR.InverseLerp(dist,1000,400),0,1)
 					tempcolor.a = frac * z.color.a
 					local alt = false
 					local ply = LocalPlayer()

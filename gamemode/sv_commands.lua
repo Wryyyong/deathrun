@@ -61,7 +61,7 @@ concommand.Add("deathrun_respawn",function(ply,cmd,args)
 			DeathrunSafeChatPrint(ply,"You are not allowed to do that.")
 		end
 	elseif not args[1] then
-		if (DR:CanAccessCommand(ply,cmd) or ROUND:GetCurrent() == ROUND_WAITING) and ply:Team() ~= TEAM_SPECTATOR then
+		if (DR:CanAccessCommand(ply,cmd) or ROUND.GetCurrent() == ROUND_WAITING) and ply:Team() ~= TEAM_SPECTATOR then
 			ply:KillSilent()
 			ply:Spawn()
 			DeathrunSafeChatPrint(ply,"Respawned yourself.")
@@ -74,7 +74,7 @@ concommand.Add("deathrun_respawn",function(ply,cmd,args)
 end,nil,nil,FCVAR_SERVER_CAN_EXECUTE)
 
 concommand.Add("deathrun_cleanup",function(ply,cmd,args)
-	if DR:CanAccessCommand(ply,cmd) or ROUND:GetCurrent() == ROUND_WAITING then
+	if DR:CanAccessCommand(ply,cmd) or ROUND.GetCurrent() == ROUND_WAITING then
 		game.CleanUpMap()
 		DeathrunSafeChatPrint(ply,"Cleaned up the map and reset entities.")
 	else

@@ -35,10 +35,10 @@ function MV:NewDermaRow(tbl_cols,w,h,customColor,customColor2,doclick)
 		local label = vgui.Create("DLabel",panel)
 		label:SetText(columns[i])
 		label:SetTextColor(customColor2 or DR.Colors.Clouds)
-		label:SetFont("deathrun_derma_Tiny")
+		label:SetFont("DeathrunDermaTiny")
 		label:SizeToContents()
 		label:SetPos(#columns > 1 and 4 + (k * ((panel:GetWide() - 8) / (#columns - 1)) - label:GetWide() * align) or (panel:GetWide() - 8) / 2 - label:GetWide() / 2,panel:GetTall() / 2 - label:GetTall() / 2 - 1)
-		--draw.SimpleText( , "deathrun_derma_Small", k * (w/(#columns-1)),h/2, , align , TEXT_ALIGN_CENTER )
+		--draw.SimpleText( , "DeathrunDermaSmall", k * (w/(#columns-1)),h/2, , align , TEXT_ALIGN_CENTER )
 	end
 
 	-- clickable
@@ -54,7 +54,7 @@ function MV:NewDermaRow(tbl_cols,w,h,customColor,customColor2,doclick)
 end
 
 function MV:OpenFullMapList(maps)
-	local frame = vgui.Create("deathrun_window")
+	local frame = vgui.Create("DR_Window")
 	frame:SetSize(480,math.min(ScrH() - 64,480 * 1.618 - 44)) -- GOLDEN RATIO FIBONACCI SPIRAL OMG
 	frame:Center()
 	frame:MakePopup()
@@ -102,13 +102,13 @@ function MV:RepopulateMapList()
 		local maps = dlist.maps
 		dlist:Clear()
 		local lb = dlist:Add("DLabel")
-		lb:SetFont("deathrun_derma_Medium")
+		lb:SetFont("DeathrunDermaMedium")
 		lb:SetText("Maps")
 		lb:SetColor(DR.Colors.Turq)
 		lb:SizeToContents()
 		lb:SetWide(dlist:GetWide())
 		local lb = dlist:Add("DLabel")
-		lb:SetFont("deathrun_derma_Tiny")
+		lb:SetFont("DeathrunDermaTiny")
 		lb:SetText("Click on a map to see its options!")
 		lb:SetColor(DR.Colors.Turq)
 		lb:SizeToContents()
@@ -150,7 +150,7 @@ MV.Active = false
 MV.VotingMapList = {}
 -- actual voting menu place
 function MV:OpenVotingPanel()
-	local frame = vgui.Create("deathrun_window")
+	local frame = vgui.Create("DR_Window")
 	frame:SetSize(230 * 1.618 + 4,MV.MaxMaps * 24 + (MV.MaxMaps - 1) * 4 + 44) -- GOLDEN RATIO FIBONACCI SPIRAL OMG
 	frame:SetPos(4,0)
 	frame:CenterVertical()

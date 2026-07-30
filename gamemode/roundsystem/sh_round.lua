@@ -1,25 +1,30 @@
 ROUND = {}
+
 -- Create round state constants
 ROUND_CURRENT = -1 -- default to -1
 ROUND_TABLE = {} -- heheh
-function ROUND:AddState(r,fOnEnter,fOnThink,fOnExit) -- constant int, and 3 functions
-	ROUND_TABLE[r] = {
-		OnEnter = fOnEnter,
-		OnThink = fOnThink,
-		OnExit = fOnExit
+ROUND_STATES = {} -- heheh
+
+function ROUND.AddState(state,fOnEnter,fOnThink,fOnExit) -- constant int, and 3 functions
+	ROUND_STATES[state] = {
+		["OnEnter"] = fOnEnter,
+		["OnThink"] = fOnThink,
+		["OnExit"] = fOnExit,
 	}
 end
 
-function ROUND:RoundThink(r)
-	if not ROUND_TABLE[r] then return end
-	ROUND_TABLE[r].OnThink()
+function ROUND.RoundThink(state)
+	local roundTbl = ROUND_TABLE[state]
+	if not roundTbl then return end
+
+	roundTbl.OnThink()
 end
 
-function ROUND:GetCurrent()
+function ROUND.GetCurrent()
 	return ROUND_CURRENT
 end
 
+-- keep thinking for the current round, i.e. to check for living players
 hook.Add("Think","ROUND_THINK",function()
-	-- keep thinking for the current round, i.e. to check for living players
-	ROUND:RoundThink(ROUND_CURRENT)
+	ROUND.RoundThink(ROUND_CURRENT)
 end)

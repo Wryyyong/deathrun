@@ -1,4 +1,5 @@
 AddCSLuaFile()
+
 ENT.Type = "anim"
 ENT.Base = "base_entity"
 ENT.PrintName = "Balloon"
@@ -7,83 +8,73 @@ ENT.Contact = "Don't"
 ENT.Category = "Deathrun"
 ENT.Spawnable = true
 ENT.AdminSpawnable = true
-ENT.WorldModel = "models/balloons/balloon_classicheart.mdl"
-ENT.Models = {"models/balloons/balloon_classicheart.mdl","models/balloons/balloon_dog.mdl","models/balloons/balloon_star.mdl"}
-for k,v in ipairs(ENT.Models) do
-	util.PrecacheModel(v)
+
+ENT.Models = {
+	Model("models/balloons/balloon_classicheart.mdl"),
+	Model("models/balloons/balloon_dog.mdl"),
+	Model("models/balloons/balloon_star.mdl"),
+}
+
+local ColorCount = 0
+local ColorTable = {}
+
+for hue = 1,360,6 do
+	ColorCount = ColorCount + 1
+	ColorTable[ColorCount] = HSVToColor(hue,1,1)
+end
+
+function ENT:SetupDataTables()
+	self.BaseClass.SetupDataTables(self)
+
+	self:NetworkVar("Float","BornTime")
+	self:NetworkVar("Int","Lifespan")
 end
 
 function ENT:Initialize()
 	local models = self.Models
-	self.WorldModel = table.Random(models)
-	self:SetModel(self.WorldModel)
+
+	self:SetModel(models[math.random(#models)])
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
-	if SERVER then self:PhysicsInit(SOLID_VPHYSICS) end
-	local phys = self:GetPhysicsObject()
-	if phys:IsValid() then phys:Wake() end
-	self.phys = phys
-	self.born = CurTime()
-	self.lifespan = 10 + math.random(-2,2)
+
+	local lifespan = 10 + math.random(-2,2)
+	self:SetBornTime(CurTime())
+	self:SetLifespan(lifespan)
+
 	if SERVER then
+		self:PhysicsInit(SOLID_VPHYSICS)
+		local phys = self:GetPhysicsObject()
+
 		phys:EnableGravity(false)
-		phys:ApplyForceCenter(Vector(0,0,self.lifespan))
+		phys:ApplyForceCenter(Vector(0,0,lifespan))
+
 		self:SetCollisionGroup(COLLISION_GROUP_WORLD)
 	end
 
-	self:SetColor(HSVToColor(math.random(0,359),1,1))
-	--self:SetVelocity( Vector(0,0,1) )
+	self:SetColor(ColorTable[math.random(#ColorCount)])
 end
 
 if SERVER then
-	function ENT:Think()
-		if self.born + self.lifespan < CurTime() then self:DoExplosion(self:GetPos()) end
-	end
+	function ENT:DoExplosion()
+		local effect = EffectData()
+		local color = self:GetColor()
 
-	function ENT:OnTakeDamage(dmginfo)
-		self:DoExplosion(self:GetPos())
-	end
+		effect:SetOrigin(self:GetPos())
+		effect:SetStart(Vector(color.r,color.g,color.b))
 
-	function ENT:Touch(e)
-	end
+		util.Effect("balloon_pop",effect)
 
-	function ENT:DoExplosion(pos)
-		local effectdata = EffectData()
-		effectdata:SetOrigin(self:GetPos())
-		local c = self:GetColor()
-		effectdata:SetStart(Vector(c.r,c.g,c.b))
-		util.Effect("balloon_pop",effectdata)
 		self:Remove()
 	end
 
-	concommand.Add("celebrate",function(ply,cmd,args)
-		if ply:SteamID() ~= "STEAM_0:1:30288855" then return end
-		for i = 1,8 do
-			local dir = Vector(math.random(-100,100),math.random(-100,100),math.random(-100,100))
-			dir:Normalize()
-			local balloon = ents.Create("ent_deathrun_balloon")
-			balloon:Spawn()
-			balloon:SetAngles(Angle(0,math.random(-180,180),0))
-			local td = {
-				start = ply:GetShootPos(),
-				endpos = ply:GetShootPos() + dir * 92,
-				filter = ply,
-				mins = balloon:OBBMins(),
-				maxs = balloon:OBBMaxs(),
-			}
+	function ENT:Think()
+		if self:GetBornTime() + self:GetLifespan() >= CurTime() then return end
 
-			local tr = util.TraceHull(td)
-			if tr.HitPos:Distance(td.start) > 30 then
-				balloon:SetPos(tr.HitPos)
-				balloon:GetPhysicsObject():ApplyForceCenter(dir * 2.5)
-			else
-				balloon:Remove()
-			end
-		end
-	end)
-end
+		self:DoExplosion()
+	end
 
-if CLIENT then
+	ENT.OnTakeDamage = ENT.DoExplosion
+else
 	function ENT:Draw()
 		self:DrawModel()
 	end

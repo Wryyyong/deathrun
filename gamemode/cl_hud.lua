@@ -210,8 +210,8 @@ function DR:DrawTargetID()
 	local x,y = ScrW() / 2,ScrH() / 2 + 16
 	DR.TargetIDColor.a = math.pow(DR.TargetIDAlpha,.3) * 255 / math.pow(255,.3)
 	local tidText = DR.TargetIDName .. (IsValid(DR.TargetIDPlayer) and " - " .. tostring(math.Clamp(DR.TargetIDPlayer:Health(),0,100)) .. "%" or "")
-	deathrunShadowTextSimple(tidText,"deathrun_hud_Medium",x,y,DR.TargetIDColor,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1)
-	deathrunShadowTextSimple(tidText,"deathrun_hud_Medium",x,y,Color(255,255,255,DR.TargetIDColor.a * .2),TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
+	DR.ShadowTextSimple(tidText,"deathrun_hud_Medium",x,y,DR.TargetIDColor,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1)
+	DR.ShadowTextSimple(tidText,"deathrun_hud_Medium",x,y,Color(255,255,255,DR.TargetIDColor.a * .2),TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
 	-- our benchmark is 100fps
 	-- e.g. our fade time is 3s
 	-- so each frame at 100fps the alpha is alpha - 1/(3s * 100f) * 255 * fmul
@@ -234,13 +234,13 @@ function DR:DrawTargetID()
 			elseif dist < 200 then
 				a = 255
 			else
-				a = InverseLerp(dist,750,200) * 255
+				a = DR.InverseLerp(dist,750,200) * 255
 			end
 
 			local tcol = team.GetColor(ply:Team())
 			tcol.a = a
-			deathrunShadowTextSimple( ply:Nick(), "deathrun_hud_Medium", data.x, data.y-32, Color(255,255,255, a), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-			deathrunShadowTextSimple( team.GetName( ply:Team() ), "deathrun_hud_Small", data.x, data.y-16, tcol, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			DR.ShadowTextSimple( ply:Nick(), "deathrun_hud_Medium", data.x, data.y-32, Color(255,255,255, a), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			DR.ShadowTextSimple( team.GetName( ply:Team() ), "deathrun_hud_Small", data.x, data.y-16, tcol, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		end
 	end
 end
@@ -258,7 +258,7 @@ function DR:DrawPlayerHUD(x,y)
 	-- spacing of 4 between all
 	local ply = LocalPlayer()
 	if ply:GetObserverMode() ~= OBS_MODE_NONE then if IsValid(ply:GetObserverTarget()) then ply = ply:GetObserverTarget() end end
-	local shouldDrawTime = ROUND:GetCurrent() == 5 and ply == LocalPlayer() and ply:Team() == TEAM_RUNNER and HudTheme:GetInt() == 1
+	local shouldDrawTime = ROUND.GetCurrent() == 5 and ply == LocalPlayer() and ply:Team() == TEAM_RUNNER and HudTheme:GetInt() == 1
 	local tcol = team.GetColor(ply:Team())
 	otcol = table.Copy(tcol)
 	tcol.a = alpha
@@ -273,12 +273,12 @@ function DR:DrawPlayerHUD(x,y)
 	surface.DrawRect(dx,dy + 14,228,2)
 	local teamtext = string.upper(team.GetName(ply:Team()))
 	if ply ~= LocalPlayer() then teamtext = string.upper(ply:Nick()) end
-	deathrunShadowTextSimple(teamtext,"deathrun_hud_Small",dx + 228 / 2,dy + 16 / 2,DR.Colors.Text.Clouds,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1) -- team name
+	DR.ShadowTextSimple(teamtext,"deathrun_hud_Small",dx + 228 / 2,dy + 16 / 2,DR.Colors.Text.Clouds,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1) -- team name
 	dy = dy + 16 + 4
 	surface.SetDrawColor(clouds) -- Time Left
 	surface.DrawRect(dx,dy,228,16)
-	deathrunShadowTextSimple(string.upper(RoundNames[ROUND:GetCurrent()] or "TIME LEFT"),"deathrun_hud_Small",dx + 4,dy + 16 / 2,otcol,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER)
-	deathrunShadowTextSimple(string.ToMinutesSeconds(math.Clamp(ROUND:GetTimer(),0,99999)),"deathrun_hud_Small",dx + 228 - 4,dy + 16 / 2,otcol,TEXT_ALIGN_RIGHT,TEXT_ALIGN_CENTER)
+	DR.ShadowTextSimple(string.upper(RoundNames[ROUND:GetCurrent()] or "TIME LEFT"),"deathrun_hud_Small",dx + 4,dy + 1,otcol,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER)
+	DR.ShadowTextSimple(string.ToMinutesSeconds(math.Clamp(ROUND:GetTimer(),0,99999)),"deathrun_hud_Small",dx + 228 - 4,dy + 1,otcol,TEXT_ALIGN_RIGHT,TEXT_ALIGN_CENTER)
 	dy = dy + 16 + 4
 	surface.SetDrawColor(aliz) -- hp bar
 	surface.DrawRect(dx,dy,32,32)
@@ -291,12 +291,12 @@ function DR:DrawPlayerHUD(x,y)
 	surface.DrawRect(dx + 32 + 4,dy,192,32)
 	local maxhp = 100 -- yeah fuck yall
 	local curhp = math.Clamp(ply:Health(),0,999)
-	local hpfrac = math.Clamp(InverseLerp(curhp,0,maxhp),0,1)
+	local hpfrac = math.Clamp(DR.InverseLerp(curhp,0,maxhp),0,1)
 	surface.SetDrawColor(aliz)
 	surface.DrawRect(dx + 32 + 4,dy,192 * hpfrac,32)
 	-- hp text
-	deathrunShadowTextSimple("HP","deathrun_hud_Medium",dx + 32 / 2,dy + 32 / 2,DR.Colors.Text.Clouds,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1)
-	deathrunShadowTextSimple(tostring(curhp),"deathrun_hud_Large",dx + 32 + 4 + 4,dy + 32 / 2 - 1,DR.Colors.Text.Clouds,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER,1)
+	DR.ShadowTextSimple("HP","deathrun_hud_Medium",dx + 32 / 2,dy + 32 / 2,DR.Colors.Text.Clouds,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1)
+	DR.ShadowTextSimple(tostring(curhp),"deathrun_hud_Large",dx + 32 + 4 + 4,dy + 32 / 2 - 1,DR.Colors.Text.Clouds,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER,1)
 	dy = dy + 32 + 4
 	surface.SetDrawColor(turq) -- vel bar
 	surface.DrawRect(dx,dy,32,32)
@@ -309,12 +309,12 @@ function DR:DrawPlayerHUD(x,y)
 	surface.DrawRect(dx + 32 + 4,dy,192,32)
 	local maxvel = 1000 -- yeah fuck yall
 	local curvel = math.Round(math.Clamp(ply:GetVelocity():Length2D(),0,maxvel))
-	local velfrac = InverseLerp(curvel,0,maxvel)
+	local velfrac = DR.InverseLerp(curvel,0,maxvel)
 	surface.SetDrawColor(turq)
 	surface.DrawRect(dx + 32 + 4,dy,192 * velfrac,32)
 	-- hp text
-	deathrunShadowTextSimple("VL","deathrun_hud_Medium",dx + 32 / 2,dy + 32 / 2,DR.Colors.Text.Clouds,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1)
-	deathrunShadowTextSimple(tostring(curvel) .. ((ply.AutoJumpEnabled == true and GetConVar("deathrun_allow_autojump"):GetBool() == true) and " AUTO" or ""),"deathrun_hud_Large",dx + 32 + 4 + 4,dy + 32 / 2 - 1,DR.Colors.Text.Clouds,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER,1)
+	DR.ShadowTextSimple("VL","deathrun_hud_Medium",dx + 32 / 2,dy + 32 / 2,DR.Colors.Text.Clouds,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1)
+	DR.ShadowTextSimple(tostring(curvel) .. ((ply.AutoJumpEnabled == true and GetConVar("deathrun_allow_autojump"):GetBool() == true) and " AUTO" or ""),"deathrun_hud_Large",dx + 32 + 4 + 4,dy + 32 / 2 - 1,DR.Colors.Text.Clouds,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER,1)
 	if shouldDrawTime then
 		dy = dy + 32 + 4
 		surface.SetDrawColor(Color(255,182,0,alpha))
@@ -326,8 +326,8 @@ function DR:DrawPlayerHUD(x,y)
 		surface.DrawRect(dx + 32 + 4,dy,192,32)
 		surface.SetDrawColor(255,255,255,(alpha / 255) * 50)
 		surface.DrawRect(dx + 32 + 4,dy,192,32)
-		deathrunShadowTextSimple("TM","deathrun_hud_Medium",dx + 32 / 2,dy + 32 / 2,DR.Colors.Text.Clouds,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1)
-		deathrunShadowTextSimple(string.ToMinutesSecondsMilliseconds(CurTime() - (ply.StartTime or 0)),"deathrun_hud_Large",dx + 32 + 4 + 4,dy + 32 / 2 - 1,DR.Colors.Text.Clouds,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER,1)
+		DR.ShadowTextSimple("TM","deathrun_hud_Medium",dx + 32 / 2,dy + 32 / 2,DR.Colors.Text.Clouds,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1)
+		DR.ShadowTextSimple(string.ToMinutesSecondsMilliseconds(CurTime() - (ply.StartTime or 0)),"deathrun_hud_Large",dx + 32 + 4 + 4,dy + 32 / 2 - 1,DR.Colors.Text.Clouds,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER,1)
 	end
 end
 
@@ -364,7 +364,7 @@ function DR:DrawPlayerHUDAmmo(x,y)
 	surface.SetDrawColor(orange)
 	surface.DrawRect(dx,dy,228,32)
 	if IsValid(wep) then
-		deathrunShadowTextSimple(tostring(wepdata.Name),"deathrun_hud_Large",dx + 224,dy + 32 / 2 - 1,DR.Colors.Text.Clouds,TEXT_ALIGN_RIGHT,TEXT_ALIGN_CENTER,1)
+		DR.ShadowTextSimple(tostring(wepdata.Name),"deathrun_hud_Large",dx + 224,dy + 32 / 2 - 1,DR.Colors.Text.Clouds,TEXT_ALIGN_RIGHT,TEXT_ALIGN_CENTER,1)
 	else
 		return
 	end
@@ -384,8 +384,8 @@ function DR:DrawPlayerHUDAmmo(x,y)
 		surface.DrawRect(dx + 32 + 4,dy,192,32)
 		surface.SetDrawColor(orange)
 		surface.DrawRect(dx + 32 + 4,dy,192 * frac,32)
-		deathrunShadowTextSimple("AM","deathrun_hud_Medium",dx + 32 / 2,dy + 32 / 2,DR.Colors.Text.Clouds,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1)
-		if wepdata.ShouldDrawHUD then deathrunShadowTextSimple(tostring(wepdata.Clip1) .. " +" .. tostring(wepdata.Remaining1),"deathrun_hud_Large",dx + 32 + 192,dy + 32 / 2 - 1,DR.Colors.Text.Clouds,TEXT_ALIGN_RIGHT,TEXT_ALIGN_CENTER,1) end
+		DR.ShadowTextSimple("AM","deathrun_hud_Medium",dx + 32 / 2,dy + 32 / 2,DR.Colors.Text.Clouds,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1)
+		if wepdata.ShouldDrawHUD then DR.ShadowTextSimple(tostring(wepdata.Clip1) .. " +" .. tostring(wepdata.Remaining1),"deathrun_hud_Large",dx + 32 + 192,dy + 32 / 2 - 1,DR.Colors.Text.Clouds,TEXT_ALIGN_RIGHT,TEXT_ALIGN_CENTER,1) end
 	end
 
 	dy = dy + 32 + 4
@@ -449,10 +449,10 @@ function DR:UpdateNotifications()
 	for k,v in ipairs(notifications) do
 		local aliveFor = CurTime() - v.born
 		local shift = aliveFor - v.dur * .75
-		local fadein = math.Clamp(Lerp(InverseLerp(aliveFor,0,.5),0,255),0,255)
+		local fadein = math.Clamp(Lerp(DR.InverseLerp(aliveFor,0,.5),0,255),0,255)
 		local scalein = math.pow(fadein / 255,1 / 4)
-		deathrunShadowTextSimple(v.text,"deathrun_hud_Medium",v.x + 1,v.y + 1,Color(0,0,0,fadein),TEXT_ALIGN_RIGHT,TEXT_ALIGN_BOTTOM)
-		deathrunShadowTextSimple(v.text,"deathrun_hud_Medium",v.x,v.y,Color(255,255,255,fadein),TEXT_ALIGN_RIGHT,TEXT_ALIGN_BOTTOM)
+		DR.ShadowTextSimple(v.text,"deathrun_hud_Medium",v.x + 1,v.y + 1,Color(0,0,0,fadein),TEXT_ALIGN_RIGHT,TEXT_ALIGN_BOTTOM)
+		DR.ShadowTextSimple(v.text,"deathrun_hud_Medium",v.x,v.y,Color(255,255,255,fadein),TEXT_ALIGN_RIGHT,TEXT_ALIGN_BOTTOM)
 		v.x = v.x + v.dx * fmul
 		v.y = v.y + v.dy * fmul
 		v.dx = v.dx + v.ddx * fmul
@@ -476,22 +476,22 @@ function DR:DrawWinners(winteam,tbl_mvps,x,y,stalemate)
 	if not stalemate then
 		surface.SetDrawColor(DR.Colors.Clouds)
 		surface.DrawRect(x,y + h + gap,mw,mh)
-		--deathrunShadowTextSimple( "NOTABLE PLAYERS", "deathrun_hud_Medium", x + w/2, y + h + gap +mh/2 - 1, col, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1 )
+		--DR.ShadowTextSimple( "NOTABLE PLAYERS", "deathrun_hud_Medium", x + w/2, y + h + gap +mh/2 - 1, col, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1 )
 		-- draw MVPs
 		surface.SetDrawColor(col)
 		for i = 1,#tbl_mvps do
 			local name = tbl_mvps[i]
 			if name then
 				surface.DrawRect(x,y + h + (gap + mh) * i + gap,mw,mh)
-				deathrunShadowTextSimple(name,"deathrun_hud_Medium",x + w / 2,y + h + (gap + mh) * i + gap + mh / 2 - 1,DR.Colors.Text.Clouds,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1)
+				DR.ShadowTextSimple(name,"deathrun_hud_Medium",x + w / 2,y + h + (gap + mh) * i + gap + mh / 2 - 1,DR.Colors.Text.Clouds,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1)
 			end
 		end
 	end
 
-	deathrunShadowTextSimple(stalemate == false and string.upper(team.GetName(winteam) .. " win the round!") or "STALEMATE!","deathrun_hud_Xlarge",x + w / 2,y + h / 2,DR.Colors.Text.Clouds,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1)
+	DR.ShadowTextSimple(stalemate == false and string.upper(team.GetName(winteam) .. " win the round!") or "STALEMATE!","deathrun_hud_Xlarge",x + w / 2,y + h / 2,DR.Colors.Text.Clouds,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1)
 	surface.SetDrawColor(DR.Colors.Clouds)
 	surface.DrawRect(x,y + h + gap,mw,mh)
-	deathrunShadowTextSimple(stalemate and "YOU'RE ALL TERRIBLE!" or "MOST VALUABLE PLAYERS","deathrun_hud_Medium",x + w / 2,y + h + gap + mh / 2 - 1,col,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,0)
+	DR.ShadowTextSimple(stalemate and "YOU'RE ALL TERRIBLE!" or "MOST VALUABLE PLAYERS","deathrun_hud_Medium",x + w / 2,y + h + gap + mh / 2 - 1,col,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,0)
 end
 
 function GM:HUDWeaponPickedUp(wep)
@@ -585,29 +585,29 @@ function DR:DrawPlayerHUDSass(x,y)
 	surface.DrawRect(x + 8 + 48,y + h / 2 + 8 + 2,228 - 16 - 48 - 2,6)
 	local maxvel = 1500 -- yeah fuck yall
 	local curvel = math.Round(math.Clamp(ply:GetVelocity():Length2D(),0,maxvel))
-	local velfrac = InverseLerp(curvel,0,maxvel)
+	local velfrac = DR.InverseLerp(curvel,0,maxvel)
 	surface.SetDrawColor(Color(50,50,255,alpha))
 	surface.DrawRect(x + 8 + 48,y + h / 2 + 8 + 2,(228 - 16 - 48 - 2) * velfrac,6)
 	surface.SetDrawColor(Color(255,255,255,5 * amul))
 	surface.DrawRect(x + 8 + 48,y + h / 2 + 8 + 2,(228 - 16 - 48 - 2) * velfrac,2)
 	local maxhp = 100 -- yeah fuck yall
 	local curhp = math.Clamp(ply:Health(),0,999)
-	local hpfrac = math.Clamp(InverseLerp(curhp,0,maxhp),0,1)
+	local hpfrac = math.Clamp(DR.InverseLerp(curhp,0,maxhp),0,1)
 	surface.SetDrawColor(Color(50,255,50,alpha))
 	surface.DrawRect(x + 8 + 48,y + h / 2 - 10 + 2,(228 - 16 - 48 - 2) * hpfrac,16)
 	surface.SetDrawColor(Color(255,255,255,40 * amul))
 	surface.DrawRect(x + 8 + 48,y + h / 2 - 10 + 2,(228 - 16 - 48 - 2) * hpfrac,7)
 	-- HP TEXT
-	deathrunShadowTextSimple(tostring(curhp),"sassLarge",x + 128,y + h / 2 + 2,Color(255,255,255,255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_CENTER,2)
-	deathrunShadowTextSimple("HP","sassSmall",x + 132,y + h / 2 + 1,Color(255,255,255,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER,2)
-	deathrunShadowTextSimple(tostring(curvel) .. " VL","sassSmall",x + w - 12,y + h / 2 + 24 + 1,Color(255,255,255,255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_TOP,2)
+	DR.ShadowTextSimple(tostring(curhp),"sassLarge",x + 128,y + h / 2 + 2,Color(255,255,255,255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_CENTER,2)
+	DR.ShadowTextSimple("HP","sassSmall",x + 132,y + h / 2 + 1,Color(255,255,255,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER,2)
+	DR.ShadowTextSimple(tostring(curvel) .. " VL","sassSmall",x + w - 12,y + h / 2 + 24 + 1,Color(255,255,255,255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_TOP,2)
 	-- team text
 	local teamtext = team.GetName(ply:Team())
 	if ply ~= LocalPlayer() then -- must be spectating
 		teamtext = ply:Nick()
 	end
 
-	deathrunShadowTextSimple(teamtext .. " - " .. string.ToMinutesSeconds(math.Clamp(ROUND:GetTimer(),0,99999)),"sassSmall",x + 8,y + h / 2 + 24,Color(255,255,255,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,2)
+	DR.ShadowTextSimple(teamtext .. " - " .. string.ToMinutesSeconds(math.Clamp(ROUND:GetTimer(),0,99999)),"sassSmall",x + 8,y + h / 2 + 24,Color(255,255,255,255),TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,2)
 	-- position avatar
 	local avx,avy = avatar:GetPos()
 	if avx ~= x + 9 or avy ~= y + h / 2 - 24 + 1 then avatar:SetPos(x + 9,y + h / 2 - 23) end
@@ -630,8 +630,8 @@ function DR:DrawPlayerHUDAmmoSass(x,y)
 		frac = math.Clamp(frac,0,1)
 		--print( wepdata.ShouldDrawHUD )
 		if wepdata.ShouldDrawHUD == true then
-			deathrunShadowTextSimple(wepdata.Name,"sassSmall",x + w - 4,y + h - 68,Color(255,255,255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_BOTTOM,2)
-			deathrunShadowTextSimple(tostring(wepdata.Clip1) .. " +" .. tostring(wepdata.Remaining1),"sassLarge",x + w - 4,y + h - 20,Color(255,255,255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_BOTTOM,2)
+			DR.ShadowTextSimple(wepdata.Name,"sassSmall",x + w - 4,y + h - 68,Color(255,255,255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_BOTTOM,2)
+			DR.ShadowTextSimple(tostring(wepdata.Clip1) .. " +" .. tostring(wepdata.Remaining1),"sassLarge",x + w - 4,y + h - 20,Color(255,255,255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_BOTTOM,2)
 		end
 	else
 		return
@@ -671,18 +671,18 @@ function DR:DrawPlayerHUDClassic(x,y)
 	draw.RoundedBox(0,x + w / 2 - hw / 2 + 4,y + h - hh + 4,hw - 8,hh - 8,Color(180,80,80,255 * amul * amul))
 	local maxhp = 100 -- yeah fuck yall
 	local curhp = math.Clamp(ply:Health(),0,999)
-	local hpfrac = math.Clamp(InverseLerp(curhp,0,maxhp),0,1)
+	local hpfrac = math.Clamp(DR.InverseLerp(curhp,0,maxhp),0,1)
 	draw.RoundedBox(0,x + w / 2 - hw / 2 + 4,y + h - hh + 4,(hw - 8) * hpfrac,hh - 8,Color(80,180,60,255 * amul))
-	deathrunShadowText(tostring(curhp > 999 and "dafuq" or math.max(curhp,0)),"Deathrun_SmoothBig",x + w / 2 - hw / 2 + 5,y + h - hh,Color(255,255,255),nil,nil,1)
+	DR.ShadowText(tostring(curhp > 999 and "dafuq" or math.max(curhp,0)),"Deathrun_SmoothBig",x + w / 2 - hw / 2 + 5,y + h - hh,Color(255,255,255),nil,nil,1)
 	-- timer
 	local timetext = string.ToMinutesSeconds(ROUND:GetTimer())
 	local tw,th = hw / 2,hh * 1.25
 	local tx,ty = x + w / 2 - tw / 2,y + h - hh - 4 - th
 	draw.RoundedBox(4,tx,ty,tw,th,Color(44,44,44,175 * amul))
-	deathrunShadowText(timetext,"Deathrun_SmoothBig",tx + tw / 2,ty + 4,Color(255,255,255),TEXT_ALIGN_CENTER,nil,1)
+	DR.ShadowText(timetext,"Deathrun_SmoothBig",tx + tw / 2,ty + 4,Color(255,255,255),TEXT_ALIGN_CENTER,nil,1)
 	local spectext = ""
 	if ply ~= LocalPlayer() then spectext = ply:Nick() end
-	deathrunShadowTextSimple(spectext,"Deathrun_Smooth",tx + tw / 2,ty,Color(255,255,255),TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1)
+	DR.ShadowTextSimple(spectext,"Deathrun_Smooth",tx + tw / 2,ty,Color(255,255,255),TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1)
 end
 
 function DR:DrawPlayerHUDAmmoClassic(x,y)
@@ -793,7 +793,7 @@ function DeathrunDrawKillfeed(x,y)
 		if obj.hp > 0 then
 			local fade = 1
 			if obj.hp <= 1 then fade = obj.hp end
-			if obj.hp > 5.7 then fade = InverseLerp(obj.hp,6,5.7) end
+			if obj.hp > 5.7 then fade = DR.InverseLerp(obj.hp,6,5.7) end
 			dy = dy - 24 * fade
 			sumhp = sumhp + obj.hp
 		end
@@ -813,13 +813,13 @@ function DeathrunDrawKillfeed(x,y)
 				end
 
 				if obj.hp > 5.7 then
-					fade = InverseLerp(obj.hp,6,5.7)
+					fade = DR.InverseLerp(obj.hp,6,5.7)
 					sh = 1 - fade
 				end
 
 				dy = dy + 24 * fade
 				surface.SetAlphaMultiplier(fade * .75)
-				deathrunShadowTextSimple(obj.text,"deathrun_hud_Medium",x,y + dy + sh * 16,modecol[obj.mode] or Color(0,0,0),TEXT_ALIGN_CENTER,TEXT_ALIGN_BOTTOM,1)
+				DR.ShadowTextSimple(obj.text,"deathrun_hud_Medium",x,y + dy + sh * 16,modecol[obj.mode] or Color(0,0,0),TEXT_ALIGN_CENTER,TEXT_ALIGN_BOTTOM,1)
 				surface.SetAlphaMultiplier(1)
 			else
 				table.remove(killfeed,j)
