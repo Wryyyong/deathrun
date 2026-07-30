@@ -33,16 +33,8 @@ function EFFECT:Init(data)
 		local size = MathRand(1,3)
 		local darkness = MathRand(.8,1)
 
-		AngleCache:SetUnpacked(
-			MathRand(-160,160),
-			MathRand(-160,160),
-			MathRand(-160,160)
-		)
-		PosCache:SetUnpacked(
-			MathRand(-1,1),
-			MathRand(-1,1),
-			MathRand(-1,1)
-		)
+		AngleCache:Random(-160,160)
+		PosCache:Random(-1,1)
 		VelocityCache:Set(PosCache)
 		VelocityCache:Mul(500)
 

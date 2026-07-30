@@ -212,11 +212,7 @@ hook.Add("DeathrunPlayerFinishMap","Balloons",function(ply)
 
 		balloon:Spawn()
 
-		BalloonDir:SetUnpacked(
-			MathRand(-100,100),
-			MathRand(-100,100),
-			MathRand(-100,100)
-		)
+		BalloonDir:Random(-100,100)
 		BalloonDir:Normalize()
 		BalloonDir:Mul(BalloonEndPosMul)
 
