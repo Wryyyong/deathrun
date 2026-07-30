@@ -66,12 +66,6 @@ Stats.MapRecordsCache = MapRecordsCache
 Stats.PersonalBestCache = Stats.PersonalBestCache or "--:--:--"
 
 net.Receive("DeathrunSendMapRecords",function()
-	MapRecordsDrawPos:SetUnpacked(
-		net.ReadDouble(),
-		net.ReadDouble(),
-		net.ReadDouble()
-	)
-
 	local idx = 0
 
 	while NetReadBool() do
@@ -81,6 +75,14 @@ net.Receive("DeathrunSendMapRecords",function()
 		rank.Name = NetReadString()
 		rank.Seconds = StringToMinutesSecondsMilliseconds(NetReadFloat())
 	end
+end)
+
+net.Receive("DeathrunSendEndZone",function()
+	MapRecordsDrawPos:SetUnpacked(
+		NetReadDouble(),
+		NetReadDouble(),
+		NetReadDouble()
+	)
 end)
 
 net.Receive("DeathrunSendMapPersonalBest",function()

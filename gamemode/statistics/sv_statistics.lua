@@ -35,13 +35,12 @@ Stats.MostWinsCache = MostWinsCache
 -- kills, deaths, round wins
 -- if a runner dies, then that's 1 kill for everyone on the Death team.
 util.AddNetworkString("DeathrunSendStats")
+util.AddNetworkString("DeathrunSendEndZone")
 util.AddNetworkString("DeathrunDisplayStats")
 util.AddNetworkString("DeathrunSendMapRecords")
 util.AddNetworkString("DeathrunSendMapPersonalBest")
 
 local TableName_MapRecords = [["DeathrunRecords-]] .. sql.SQLStr(game.GetMap(),true) .. [["]]
-
-local EndZone
 
 -- Setup database tables
 sql.Query(
@@ -135,7 +134,8 @@ end
 
 --- @param plyFinish Player?
 local function UpdateMapRecords(plyFinish)
-	if not EndZone then return end
+	local endZone = Stats.EndZone
+	if not endZone then return end
 
 	local newRecords = sql.Query(
 		[[
@@ -157,16 +157,7 @@ local function UpdateMapRecords(plyFinish)
 	MapRecordsCache = newRecords
 
 	net.Start("DeathrunSendMapRecords")
-		--- @type Vector
-		local location = (EndZone.pos1 + EndZone.pos2)
-		location:Mul(.5)
-		location[1] = location[1] - 90
-
-		net.WriteDouble(location[1])
-		net.WriteDouble(location[2])
-		net.WriteDouble(location[3])
-
-		for _,data in ipairs(MapRecordsCache) do
+		for _,data in Iterator,MapRecordsCache,0 do
 			net.WriteBool(true)
 			net.WriteString(data.Name:sub(1,24))
 			net.WriteFloat(data.Seconds)
@@ -184,16 +175,39 @@ local function UpdateMapRecords(plyFinish)
 	end
 end
 
+--- @param plyFinish Player?
+local function SendEndZone(ply)
+	local endZone = Stats.EndZone
+	if not endZone then return end
+
+	net.Start("DeathrunSendEndZone")
+		local location = endZone.pos1 + endZone.pos2
+		location:Mul(.5)
+		location[1] = location[1] - 90
+
+		net.WriteDouble(location[1])
+		net.WriteDouble(location[2])
+		net.WriteDouble(location[3])
+
+	if ply then
+		net.Send(ply)
+	else
+		net.Broadcast()
+	end
+end
+
 local function FindEndZone()
 	if not ZoneSystem.MapZones then return end
 
 	for _,zone in next,ZoneSystem.MapZones do
 		if zone.type ~= "end" then continue end
 
-		EndZone = zone
+		Stats.EndZone = zone
 
 		break
 	end
+
+	SendEndZone()
 end
 
 hook.Add("DeathrunPlayerFinishMap","DeathrunMapRecords",function(ply,_,_,_,seconds)
@@ -227,6 +241,7 @@ end)
 hook.Add("InitPostEntity","DeathrunFindEndZone",function()
 	UpdateMostWins()
 	FindEndZone()
+	SendEndZone()
 end)
 
 hook.Add("DeathrunZonesUpdated","DeathrunFindEndZone",FindEndZone)
