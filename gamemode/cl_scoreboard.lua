@@ -25,7 +25,7 @@ function DR:CreateScoreboard()
 	local scoreboard = DR.ScoreboardPanel
 	if not IsValid(DR.ScoreboardPanel) then
 		local scoreboard = vgui.Create("DPanel")
-		scoreboard:SetSize(ScrW() / 2,ScrH() - 100)
+		scoreboard:SetSize(ScrW() * .5,ScrH() - 100)
 		scoreboard:SetPos(0,ScrH() + 50)
 		scoreboard:CenterHorizontal()
 		scoreboard.dt = 0
@@ -68,7 +68,7 @@ function DR:CreateScoreboard()
 	function header:Paint(w,h)
 		surface.SetDrawColor(DR.Colors.Turq or HexColor("#303030"))
 		surface.DrawRect(0,0,w,h)
-		surface.SetDrawColor(255,255,255,155 * (1 - math.pow((math.sin(CurTime()) + 1) / 2,.1)))
+		surface.SetDrawColor(255,255,255,155 * (1 - math.pow((math.sin(CurTime()) + 1) * .5,.1)))
 		surface.DrawRect(0,0,w,h)
 		surface.SetDrawColor(0,0,0,100)
 		surface.DrawRect(0,h - 3,w,3)
@@ -80,10 +80,10 @@ function DR:CreateScoreboard()
 		fw = fw + 64 -- 64 pixel gap
 		if self.counter > 1 then self.counter = 0 end
 		if fw > self:GetWide() then
-			DR.ShadowTextSimple(GetHostName(),"Deathrun_Derma_Large",4 + fw - self.counter * fw,h / 2 - 2,DR.Colors.Text.Clouds,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER,1)
-			DR.ShadowTextSimple(GetHostName(),"Deathrun_Derma_Large",4 - self.counter * fw,h / 2 - 2,DR.Colors.Text.Clouds,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER,1)
+			DR.ShadowTextSimple(GetHostName(),"Deathrun_Derma_Large",4 + fw - self.counter * fw,h * .5 - 2,DR.Colors.Text.Clouds,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER,1)
+			DR.ShadowTextSimple(GetHostName(),"Deathrun_Derma_Large",4 - self.counter * fw,h * .5 - 2,DR.Colors.Text.Clouds,TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER,1)
 		else
-			DR.ShadowTextSimple(GetHostName(),"Deathrun_Derma_Large",w / 2,h / 2 - 2,DR.Colors.Text.Clouds,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1)
+			DR.ShadowTextSimple(GetHostName(),"Deathrun_Derma_Large",w * .5,h * .5 - 2,DR.Colors.Text.Clouds,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER,1)
 		end
 	end
 
@@ -146,7 +146,7 @@ function DR:NewScoreboardSpacer(tbl_cols,w,h,customColor) -- static columns
 		local small = GetConVar("deathrun_scoreboard_small"):GetBool()
 		label:SetFont(small and "Deathrun_Derma_ExtraSmall" or "Deathrun_Derma_Small")
 		label:SizeToContents()
-		label:SetPos(#columns > 1 and 4 + (k * ((panel:GetWide() - 8) / (#columns - 1)) - label:GetWide() * align) or (panel:GetWide() - 8) / 2 - label:GetWide() / 2,0)
+		label:SetPos(#columns > 1 and 4 + (k * ((panel:GetWide() - 8) / (#columns - 1)) - label:GetWide() * align) or (panel:GetWide() - 8) * .5 - label:GetWide() * .5,0)
 		label:CenterVertical()
 		--draw.SimpleText( , "Deathrun_Derma_Small", k * (w/(#columns-1)),h/2, , align , TEXT_ALIGN_CENTER )
 	end
@@ -182,7 +182,7 @@ function DR:NewScoreboardPlayer(ply,w,h)
 			if not self.Player:Alive() then
 				surface.SetDrawColor(Color(255,255,255,100))
 				surface.DrawRect(0,0,w,h)
-				draw.SimpleText("✖","Deathrun_Derma_Medium",w / 2,h / 2 - 1,DR.Colors.Alizarin,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
+				draw.SimpleText("✖","Deathrun_Derma_Medium",w * .5,h * .5 - 1,DR.Colors.Alizarin,TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
 			end
 		end
 
@@ -192,7 +192,7 @@ function DR:NewScoreboardPlayer(ply,w,h)
 				surface.SetDrawColor(Color(255,255,255,100))
 				surface.DrawRect(0,0,w,h)
 				surface.SetDrawColor(Color(255,255,255,255))
-				surface.DrawTexturedRect(h / 2 - 8,w / 2 - 8,16,16)
+				surface.DrawTexturedRect(h * .5 - 8,w * .5 - 8,16,16)
 			end
 		end
 	end
@@ -220,7 +220,7 @@ function DR:NewScoreboardPlayer(ply,w,h)
 		if self.Mat ~= false then
 			surface.SetDrawColor(255,255,255)
 			surface.SetMaterial(self.Mat)
-			surface.DrawTexturedRect(0 + w / 2 - 8,0 + h / 2 - 8,16,16)
+			surface.DrawTexturedRect(0 + w * .5 - 8,0 + h * .5 - 8,16,16)
 		end
 	end
 

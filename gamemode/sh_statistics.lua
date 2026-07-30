@@ -252,7 +252,7 @@ if CLIENT then
 	end)
 
 	local w,h = 1000,380
-	local x,y = -w / 2,-h / 2
+	local x,y = -w * .5,-h * .5
 
 	hook.Add("PostDrawTranslucentRenderables","statsdisplay",function()
 		local delay = .45

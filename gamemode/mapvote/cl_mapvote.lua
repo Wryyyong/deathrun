@@ -37,7 +37,7 @@ function MV:NewDermaRow(tbl_cols,w,h,customColor,customColor2,doclick)
 		label:SetTextColor(customColor2 or DR.Colors.Clouds)
 		label:SetFont("Deathrun_Derma_ExtraSmall")
 		label:SizeToContents()
-		label:SetPos(#columns > 1 and 4 + (k * ((panel:GetWide() - 8) / (#columns - 1)) - label:GetWide() * align) or (panel:GetWide() - 8) / 2 - label:GetWide() / 2,panel:GetTall() / 2 - label:GetTall() / 2 - 1)
+		label:SetPos(#columns > 1 and 4 + (k * ((panel:GetWide() - 8) / (#columns - 1)) - label:GetWide() * align) or (panel:GetWide() - 8) * .5 - label:GetWide() * .5,panel:GetTall() * .5 - label:GetTall() * .5 - 1)
 		--draw.SimpleText( , "Deathrun_Derma_Small", k * (w/(#columns-1)),h/2, , align , TEXT_ALIGN_CENTER )
 	end
 

@@ -30,7 +30,7 @@ function ZONE:DrawCuboid(pos1,pos2,col,alt)
 	render.DrawBeam(points[3],points[7],width,1,1,col)
 	render.DrawBeam(points[4],points[8],width,1,1,col)
 	if alt then
-		width = width / 2 * (1 + math.floor(CurTime() * 4) % 2)
+		width = width * .5 * (1 + math.floor(CurTime() * 4) % 2)
 		render.DrawBeam(points[1],points[3],width,1,1,col)
 		render.DrawBeam(points[2],points[4],width,1,1,col)
 		render.DrawBeam(points[1],points[6],width,1,1,col)
