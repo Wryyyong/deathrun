@@ -1,3 +1,37 @@
+local Iterator = ipairs({})
+
+local tostring = tostring
+
+local CurTime = CurTime
+local IsValid = IsValid
+local RunConsoleCommand = RunConsoleCommand
+
+local FileFind = file.Find
+local FileWrite = file.Write
+
+local GameGetMap = game.GetMap
+
+local HookRun = hook.Run
+
+local MathCeil = math.ceil
+local MathRandom = math.random
+
+local NetBroadcast = net.Broadcast
+local NetSend = net.Send
+local NetStart = net.Start
+local NetWriteBool = net.WriteBool
+local NetWriteFloat = net.WriteFloat
+local NetWriteTable = net.WriteTable
+
+local PlayerGetAll = player.GetAll
+
+local TableCount = table.Count
+local TableEmpty = table.Empty
+local TableHasValue = table.HasValue
+local TableRemove = table.remove
+
+local TimerSimple = timer.Simple
+
 local DR = DR
 
 local MapVote = DR.MapVote
@@ -36,19 +70,19 @@ util.AddNetworkString("MapvoteSetActive")
 util.AddNetworkString("MapvoteSyncNominations")
 
 if not file.Exists("deathrun/MapStatistics.json","DATA") then
-	file.Write("deathrun/MapStatistics.json","[]")
+	FileWrite("deathrun/MapStatistics.json","[]")
 end
 
 local MapStats = MapVote.MapStats or util.JSONToTable(file.Read("deathrun/MapStatistics.json","DATA")) or {}
 MapVote.MapStats = MapStats
 
 local function SaveStats()
-	file.Write("deathrun/MapStatistics.json",util.TableToJSON(MapStats))
+	FileWrite("deathrun/MapStatistics.json",util.TableToJSON(MapStats))
 end
 
 -- increment stats by 1 each time a round is played on the map
 hook.Add("DeathrunBeginPrep","RecordMapStats",function()
-	local map = game.GetMap()
+	local map = GameGetMap()
 	local stats = MapStats[map]
 	local plyNum = #DR.GetAllPlaying()
 
@@ -64,39 +98,39 @@ end)
 concommand.Add("mapvote_list_maps",function(ply,cmd)
 	if not DR.CanAccessCommand(ply,cmd) then return end
 
-	net.Start("MapvoteSendAllMaps")
-		net.WriteTable({
+	NetStart("MapvoteSendAllMaps")
+		NetWriteTable({
 			["maps"] = MapVote.GetGoodMaps(),
 			["action"] = "openlist",
 		})
-	net.Send(ply)
+	NetSend(ply)
 end)
 
 function MapVote.SyncMapList()
-	net.Start("MapvoteUpdateMapList")
-		net.WriteTable(MapList)
-	net.Broadcast()
+	NetStart("MapvoteUpdateMapList")
+		NetWriteTable(MapList)
+	NetBroadcast()
 end
 
 function MapVote.GetGoodMaps()
 	-- get a list of maps
-	local mapList = file.Find("maps/*.bsp","GAME","nameasc")
+	local mapList = FileFind("maps/*.bsp","GAME","nameasc")
 
 	-- cleanup the names
-	for idx,map in ipairs(mapList) do
+	for idx,map in Iterator,mapList,0 do
 		mapList[idx] = map:StripExtension():lower()
 	end
 
 	-- remove files that don't have the right prefix
 	local goodMaps = {}
 
-	for _,filter in ipairs(MapVote.Filter) do
+	for _,filter in Iterator,MapVote.Filter,0 do
 		local length = #filter
 
-		for _,map in ipairs(mapList) do
+		for _,map in Iterator,mapList,0 do
 			if
 				map:sub(1,length) ~= filter
-			or	table.HasValue(goodMaps,map)
+			or	TableHasValue(goodMaps,map)
 			then continue end
 
 			goodMaps[#goodMaps + 1] = map
@@ -107,22 +141,22 @@ function MapVote.GetGoodMaps()
 end
 
 function MapVote.UpdateMapVote()
-	net.Start("MapvoteUpdateMapList")
-		net.WriteTable(MapList)
-	net.Broadcast()
+	NetStart("MapvoteUpdateMapList")
+		NetWriteTable(MapList)
+	NetBroadcast()
 end
 
 local function SendMapVoteStatus()
 	local active = MapVote.Active
 
-	net.Start("MapvoteSetActive")
-		net.WriteBool(active)
+	NetStart("MapvoteSetActive")
+		NetWriteBool(active)
 
 		if active then
-			net.WriteTable(MapList)
-			net.WriteFloat(MapVote.VotingTime)
+			NetWriteTable(MapList)
+			NetWriteFloat(MapVote.VotingTime)
 		end
-	net.Broadcast()
+	NetBroadcast()
 end
 
 -- initiates the mapvote, and syncs the maps once
@@ -130,7 +164,7 @@ function MapVote.BeginMapVote()
 	local mapList = MapVote.GetGoodMaps()
 
 	-- populate the maplist
-	table.Empty(MapList)
+	TableEmpty(MapList)
 
 	-- add nominations
 	for idx = 1,MapVote.MaxMaps do
@@ -141,21 +175,21 @@ function MapVote.BeginMapVote()
 	end
 
 	local loopCount = 0
-	local numMaps = table.Count(MapList)
+	local numMaps = TableCount(MapList)
 
 	while loopCount < 200 and numMaps < MapVote.MaxMaps and #mapList > 0 do
-		local randNum = math.random(#mapList)
+		local randNum = MathRandom(#mapList)
 		local map = mapList[randNum]
 
 		MapList[map] = 0
 
-		table.remove(mapList,randNum)
-		numMaps = table.Count(MapList)
+		TableRemove(mapList,randNum)
+		numMaps = TableCount(MapList)
 
 		loopCount = loopCount + 1
 	end
 
-	numMaps = table.Count(MapList)
+	numMaps = TableCount(MapList)
 
 	MapVote.Active = true
 	MapVote.TimeLeft = MapVote.VotingTime
@@ -178,26 +212,26 @@ function MapVote.FinishMapVote()
 	local winner
 	local winningVotes = 0
 
-	for map,voteCount in pairs(MapList) do
+	for map,voteCount in next,MapList do
 		if winningVotes >= voteCount then continue end
 
 		winningVotes = voteCount
 		winner = map
 	end
 
-	table.Empty(VotingMapsNoVotes)
+	TableEmpty(VotingMapsNoVotes)
 
-	for mapId in pairs(MapList) do
+	for mapId in next,MapList do
 		VotingMapsNoVotes[#VotingMapsNoVotes + 1] = mapId
 	end
 
 	if not winner then
-		winner = VotingMapsNoVotes[math.random(#VotingMapsNoVotes)]
+		winner = VotingMapsNoVotes[MathRandom(#VotingMapsNoVotes)]
 	end
 
 	DR.ChatBroadcast("The next map will be " .. tostring(winner) .. ". Map will change in 5 seconds.")
 
-	timer.Simple(5,function()
+	TimerSimple(5,function()
 		DR.ChatBroadcast("Changing to the next map...")
 
 		RunConsoleCommand("changelevel",winner)
@@ -218,7 +252,7 @@ end)
 concommand.Add("mapvote_begin_mapvote",function(ply,cmd)
 	if
 		not DR.CanAccessCommand(ply,cmd)
-	or	hook.Run("DeathrunStartMapvote",RoundSystem.GetRoundsPlayed())
+	or	HookRun("DeathrunStartMapvote",RoundSystem.GetRoundsPlayed())
 	then return end
 
 	MapVote.BeginMapVote()
@@ -238,11 +272,11 @@ concommand.Add("mapvote_vote",function(ply,cmd,args)
 	if targetMap then
 		Players[ply] = targetMap
 
-		for map in pairs(MapList) do
+		for map in next,MapList do
 			MapList[map] = 0
 		end
 
-		for _,map in pairs(Players) do
+		for _,map in next,Players do
 			MapList[map] = MapList[map] + 1
 		end
 
@@ -265,13 +299,13 @@ concommand.Add("mapvote_nominate_map",function(ply,cmd,args)
 	local curTime = CurTime()
 
 	if not ply.LastNom or ply.LastNom + 1 < curTime then
-		if not table.HasValue(MapVote.GetGoodMaps(),nomNum) then
+		if not TableHasValue(MapVote.GetGoodMaps(),nomNum) then
 			ply:DeathrunChatPrint("You can't nominate a map that isn't in the nominate list.")
 
 			return
 		end
 
-		if nomNum == game.GetMap() then
+		if nomNum == GameGetMap() then
 			ply:DeathrunChatPrint("You can't nominate the map you are currently playing.")
 
 			return
@@ -279,8 +313,8 @@ concommand.Add("mapvote_nominate_map",function(ply,cmd,args)
 
 		PlayerNominations[ply] = nomNum
 
-		for _,plyNom in pairs(PlayerNominations) do
-			if table.HasValue(Nominations,plyNom) then continue end
+		for _,plyNom in next,PlayerNominations do
+			if TableHasValue(Nominations,plyNom) then continue end
 
 			Nominations[#Nominations + 1] = plyNom
 		end
@@ -289,9 +323,9 @@ concommand.Add("mapvote_nominate_map",function(ply,cmd,args)
 
 		DR.ChatBroadcast(ply:Nick() .. " has nominated " .. nomNum .. " for the mapvote!")
 
-		net.Start("MapvoteSyncNominations")
-			net.WriteTable(Nominations)
-		net.Broadcast()
+		NetStart("MapvoteSyncNominations")
+			NetWriteTable(Nominations)
+		NetBroadcast()
 	else
 		ply:DeathrunChatPrint("Please wait before nominating again.")
 	end
@@ -316,10 +350,10 @@ function MapVote.CheckRTV(suppress)
 	end
 
 	local voteCount = 0
-	local plyList = player.GetAll()
+	local plyList = PlayerGetAll()
 	local plyCount = #plyList
 
-	for _,ply in ipairs(plyList) do
+	for _,ply in Iterator,plyList,0 do
 		local wantsRtv = ply.WantsRTV or false
 		ply.WantsRTV = wantsRtv
 
@@ -329,11 +363,11 @@ function MapVote.CheckRTV(suppress)
 	end
 
 	if voteCount / plyCount > CvRtvRatio:GetFloat() then
-		if not hook.Run("DeathrunStartMapvote",RoundSystem.GetRoundsPlayed()) then MapVote.BeginMapVote() end
+		if not HookRun("DeathrunStartMapvote",RoundSystem.GetRoundsPlayed()) then MapVote.BeginMapVote() end
 
 		DR.ChatBroadcast("RTV limit reached. Initiating mapvote.")
 	elseif not suppress then
-		DR.ChatBroadcast((math.ceil(CvRtvRatio:GetFloat() * plyCount) - voteCount + 1) .. " more votes needed in order to change the map. Type !rtv to vote.")
+		DR.ChatBroadcast((MathCeil(CvRtvRatio:GetFloat() * plyCount) - voteCount + 1) .. " more votes needed in order to change the map. Type !rtv to vote.")
 	end
 end
 

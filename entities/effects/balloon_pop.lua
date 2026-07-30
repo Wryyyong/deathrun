@@ -1,3 +1,9 @@
+local ParticleEmitter = ParticleEmitter
+
+local MathRand = math.Rand
+
+local SoundPlay = sound.Play
+
 --[[---------------------------------------------------------
    Initializes the effect. The data is a table of data
    which was passed from the server.
@@ -24,18 +30,18 @@ function EFFECT:Init(data)
 	local emitter = ParticleEmitter(offset,true)
 
 	for _ = 1,ParticleCount do
-		local size = math.Rand(1,3)
-		local darkness = math.Rand(.8,1)
+		local size = MathRand(1,3)
+		local darkness = MathRand(.8,1)
 
 		AngleCache:SetUnpacked(
-			math.Rand(-160,160),
-			math.Rand(-160,160),
-			math.Rand(-160,160)
+			MathRand(-160,160),
+			MathRand(-160,160),
+			MathRand(-160,160)
 		)
 		PosCache:SetUnpacked(
-			math.Rand(-1,1),
-			math.Rand(-1,1),
-			math.Rand(-1,1)
+			MathRand(-1,1),
+			MathRand(-1,1),
+			MathRand(-1,1)
 		)
 		VelocityCache:Set(PosCache)
 		VelocityCache:Mul(500)
@@ -64,8 +70,8 @@ function EFFECT:Init(data)
 		particle:SetStartSize(size)
 		particle:SetEndSize(0)
 
-		particle:SetRoll(math.Rand(0,360))
-		particle:SetRollDelta(math.Rand(-2,2))
+		particle:SetRoll(MathRand(0,360))
+		particle:SetRollDelta(MathRand(-2,2))
 
 		particle:SetAirResistance(100)
 		particle:SetBounce(1)
@@ -74,7 +80,7 @@ function EFFECT:Init(data)
 		particle:SetLighting(true)
 	end
 
-	sound.Play("Deathrun.BalloonPop",offset)
+	SoundPlay("Deathrun.BalloonPop",offset)
 
 	emitter:Finish()
 end

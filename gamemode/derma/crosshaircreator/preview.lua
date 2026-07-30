@@ -1,3 +1,6 @@
+local SurfaceSetDrawColor = surface.SetDrawColor
+local SurfaceDrawRect = surface.DrawRect
+
 local HUD = DR.UI.HUD
 
 --- @class DR_CrosshairPreview : DPanel
@@ -14,8 +17,8 @@ function DR_CrosshairPreview:Init()
 end
 
 function DR_CrosshairPreview:Paint(width,height)
-	surface.SetDrawColor(0,0,0,200)
-	surface.DrawRect(
+	SurfaceSetDrawColor(0,0,0,200)
+	SurfaceDrawRect(
 		0,
 		0,
 		width,

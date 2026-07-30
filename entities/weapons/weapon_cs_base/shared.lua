@@ -1,3 +1,5 @@
+local Iterator = ipairs({})
+
 -- Note from Arizard:
 -- This is a heavily modified version of the weapon_cs_base in Gravious' release of Flow Network Gamemodes.
 -- It features additions such as recoil predictability (almost a spray pattern) and headshot damage buffs.
@@ -73,10 +75,10 @@ function SWEP:Initialize()
 		self:SetNPCMaxBurst( 30 )
 		self:SetNPCFireRate( 0.01 )
 	end
-	
+
 	self:SetHoldType( self.HoldType )
 	self.Weapon:SetNetworkedBool( "Ironsights", false )
-	
+
 end
 
 
@@ -88,11 +90,11 @@ function SWEP:Holster()
 end
 
 function SWEP:Reload()
-	
+
 	if (self:Clip1() == self.Primary.ClipSize) or self.Reloading == true then return end
 
 	self.Weapon:DefaultReload( ACT_VM_RELOAD );
-	
+
 	self:SetIronsights( false, true )
 
 	self.Reloading = true
@@ -102,7 +104,7 @@ function SWEP:CalculateFalloff( drunkhigh, dt ) -- stole the code from my drug a
 	drunkhigh = (drunkhigh > 0) and (drunkhigh + 1) or drunkhigh -1
 
 	local halflife = 0.5 * math.sqrt(self.Primary.Recoil/1.5) -- is half-life of recoil in seconds
-	local rate =  ( math.log(1/2)*1000 / (halflife) )/1000 
+	local rate =  ( math.log(1/2)*1000 / (halflife) )/1000
 	local initial = math.abs(drunkhigh)
 	local sign = ((drunkhigh < 0) and -1) or 1
 	local final = 0
@@ -111,7 +113,7 @@ function SWEP:CalculateFalloff( drunkhigh, dt ) -- stole the code from my drug a
 
 	if final < 0 then final = 0 else final = final * sign end
 
-	return final 
+	return final
 
 end
 
@@ -135,7 +137,7 @@ if SERVER then
 		self.LastThink = RealTime()
 
 		self.KickBack = self:CalculateFalloff( self.KickBack, dt )
-		
+
 		--if self.KickBack < 0 then self.KickBack = 0 end	-- do this serverside
 		self.Reloading = false
 
@@ -146,7 +148,7 @@ if SERVER then
 			end
 		end
 
-		
+
 	end
 else
 	function SWEP:Think() -- clientside think
@@ -165,7 +167,7 @@ else
 
 		self.Reloading = false
 
-		
+
 	end
 end
 
@@ -183,7 +185,7 @@ function SWEP:PrimaryAttack()
 	self.Reloading = false
 	self:SetNetworkedBool( "ReloadingShotgun", false )
 
-	timer.Simple( self.Primary.Delay*0.8, function() 
+	timer.Simple( self.Primary.Delay*0.8, function()
 		if self.Weapon and not self.Reloading then
 			self.Weapon:SendWeaponAnim( ACT_VM_IDLE )
 		end
@@ -197,34 +199,34 @@ function SWEP:PrimaryAttack()
 
 	self.Weapon:SetNextSecondaryFire( CurTime() + self.Primary.Delay )
 	self.Weapon:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
-	
+
 	if ( !self:CanPrimaryAttack() ) then return end
-	
+
 	-- Play shoot sound
 	if self.LaserBeams then
 		self.Weapon:EmitSound( "weapons/airboat/airboat_gun_energy1.wav", 75, 100 - 50*(math.min(self.Primary.Damage*self.Primary.NumShots,100)/100), 1 )
 	else
 		self.Weapon:EmitSound( self.Primary.Sound )
 	end
-	
+
 	-- Shoot the bullet
 	self:CSShootBullet( self.Primary.Damage, self.Primary.Recoil, self.Primary.NumShots, self.Primary.Cone )
-	
-	
-	
-	
+
+
+
+
 	if ( self.Owner:IsNPC() ) then return end
-	
-	
-	
+
+
+
 	-- In singleplayer this function doesn't get called on the client, so we use a networked float
-	-- to send the last shoot time. In multiplayer this is predicted clientside so we don't need to 
+	-- to send the last shoot time. In multiplayer this is predicted clientside so we don't need to
 	-- send the float.
 	if ( (game.SinglePlayer() && SERVER) || CLIENT ) then
 		self.Weapon:SetNetworkedFloat( "LastShootTime", CurTime() )
 	end
 
-	
+
 
 
 
@@ -251,7 +253,7 @@ function BulletLaserCallback(ply, tr, dmginfo)
 	local id = ply:LookupAttachment("anim_attachment_RH")
 	local att = ply:GetAttachment( id )
 	newBeam.start = att and att.Pos + att.Ang:Forward()*20 + att.Ang:Up()*2 or self:GetPos()
-	
+
 	if CLIENT then
 		local att = ply:GetViewModel():GetAttachment( 1 )
 		newBeam.start = att.Pos
@@ -260,7 +262,7 @@ function BulletLaserCallback(ply, tr, dmginfo)
 	newBeam.endpos = tr.HitPos
 	local green = Color(50,200,50)
 	local gold = Color(255,200,50)
-	
+
 	-- if math.random(0,10) > 5 then
 	-- 	newBeam.r, newBeam.g, newBeam.b, a = gold.r, gold.g, gold.b
 	-- else
@@ -270,7 +272,7 @@ function BulletLaserCallback(ply, tr, dmginfo)
 	newBeam.b = math.random(0,100)
 
 	if SERVER then
-		for k,v in ipairs( player.GetAll() ) do
+		for k,v in Iterator,player.GetAll(),0 do
 			if v ~= ply then
 				net.Start("NewBeamMeme")
 				net.WriteString( util.TableToJSON(newBeam) )
@@ -315,7 +317,7 @@ function SWEP:CSShootBullet( dmg, recoil, numbul, cone )
 	if self.Shotgun == true then
 		bullet.Spread 	= Vector( math.pow(accfrac + 0.1, 1), math.pow(accfrac + 0.1, 1), 0 )
 	end
-	bullet.Tracer	= 4									-- Show a tracer on every x bullets 
+	bullet.Tracer	= 4									-- Show a tracer on every x bullets
 	bullet.Force	= 5									-- Amount of force to give to phys objects
 	bullet.Damage	= dmg
 
@@ -362,11 +364,11 @@ function SWEP:CSShootBullet( dmg, recoil, numbul, cone )
 			end
 		end
 	--end
-	
+
 	local owner = self.Owner
 	local slf = self
 
-	
+
 
 	bullet.Callback = function( ply, tr, dmginfo )
 		if self.LaserBeams then
@@ -413,22 +415,22 @@ function SWEP:GetViewModelPosition( pos, ang )
 	if ( !self.IronSightsPos ) then return pos, ang end
 
 	local bIron = self.Weapon:GetNetworkedBool( "Ironsights" )
-	
+
 	if ( bIron != self.bLastIron ) then
-	
-		self.bLastIron = bIron 
+
+		self.bLastIron = bIron
 		self.fIronTime = CurTime()
-		
-		if ( bIron ) then 
+
+		if ( bIron ) then
 			self.SwayScale 	= 0.3
 			self.BobScale 	= 0.1
-		else 
+		else
 			self.SwayScale 	= 1.0
 			self.BobScale 	= 1.0
 		end
-	
+
 	end
-	
+
 
 	local right = ang:Right();
 	local forward = ang:Forward()
@@ -442,37 +444,37 @@ function SWEP:GetViewModelPosition( pos, ang )
 		pos = pos + ang:Forward()*-100
 	end
 
-	if ( !bIron && fIronTime < CurTime() - IRONSIGHT_TIME ) then 
-		return pos, ang 
+	if ( !bIron && fIronTime < CurTime() - IRONSIGHT_TIME ) then
+		return pos, ang
 	end
-	
+
 	local Mul = 1.0
-	
+
 	if ( fIronTime > CurTime() - IRONSIGHT_TIME ) then
-	
+
 		Mul = math.Clamp( (CurTime() - fIronTime) / IRONSIGHT_TIME, 0, 1 )
-		
+
 		if (!bIron) then Mul = 1 - Mul end
-	
+
 	end
 
 	local Offset	= self.IronSightsPos
-	
+
 	if ( self.IronSightsAng ) then
-	
+
 		ang = ang * 1
 		ang:RotateAroundAxis( ang:Right(), 		self.IronSightsAng.x * Mul )
 		ang:RotateAroundAxis( ang:Up(), 		self.IronSightsAng.y * Mul )
 		ang:RotateAroundAxis( ang:Forward(), 	self.IronSightsAng.z * Mul )
-	
-	
+
+
 	end
-	
+
 	local Right 	= ang:Right()
 	local Up 		= ang:Up()
 	local Forward 	= ang:Forward()
-	
-	
+
+
 
 	pos = pos + Offset.x * Right * Mul
 	pos = pos + Offset.y * Forward * Mul
@@ -481,7 +483,7 @@ function SWEP:GetViewModelPosition( pos, ang )
 
 
 	return pos, ang
-	
+
 end
 
 
@@ -537,8 +539,8 @@ if CLIENT then
 		end
 	end
 
-	
-	
+
+
 	function SWEP:CalcView( ply, pos, ang, fov )
 		-- local dt = RealTime() - self.LastCalcView
 		-- --print(dt, engine.TickInterval())
@@ -561,7 +563,7 @@ if CLIENT then
 	end
 
 	-- function SWEP:CalcViewModelView( ply, opos, oang, pos, ang )
-		
+
 	-- 	return pos, ang
 	-- end
 
@@ -604,7 +606,7 @@ function SWEP:SecondaryAttack()
 
 	if CurTime() < self.LastSecondaryShotTime + self.Secondary.Delay then return end
 	self.LastSecondaryShotTime = CurTime()
-	
+
 	self:SecondaryAttack2()
 
 end
@@ -617,7 +619,7 @@ function SWEP:OnRestore()
 
 	self.NextSecondaryAttack = 0
 	self:SetIronsights( false )
-	
+
 end
 
 if SERVER then
@@ -634,11 +636,11 @@ SWEP.EmptyBeam = {
 if CLIENT then
 	print("Loaded laser beams")
 	WeaponBeams = {} -- global
-	
+
 	local laser = Material('color.vmt')
 	hook.Add("PreDrawTranslucentRenderables", "Lasers", function()
 		render.SetMaterial(laser)
-		for k,v in pairs(WeaponBeams) do
+		for k,v in next,WeaponBeams do
 			if v ~= nil then
 				if v.alpha > 0 then
 					render.DrawBeam( v.start, v.endpos, 1, 0, 1, Color(v.r,v.g,v.b, v.alpha) )

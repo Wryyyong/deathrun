@@ -1,3 +1,6 @@
+local SurfaceSetDrawColor = CLIENT and surface.SetDrawColor
+local SurfaceDrawRect = CLIENT and surface.DrawRect
+
 local ColorTurq = DR.Colors.Clouds
 
 --- @class DR_MenuControls : DPanel
@@ -21,8 +24,8 @@ function DR_MenuControls:SetupPos()
 end
 
 function DR_MenuControls:Paint(width,height)
-	surface.SetDrawColor(ColorTurq)
-	surface.DrawRect(
+	SurfaceSetDrawColor(ColorTurq)
+	SurfaceDrawRect(
 		0,
 		0,
 		width,

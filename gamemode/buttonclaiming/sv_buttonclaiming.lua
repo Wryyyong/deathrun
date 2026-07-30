@@ -1,3 +1,25 @@
+local Iterator = ipairs({})
+
+local IsValid = IsValid
+
+local EntsFindByClass = ents.FindByClass
+
+local HookRun = hook.Run
+
+local MathMax = math.max
+
+local NetSend = net.Send
+local NetSendPVS = net.SendPVS
+local NetStart = net.Start
+local NetWriteBool = net.WriteBool
+local NetWriteDouble = net.WriteDouble
+local NetWritePlayer = net.WritePlayer
+local NetWriteUInt = net.WriteUInt
+
+local TeamGetPlayers = team.GetPlayers
+
+local TimerCreate = timer.Create
+
 local DR = DR
 
 local ButtonClaimSystem = DR.ButtonClaimSystem
@@ -11,9 +33,9 @@ util.AddNetworkString("DeathrunButtonEntsClientReady")
 hook.Add("InitPostEntity","SetupButtonEntData",function()
 	local maxId = -1
 
-	for _,ent in ipairs(ents.FindByClass("func_button")) do
+	for _,ent in Iterator,EntsFindByClass("func_button"),0 do
 		local mapId = ent:MapCreationID()
-		maxId = math.max(mapId,maxId)
+		maxId = MathMax(mapId,maxId)
 
 		local pos = ent:GetPos()
 		pos:Add(ent:OBBCenter())
@@ -31,51 +53,51 @@ end)
 --- @param mapId integer
 --- @param data ButtonEntData
 local function SingleUpdate(mapId,data)
-	net.Start("DeathrunButtonEntsUpdateSimple")
-		net.WriteUInt(mapId,ButtonClaimSystem.EntBits)
+	NetStart("DeathrunButtonEntsUpdateSimple")
+		NetWriteUInt(mapId,ButtonClaimSystem.EntBits)
 
 		local claimed = data.Claimed
-		net.WriteBool(claimed)
+		NetWriteBool(claimed)
 
 		if claimed then
-			net.WritePlayer(data.ClaimingPlayer)
+			NetWritePlayer(data.ClaimingPlayer)
 		end
-	net.SendPVS(data.Position)
+	NetSendPVS(data.Position)
 end
 
 net.Receive("DeathrunButtonEntsClientReady",function(_,ply)
 	local entBits = ButtonClaimSystem.EntBits
 
-	net.Start("DeathrunButtonEntsUpdateFull")
-		net.WriteUInt(entBits,16)
+	NetStart("DeathrunButtonEntsUpdateFull")
+		NetWriteUInt(entBits,16)
 
-		for mapId,data in pairs(ButtonEnts) do
-			net.WriteBool(true)
+		for mapId,data in next,ButtonEnts do
+			NetWriteBool(true)
 
-			net.WriteUInt(mapId,entBits)
+			NetWriteUInt(mapId,entBits)
 
 			local claimed = data.Claimed
-			net.WriteBool(claimed)
+			NetWriteBool(claimed)
 
 			if claimed then
-				net.WritePlayer(data.ClaimingPlayer)
+				NetWritePlayer(data.ClaimingPlayer)
 			end
 
 			local pos = data.Position
-			net.WriteDouble(pos[1])
-			net.WriteDouble(pos[2])
-			net.WriteDouble(pos[3])
+			NetWriteDouble(pos[1])
+			NetWriteDouble(pos[2])
+			NetWriteDouble(pos[3])
 		end
 
-		net.WriteBool(false)
-	net.Send(ply)
+		NetWriteBool(false)
+	NetSend(ply)
 end)
 
-timer.Create("CheckButtonClaims",1 / 3,0,function()
+TimerCreate("CheckButtonClaims",1 / 3,0,function()
 	--- @type Player[]
 	local plyList = {}
 
-	for _,ply in ipairs(team.GetPlayers(DR_TEAM_DEATH)) do
+	for _,ply in Iterator,TeamGetPlayers(DR_TEAM_DEATH),0 do
 		if not ply:Alive() then continue end
 
 		plyList[#plyList + 1] = ply
@@ -86,7 +108,7 @@ timer.Create("CheckButtonClaims",1 / 3,0,function()
 	-- compile all the button entities into the table buttons
 	--- @param mapId integer
 	--- @param data ButtonEntData
-	for mapId,data in pairs(ButtonEnts) do
+	for mapId,data in next,ButtonEnts do
 		local claimed = data.Claimed
 		local claimer = data.ClaimingPlayer
 		local pos = data.Position
@@ -94,7 +116,7 @@ timer.Create("CheckButtonClaims",1 / 3,0,function()
 		local closestDist = math.huge
 		local closestPlayer
 
-		for _,ply in ipairs(plyList) do
+		for _,ply in Iterator,plyList,0 do
 			local dist = pos:DistToSqr(ply:EyePos())
 			if dist >= closestDist then continue end
 
@@ -152,7 +174,7 @@ hook.Add("PlayerUse","DeathrunButtonClaimPlayerUse",function(ply,ent)
 		and	not ent:GetInternalVariable("m_bLocked")
 		and	ply:KeyPressed(IN_USE)
 		then
-			hook.Run("DeathrunButtonActivated",ply,ent)
+			HookRun("DeathrunButtonActivated",ply,ent)
 		end
 
 		ent.User = ply

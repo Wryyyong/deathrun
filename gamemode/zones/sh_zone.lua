@@ -1,3 +1,5 @@
+local Vector = Vector
+
 local DR = DR
 
 -- zone format

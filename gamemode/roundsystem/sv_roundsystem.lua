@@ -1,3 +1,30 @@
+local Iterator = ipairs({})
+
+local tonumber = tonumber
+
+local IsValid = IsValid
+
+local EntsCreate = ents.Create
+
+local GameCleanUpMap = game.CleanUpMap
+
+local HookRun = hook.Run
+
+local MathRand = math.Rand
+
+local NetBroadcast = net.Broadcast
+local NetSend = net.Send
+local NetStart = net.Start
+local NetWriteTable = net.WriteTable
+local NetWriteUInt = net.WriteUInt
+
+local PlayerGetCount = player.GetCount
+local PlayerIterator = player.Iterator
+
+local TeamGetName = team.GetName
+
+local UtilTraceHull = util.TraceHull
+
 local DR = DR
 
 local ConVars = DR.ConVars
@@ -21,12 +48,12 @@ function RoundSystem.RoundSwitch(round) -- this can be used to switch or restart
 
 	RoundSystem.CurrentState = round
 
-	net.Start("DeathrunUpdateRoundState")
-		net.WriteUInt(round,16)
-	net.Broadcast()
+	NetStart("DeathrunUpdateRoundState")
+		NetWriteUInt(round,16)
+	NetBroadcast()
 
 	-- compatibility
-	hook.Run("OnRoundSet",round)
+	HookRun("OnRoundSet",round)
 end
 
 -- commands
@@ -37,20 +64,20 @@ concommand.Add("round_switch",function(ply,_,args)
 end)
 
 hook.Add("PlayerInitialSpawn","RoundSyncCurrent",function(ply)
-	net.Start("DeathrunUpdateRoundState")
-		net.WriteUInt(RoundSystem.GetCurrent(),16)
-	net.Send(ply)
+	NetStart("DeathrunUpdateRoundState")
+		NetWriteUInt(RoundSystem.GetCurrent(),16)
+	NetSend(ply)
 end)
 
 --- @param ply Player?
 function RoundSystem.SyncTimer(ply)
-	net.Start("DeathrunSyncRoundTimer")
-		net.WriteUInt(RoundSystem.GetTimer(),16)
+	NetStart("DeathrunSyncRoundTimer")
+		NetWriteUInt(RoundSystem.GetTimer(),16)
 
 	if ply then
-		net.Send(ply)
+		NetSend(ply)
 	else
-		net.Broadcast()
+		NetBroadcast()
 	end
 end
 
@@ -64,9 +91,9 @@ end
 hook.Add("PlayerInitialSpawn","DeathrunCleanupSinglePlayer",function(ply)
 	RoundSystem.SyncTimer(ply)
 
-	if player.GetCount() > 1 then return end
+	if PlayerGetCount() > 1 then return end
 
-	game.CleanUpMap()
+	GameCleanUpMap()
 
 	DR.ChatBroadcast("Cleaned up the map.")
 end)
@@ -102,7 +129,7 @@ hook.Add("PlayerDeath","DeathrunMVPs",function(ply,_,attacker)
 end)
 
 hook.Add("DeathrunBeginActive","DeathrunMVPs",function()
-	for _,ply in player.Iterator() do
+	for _,ply in PlayerIterator() do
 		ply.KillsThisRound = 0
 	end
 end)
@@ -112,8 +139,8 @@ function RoundSystem.FinishRound(winningTeam)
 
 	DR.ChatBroadcast(
 		"Round over! " .. (
-			winningTeam == DR_WIN_RUNNERS and team.GetName(DR_TEAM_RUNNER) .. " win!"
-		or	winningTeam == DR_WIN_DEATHS and team.GetName(DR_TEAM_DEATH) .. " win!"
+			winningTeam == DR_WIN_RUNNERS and TeamGetName(DR_TEAM_RUNNER) .. " win!"
+		or	winningTeam == DR_WIN_DEATHS and TeamGetName(DR_TEAM_DEATH) .. " win!"
 		or	"Stalemate! Unbelievable!"
 		)
 	)
@@ -124,7 +151,7 @@ function RoundSystem.FinishRound(winningTeam)
 	local mostKills = 0
 	local mostKillsMvp
 
-	for _,ply in ipairs(DR.GetAllPlaying()) do
+	for _,ply in Iterator,DR.GetAllPlaying(),0 do
 		if
 			not (
 				ply:Alive()
@@ -144,17 +171,17 @@ function RoundSystem.FinishRound(winningTeam)
 		mvpList[#mvpList + 1] = mostKillsMvp:Nick() .. " got " .. mostKills .. " kill" .. (mostKills > 1 and "s" or "") .. "!"
 	end
 
-	net.Start("DeathrunSendMVPs")
-		net.WriteTable({
+	NetStart("DeathrunSendMVPs")
+		NetWriteTable({
 			["winteam"] = winningTeam,
 			["mvps"] = mvpList,
 		})
-	net.Broadcast()
+	NetBroadcast()
 
-	hook.Run("DeathrunRoundWin",winningTeam)
+	HookRun("DeathrunRoundWin",winningTeam)
 
 	-- compatibility
-	hook.Run("OnRoundSet",DR_ROUND_OVER,winningTeam ~= DR_WIN_STALEMATE and winningTeam or -1)
+	HookRun("OnRoundSet",DR_ROUND_OVER,winningTeam ~= DR_WIN_STALEMATE and winningTeam or -1)
 end
 
 -- initial round
@@ -181,19 +208,19 @@ hook.Add("DeathrunPlayerFinishMap","Balloons",function(ply)
 	local shootPos = ply:GetShootPos()
 
 	for _ = 1,balloonCount do
-		local balloon = ents.Create("ent_deathrun_balloon") --- @cast balloon -NULL
+		local balloon = EntsCreate("ent_deathrun_balloon") --- @cast balloon -NULL
 
 		balloon:Spawn()
 
 		BalloonDir:SetUnpacked(
-			math.Rand(-100,100),
-			math.Rand(-100,100),
-			math.Rand(-100,100)
+			MathRand(-100,100),
+			MathRand(-100,100),
+			MathRand(-100,100)
 		)
 		BalloonDir:Normalize()
 		BalloonDir:Mul(BalloonEndPosMul)
 
-		BalloonAngle[2] = math.Rand(-180,180)
+		BalloonAngle[2] = MathRand(-180,180)
 		balloon:SetAngles(BalloonAngle)
 
 		BalloonTraceCache.start = shootPos
@@ -202,7 +229,7 @@ hook.Add("DeathrunPlayerFinishMap","Balloons",function(ply)
 		BalloonTraceCache.mins = balloon:OBBMins()
 		BalloonTraceCache.maxs = balloon:OBBMaxs()
 
-		local trace = util.TraceHull(BalloonTraceCache)
+		local trace = UtilTraceHull(BalloonTraceCache)
 		local hitPos = trace.HitPos
 
 		if hitPos:DistToSqr(shootPos) > BalloonDistCheck then

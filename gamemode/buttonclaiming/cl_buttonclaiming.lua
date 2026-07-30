@@ -1,3 +1,19 @@
+local next = next
+
+local IsValid = IsValid
+local Lerp = Lerp
+local LocalPlayer = LocalPlayer
+local Vector = Vector
+
+local DrawSimpleText = draw.SimpleText
+
+local NetReadBool = net.ReadBool
+local NetReadDouble = net.ReadDouble
+local NetReadPlayer = net.ReadPlayer
+local NetReadUInt = net.ReadUInt
+local NetSendToServer = net.SendToServer
+local NetStart = net.Start
+
 local DR = DR
 
 local ButtonClaimSystem = DR.ButtonClaimSystem
@@ -12,40 +28,40 @@ local ClaimColors = {
 }
 
 hook.Add("InitPostEntity","DeathrunButtonEntsClientReady",function()
-	net.Start("DeathrunButtonEntsClientReady")
-	net.SendToServer()
+	NetStart("DeathrunButtonEntsClientReady")
+	NetSendToServer()
 end)
 
 net.Receive("DeathrunButtonEntsUpdateFull",function(len)
-	local entBits = net.ReadUInt(16)
+	local entBits = NetReadUInt(16)
 	ButtonClaimSystem.EntBits = entBits
 
-	while net.ReadBool() do
-		local mapId = net.ReadUInt(entBits)
+	while NetReadBool() do
+		local mapId = NetReadUInt(entBits)
 
-		local claimed = net.ReadBool()
+		local claimed = NetReadBool()
 
 		ButtonEnts[mapId] = {
 			["Claimed"] = claimed,
 			["ClaimingPlayer"] =
 				claimed
-			and	net.ReadPlayer()
+			and	NetReadPlayer()
 			or	NULL
 			,
-			["Position"] = Vector(net.ReadDouble(),net.ReadDouble(),net.ReadDouble()),
+			["Position"] = Vector(NetReadDouble(),NetReadDouble(),NetReadDouble()),
 		}
 	end
 end)
 
 net.Receive("DeathrunButtonEntsUpdateSimple",function(len)
-	local data = ButtonEnts[net.ReadUInt(ButtonClaimSystem.EntBits)]
+	local data = ButtonEnts[NetReadUInt(ButtonClaimSystem.EntBits)]
 
-	local claimed = net.ReadBool()
+	local claimed = NetReadBool()
 	data.Claimed = claimed
 
 	data.ClaimingPlayer =
 		claimed
-	and	net.ReadPlayer()
+	and	NetReadPlayer()
 	or	NULL
 end)
 
@@ -57,7 +73,7 @@ hook.Add("HUDPaint","DeathrunButtonClaimHUD",function()
 	local eyePos = localPly:EyePos()
 
 	--- @param data ButtonEntData
-	for _,data in pairs(ButtonEnts) do
+	for _,data in next,ButtonEnts do
 		local pos = data.Position
 		local dist = eyePos:DistToSqr(pos)
 
@@ -84,7 +100,7 @@ hook.Add("HUDPaint","DeathrunButtonClaimHUD",function()
 		local color = ClaimColors[claimed]
 		color--[[@cast -?]].a = alpha
 
-		draw.SimpleText(
+		DrawSimpleText(
 			claimText,
 			"Deathrun_Derma_ExtraSmall",
 			toScreen.x,

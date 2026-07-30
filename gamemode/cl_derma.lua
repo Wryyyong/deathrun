@@ -1,3 +1,15 @@
+local Iterator = ipairs({})
+
+local Color = Color
+
+local DrawDrawText = draw.DrawText
+local DrawSimpleText = draw.SimpleText
+
+local MathRound = math.Round
+
+local SurfaceGetTextSize = surface.GetTextSize
+local SurfaceSetFont = surface.SetFont
+
 local UI = DR.UI
 
 local ShadowColorCache = {}
@@ -7,8 +19,8 @@ local ShadowColorCache = {}
 local function GetShadowColors(color)
 	local alpha = color.a or 255
 
-	local alphaQuar = math.Round(alpha * .25)
-	local alphaHalf = math.Round(alpha * .5)
+	local alphaQuar = MathRound(alpha * .25)
+	local alphaHalf = MathRound(alpha * .5)
 
 	local shadowColorQuar = ShadowColorCache[alphaQuar]
 	local shadowColorHalf = ShadowColorCache[alphaHalf]
@@ -87,7 +99,7 @@ end
 --- @param yAlign number? = nil
 --- @param dist number? = 1
 function UI.ShadowText(text,font,x,y,color,xAlign,yAlign,dist)
-	ShadowTextBase(draw.DrawText,text,font,x,y,color,xAlign,nil,dist)
+	ShadowTextBase(DrawDrawText,text,font,x,y,color,xAlign,nil,dist)
 end
 
 --- @param text string
@@ -99,7 +111,7 @@ end
 --- @param yAlign number? = TEXT_ALIGN_TOP
 --- @param dist number? = 1
 function UI.ShadowTextSimple(text,font,x,y,color,xAlign,yAlign,dist)
-	ShadowTextBase(draw.SimpleText,text,font,x,y,color,xAlign,yAlign,dist)
+	ShadowTextBase(DrawSimpleText,text,font,x,y,color,xAlign,yAlign,dist)
 end
 
 --- @param text string
@@ -109,7 +121,7 @@ function UI.GetWordWrapText(text,width,font)
 	local displayText = ""
 	local displayLine = ""
 
-	surface.SetFont(font)
+	SurfaceSetFont(font)
 	text = text:Replace("\n","")
 	text = text:Replace("\t","")
 	text = text:Replace([[\n]],"\n")
@@ -118,8 +130,8 @@ function UI.GetWordWrapText(text,width,font)
 
 	local args = text:Split(" ")
 
-	for _,word in ipairs(args) do
-		local textWidth = surface.GetTextSize(displayLine .. word .. " ")
+	for _,word in Iterator,args,0 do
+		local textWidth = SurfaceGetTextSize(displayLine .. word .. " ")
 
 		if textWidth > width then
 			displayText = displayText .. displayLine .. "\n"

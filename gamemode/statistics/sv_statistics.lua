@@ -1,3 +1,5 @@
+local Iterator = ipairs({})
+
 local DR = DR
 
 local RoundSystem = DR.RoundSystem
@@ -185,7 +187,7 @@ end
 local function FindEndZone()
 	if not ZoneSystem.MapZones then return end
 
-	for _,zone in pairs(ZoneSystem.MapZones) do
+	for _,zone in next,ZoneSystem.MapZones do
 		if zone.type ~= "end" then continue end
 
 		EndZone = zone
@@ -261,7 +263,7 @@ hook.Add("PlayerDeath","DeathrunUpdateKillDeathStats",function(victim,_,attacker
 			UpdateStats(attacker,DR_STATS_KILLS)
 		end
 	elseif victimTeam == DR_TEAM_RUNNER then
-		for _,ply in ipairs(team.GetPlayers(DR_TEAM_DEATH)) do
+		for _,ply in Iterator,team.GetPlayers(DR_TEAM_DEATH),0 do
 			UpdateStats(ply,DR_STATS_KILLS)
 		end
 	end
@@ -281,7 +283,7 @@ hook.Add("DeathrunRoundWin","DeathrunUpdateWinStats",function(winningTeam)
 
 	sql.Begin()
 
-	for _,ply in ipairs(plyList) do
+	for _,ply in Iterator,plyList,0 do
 		UpdateStats(ply,column)
 	end
 

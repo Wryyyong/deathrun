@@ -1,3 +1,46 @@
+local Iterator = ipairs({})
+
+local print = print
+local tobool = tobool
+
+local CurTime = CurTime
+local DamageInfo = DamageInfo
+local IsValid = IsValid
+local RunConsoleCommand = RunConsoleCommand
+local SafeRemoveEntity = SafeRemoveEntity
+
+local EntsFindByClass = ents.FindByClass
+
+local FileWrite = file.Write
+
+local HookRun = hook.Run
+
+local MathCeil = math.ceil
+local MathFloor = math.floor
+local MathMax = math.max
+local MathRandom = math.random
+
+local NetBroadcast = net.Broadcast
+local NetReadPlayer = net.ReadPlayer
+local NetSend = net.Send
+local NetStart = net.Start
+local NetWriteInt = net.WriteInt
+local NetWriteString = net.WriteString
+local NetWriteTable = net.WriteTable
+
+local OsTime = os.time
+
+local PlayerIterator = player.Iterator
+
+local TableHasValue = table.HasValue
+
+local TeamGetColor = team.GetColor
+local TeamGetSpawnPoints = team.GetSpawnPoints
+
+local TimerSimple = timer.Simple
+
+local UtilTableToJSON = util.TableToJSON
+
 if not file.Exists("deathrun","DATA") then -- creates a folder in data for the gamemode
 	file.CreateDir("deathrun")
 end
@@ -159,7 +202,7 @@ hook.Add("PlayerSpawn","DeathrunSetPlayerModels",function(ply)
 		ply:SetModel(PlayerModels[PlayerModelCount])
 	end
 
-	local mdl = hook.Run("ChangePlayerModel",ply)
+	local mdl = HookRun("ChangePlayerModel",ply)
 
 	if mdl then
 		ply:SetModel(mdl)
@@ -186,7 +229,7 @@ DR.SpecBuffer = SpecBuffer
 
 local function FixSpecBuffer()
 	-- SUDDENTLY SPECTATOR IS MAGICALLY FIXED
-	for idx,spectator in ipairs(SpecBuffer) do
+	for idx,spectator in Iterator,SpecBuffer,0 do
 		if not IsValid(spectator) then continue end
 
 		SpawnSpectator(spectator)
@@ -221,14 +264,14 @@ hook.Add("PlayerSpawn","DeathrunPlayerSpawn",function(ply)
 		if roundState == DR_ROUND_ACTIVE or roundState == DR_ROUND_OVER then
 			SpecBuffer[#SpecBuffer + 1] = ply
 
-			timer.Simple(0,FixSpecBuffer)
+			TimerSimple(0,FixSpecBuffer)
 
 			return SpawnSpectator(ply)
 		else
 			ply:SetTeam(DR_TEAM_RUNNER)
 		end
 
-		hook.Run("PlayerLoadout",ply)
+		HookRun("PlayerLoadout",ply)
 	elseif ply.JustDied then
 		ply:BeginSpectate()
 	elseif ply:ShouldStaySpectating() then
@@ -236,7 +279,7 @@ hook.Add("PlayerSpawn","DeathrunPlayerSpawn",function(ply)
 	else
 		ply:StopSpectate()
 
-		hook.Run("PlayerLoadout",ply)
+		HookRun("PlayerLoadout",ply)
 	end
 
 	if
@@ -247,12 +290,12 @@ hook.Add("PlayerSpawn","DeathrunPlayerSpawn",function(ply)
 		ply:SetTeam(DR_TEAM_RUNNER)
 	end
 
-	local spawns = team.GetSpawnPoints(plyTeam) or {}
+	local spawns = TeamGetSpawnPoints(plyTeam) or {}
 	local spawnsCount = #spawns
 
 	if spawnsCount <= 0 then return end
 
-	ply:SetPos(spawns[math.random(spawnsCount)]--[[@cast -?]]:GetPos())
+	ply:SetPos(spawns[MathRandom(spawnsCount)]--[[@cast -?]]:GetPos())
 end)
 
 function GM:PlayerLoadout(ply)
@@ -262,7 +305,7 @@ function GM:PlayerLoadout(ply)
 	ply:RemoveAllAmmo()
 	ply:Give(CvStartingWeapon:GetString() or "weapon_crowbar")
 
-	ply:SetPlayerColor(team.GetColor(plyTeam):ToVector())
+	ply:SetPlayerColor(TeamGetColor(plyTeam):ToVector())
 
 	-- run speeds and jump powah
 	ply:SetRunSpeed(250)
@@ -276,7 +319,7 @@ function GM:PlayerLoadout(ply)
 	ply:DrawViewModel(true)
 	ply:SetupHands(ply)
 
-	hook.Run("DeathrunPlayerLoadout",ply)
+	HookRun("DeathrunPlayerLoadout",ply)
 end
 
 hook.Add("AcceptInput","DeathrunKillers",function(ent,_,_,caller)
@@ -309,7 +352,7 @@ function GM:PlayerDeath(ply,inflictor,attacker)
 		return
 	end
 
-	timer.Simple(5,function()
+	TimerSimple(5,function()
 		-- incase they die and disconnect, prevents console errors.
 		if not IsValid(ply) then return end
 
@@ -320,7 +363,7 @@ function GM:PlayerDeath(ply,inflictor,attacker)
 
 			local pool = {}
 
-			for _,tPly in player.Iterator() do
+			for _,tPly in PlayerIterator() do
 				if
 					not tPly:Alive()
 				or	tPly:GetSpectate()
@@ -332,7 +375,7 @@ function GM:PlayerDeath(ply,inflictor,attacker)
 			local poolCount = #pool
 
 			if poolCount > 0 then
-				local randPly = pool[math.random(poolCount)]
+				local randPly = pool[MathRandom(poolCount)]
 
 				ply:SpectateEntity(randPly)
 				ply:SetupHands(randPly)
@@ -341,7 +384,7 @@ function GM:PlayerDeath(ply,inflictor,attacker)
 			end
 
 			ply.JustDied = false
-			hook.Run("DeathrunDeadToSpectator",ply)
+			HookRun("DeathrunDeadToSpectator",ply)
 		end
 	end)
 
@@ -352,7 +395,7 @@ function GM:PlayerDeath(ply,inflictor,attacker)
 	end
 
 	-- support for when traps kill players
-	hook.Run("DeathrunPlayerDeath",ply,inflictor,attacker)
+	HookRun("DeathrunPlayerDeath",ply,inflictor,attacker)
 
 	local attackerName
 
@@ -360,7 +403,7 @@ function GM:PlayerDeath(ply,inflictor,attacker)
 		if attacker:IsPlayer() then
 			attackerName = attacker:Nick()
 		else
-			attackerName = CausesOfDeath[math.random(#CausesOfDeath)]
+			attackerName = CausesOfDeath[MathRandom(#CausesOfDeath)]
 		end
 	end
 
@@ -368,10 +411,10 @@ function GM:PlayerDeath(ply,inflictor,attacker)
 end
 
 function DR.DeathNotification(msg,mod)
-	net.Start("DeathrunAddKillNote")
-		net.WriteString(msg or "nil")
-		net.WriteInt(mod or 1,8)
-	net.Broadcast()
+	NetStart("DeathrunAddKillNote")
+		NetWriteString(msg or "nil")
+		NetWriteInt(mod or 1,8)
+	NetBroadcast()
 end
 
 function GM:PlayerDeathThink()
@@ -419,7 +462,7 @@ function GM:EntityTakeDamage(target,dmgInfo)
 		then
 			dmgInfo:SetDamage(0)
 
-			hook.Run("DeathrunTeamDamage",attacker,target,dmgInfo,dmgOrig)
+			HookRun("DeathrunTeamDamage",attacker,target,dmgInfo,dmgOrig)
 		end
 	end
 
@@ -439,7 +482,7 @@ function GM:PlayerCanHearPlayersVoice(listener,talker)
 	local result = true
 
 	if
-		table.HasValue(muteList,talker:SteamID()) -- dont transmit voices which are on the mutelist
+		TableHasValue(muteList,talker:SteamID()) -- dont transmit voices which are on the mutelist
 	or	(
 			not CvAllTalk:GetBool()
 		and	(
@@ -474,7 +517,7 @@ concommand.Add("deathrun_toggle_mute",function(ply,_,args)
 
 	local found = false
 
-	for idx,tPly in pairs(muteList) do
+	for idx,tPly in next,muteList do
 		if tPly ~= id then continue end
 
 		muteList[idx] = nil
@@ -491,9 +534,9 @@ concommand.Add("deathrun_toggle_mute",function(ply,_,args)
 		ply:DeathrunChatPrint("Player was muted.")
 	end
 
-	net.Start("DeathrunSyncMutelist")
-		net.WriteTable(muteList)
-	net.Send(ply)
+	NetStart("DeathrunSyncMutelist")
+		NetWriteTable(muteList)
+	NetSend(ply)
 end)
 
 concommand.Add("strip",function(ply)
@@ -508,8 +551,8 @@ local FallDamageByTeam = {
 function GM:GetFallDamage(ply,speed)
 	return
 		FallDamageByTeam[ply:Team()]
-	or	hook.Run("DeathrunFallDamage",ply,speed)
-	or 	math.max(0,math.ceil(.2418 * speed - 141.75))
+	or	HookRun("DeathrunFallDamage",ply,speed)
+	or 	MathMax(0,MathCeil(.2418 * speed - 141.75))
 end
 
 --- @param ply Player
@@ -559,7 +602,7 @@ hook.Add("PlayerCanPickupWeapon","StopWeaponAbuseAustraliaSaysNo",function(ply,w
 	--- @type table<integer,bool>
 	local inventory = {}
 
-	for _,wepInv in ipairs(ply:GetWeapons()) do
+	for _,wepInv in Iterator,ply:GetWeapons(),0 do
 		local slot = wepInv:GetSlot()
 		if slot == nil then continue end
 
@@ -604,10 +647,10 @@ timer.Create("CheckIdlePlayers",1,0,function()
 	local idleTimer = CvIdleTimer:GetInt()
 	local idleWarn = idleTimer - 20
 
-	for _,ply in ipairs(DR.GetAllPlaying()) do
+	for _,ply in Iterator,DR.GetAllPlaying(),0 do
 		local idlePly = DR.CheckIdleTime()
 
-		if math.floor(idlePly) == idleWarn then
+		if MathFloor(idlePly) == idleWarn then
 			ply:DeathrunChatPrint("If you do not move in 20 seconds, you will be forced into spectator for being idle.")
 		end
 
@@ -620,8 +663,8 @@ timer.Create("CheckIdlePlayers",1,0,function()
 
 		ply:ConCommand("deathrun_spectate_only 1")
 
-		net.Start("DeathrunSpectatorNotification")
-		net.Send(ply)
+		NetStart("DeathrunSpectatorNotification")
+		NetSend(ply)
 
 		DR.ChatBroadcast(ply:Nick() .. " was specced for being idle too long.")
 	end
@@ -634,7 +677,7 @@ end)
 local DeathAvoidersFile = "deathrun/deathavoiders.json"
 
 if not file.Exists(DeathAvoidersFile,"DATA") then
-	file.Write(DeathAvoidersFile,"")
+	FileWrite(DeathAvoidersFile,"")
 end
 
 --- @alias DeathAvoiderData {
@@ -647,9 +690,9 @@ local DeathAvoiders = DR.DeathAvoiders or util.JSONToTable(file.Read(DeathAvoide
 DR.DeathAvoiders = DeathAvoiders
 
 function DR.SaveDeathAvoiders()
-	local oneDayAgo = os.time() - 86400
+	local oneDayAgo = OsTime() - 86400
 
-	for id64,data in pairs(DeathAvoiders) do
+	for id64,data in next,DeathAvoiders do
 		if
 			data.RoundsLeft > 0 -- remove all players with 0 rounds left
 		or	data.LastPunished > oneDayAgo -- remove all players punished 24 hours ago
@@ -658,7 +701,7 @@ function DR.SaveDeathAvoiders()
 		DeathAvoiders[id64] = nil
 	end
 
-	file.Write(DeathAvoidersFile,util.TableToJSON(DeathAvoiders,true))
+	FileWrite(DeathAvoidersFile,UtilTableToJSON(DeathAvoiders,true))
 end
 
 hook.Add("PostCleanupMap","SaveDeathAvoid",DR.SaveDeathAvoiders)
@@ -681,7 +724,7 @@ function DR.PunishDeathAvoid(ply,amt)
 	local data = DR.GetDeathAvoiderData(ply)
 
 	data.RoundsLeft = data.RoundsLeft + (amt or 1)
-	data.LastPunished = os.time()
+	data.LastPunished = OsTime()
 end
 
 function DR.PardonDeathAvoid(ply,amt)
@@ -702,7 +745,7 @@ function DR.GetOnlineDeathAvoiders()
 	--- @type Player[]
 	local poolPly = {}
 
-	for _,ply in player.Iterator() do
+	for _,ply in PlayerIterator() do
 		if
 			DR.GetDeathAvoiderRounds(ply) <= 0
 		or	ply:ShouldStaySpectating()
@@ -728,7 +771,7 @@ timer.Create("DeathrunDrowningStuff",.5,0,function()
 	local curTime = CurTime()
 	local drownTimer = CvDrownTimer:GetInt()
 
-	for _,ply in player.Iterator() do
+	for _,ply in PlayerIterator() do
 		local lastOxygenTime = ply.LastOxygenTime or curTime
 
 		if
@@ -743,7 +786,7 @@ timer.Create("DeathrunDrowningStuff",.5,0,function()
 			dmgInfo:SetDamage(5)
 			dmgInfo:SetDamageType(DMG_DROWN)
 
-			DrowningViewPunch[3] = math.random(-1,1)
+			DrowningViewPunch[3] = MathRandom(-1,1)
 
 			ply:TakeDamageInfo(dmgInfo)
 			ply:ViewPunch(DrowningViewPunch)
@@ -773,7 +816,7 @@ end)
 
 net.Receive("DeathrunForceSpectator",function(_,ply)
 	if DR.CanAccessCommand(ply,"deathrun_force_spectate") then
-		local target = net.ReadPlayer()
+		local target = NetReadPlayer()
 		if not target then return end
 		--- @cast target -boolean
 
@@ -788,7 +831,7 @@ end)
 function DR.RemoveSpeedMods()
 	if not CvDisableDefaultDeathSpeed:GetBool() then return end
 
-	for _,ent in ipairs(ents.FindByClass("player_speedmod")) do
+	for _,ent in Iterator,EntsFindByClass("player_speedmod"),0 do
 		SafeRemoveEntity(ent)
 	end
 end

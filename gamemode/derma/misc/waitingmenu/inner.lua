@@ -1,3 +1,6 @@
+local SurfaceSetDrawColor = CLIENT and surface.SetDrawColor
+local SurfaceDrawRect = CLIENT and surface.DrawRect
+
 local DR = DR
 
 local Colors = DR.Colors
@@ -26,8 +29,8 @@ Enjoy, and have fun!]],
 local DR_WaitingMenuInner = {}
 
 function DR_WaitingMenuInner:Paint(width,height)
-	surface.SetDrawColor(ColorClouds)
-	surface.DrawRect(
+	SurfaceSetDrawColor(ColorClouds)
+	SurfaceDrawRect(
 		0,
 		0,
 		width,

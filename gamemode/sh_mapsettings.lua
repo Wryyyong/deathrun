@@ -1,7 +1,7 @@
 local MapSettingsDir = "mapsettings"
 
 if SERVER then
-	for _,filePath in ipairs(file.Find("gamemode/mapsettings/*.lua","LUA") or {}) do
+	for _,filePath in ipairs(file.Find("gamemode/mapsettings/*.lua","LUA",0 or {})) do
 		AddCSLuaFile(MapSettingsDir .. "/" .. filePath)
 	end
 end

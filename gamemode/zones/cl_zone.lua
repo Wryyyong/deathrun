@@ -1,3 +1,16 @@
+local CurTime = CurTime
+local LocalPlayer = LocalPlayer
+
+local MathClamp = math.Clamp
+local MathFloor = math.floor
+
+local NetReadTable = net.ReadTable
+
+local RenderDrawBeam = render.DrawBeam
+local RenderSetMaterial = render.SetMaterial
+
+local TableCopyFromTo = table.CopyFromTo
+
 local DR = DR
 
 local ZoneSystem = DR.ZoneSystem
@@ -8,7 +21,7 @@ local CvRenderZones = DR.ConVars.RenderZones
 local MatLine = Material("color.vmt")
 
 net.Receive("DeathrunSendZones",function()
-	table.CopyFromTo(net.ReadTable(),MapZones)
+	TableCopyFromTo(NetReadTable(),MapZones)
 end)
 
 local BaseBeamWidth = 2
@@ -62,39 +75,39 @@ function ZoneSystem.DrawCuboid(pos1,pos2,col,alt)
 	point8:SetUnpacked(0,rangeY,0)
 	point8:Add(point5)
 
-	render.SetMaterial(MatLine)
+	RenderSetMaterial(MatLine)
 
-	render.DrawBeam(point1,point2,BaseBeamWidth,1,1,col)
-	render.DrawBeam(point2,point3,BaseBeamWidth,1,1,col)
-	render.DrawBeam(point3,point4,BaseBeamWidth,1,1,col)
-	render.DrawBeam(point4,point1,BaseBeamWidth,1,1,col) -- top level
-	render.DrawBeam(point5,point6,BaseBeamWidth,1,1,col) -- bottom level
-	render.DrawBeam(point6,point7,BaseBeamWidth,1,1,col)
-	render.DrawBeam(point7,point8,BaseBeamWidth,1,1,col)
-	render.DrawBeam(point8,point5,BaseBeamWidth,1,1,col)
+	RenderDrawBeam(point1,point2,BaseBeamWidth,1,1,col)
+	RenderDrawBeam(point2,point3,BaseBeamWidth,1,1,col)
+	RenderDrawBeam(point3,point4,BaseBeamWidth,1,1,col)
+	RenderDrawBeam(point4,point1,BaseBeamWidth,1,1,col) -- top level
+	RenderDrawBeam(point5,point6,BaseBeamWidth,1,1,col) -- bottom level
+	RenderDrawBeam(point6,point7,BaseBeamWidth,1,1,col)
+	RenderDrawBeam(point7,point8,BaseBeamWidth,1,1,col)
+	RenderDrawBeam(point8,point5,BaseBeamWidth,1,1,col)
 
 	-- Vertical connectors
-	render.DrawBeam(point1,point5,BaseBeamWidth,1,1,col)
-	render.DrawBeam(point2,point6,BaseBeamWidth,1,1,col)
-	render.DrawBeam(point3,point7,BaseBeamWidth,1,1,col)
-	render.DrawBeam(point4,point8,BaseBeamWidth,1,1,col)
+	RenderDrawBeam(point1,point5,BaseBeamWidth,1,1,col)
+	RenderDrawBeam(point2,point6,BaseBeamWidth,1,1,col)
+	RenderDrawBeam(point3,point7,BaseBeamWidth,1,1,col)
+	RenderDrawBeam(point4,point8,BaseBeamWidth,1,1,col)
 
 	if not alt then return end
 
-	local widthBoost = BaseBeamWidth * .5 * (1 + math.floor(CurTime() * 4) % 2)
+	local widthBoost = BaseBeamWidth * .5 * (1 + MathFloor(CurTime() * 4) % 2)
 
-	render.DrawBeam(point1,point3,widthBoost,1,1,col)
-	render.DrawBeam(point2,point4,widthBoost,1,1,col)
-	render.DrawBeam(point1,point6,widthBoost,1,1,col)
-	render.DrawBeam(point2,point5,widthBoost,1,1,col)
-	render.DrawBeam(point4,point7,widthBoost,1,1,col)
-	render.DrawBeam(point3,point8,widthBoost,1,1,col)
-	render.DrawBeam(point3,point6,widthBoost,1,1,col)
-	render.DrawBeam(point2,point7,widthBoost,1,1,col)
-	render.DrawBeam(point1,point8,widthBoost,1,1,col)
-	render.DrawBeam(point4,point5,widthBoost,1,1,col)
-	render.DrawBeam(point5,point7,widthBoost,1,1,col)
-	render.DrawBeam(point6,point8,widthBoost,1,1,col)
+	RenderDrawBeam(point1,point3,widthBoost,1,1,col)
+	RenderDrawBeam(point2,point4,widthBoost,1,1,col)
+	RenderDrawBeam(point1,point6,widthBoost,1,1,col)
+	RenderDrawBeam(point2,point5,widthBoost,1,1,col)
+	RenderDrawBeam(point4,point7,widthBoost,1,1,col)
+	RenderDrawBeam(point3,point8,widthBoost,1,1,col)
+	RenderDrawBeam(point3,point6,widthBoost,1,1,col)
+	RenderDrawBeam(point2,point7,widthBoost,1,1,col)
+	RenderDrawBeam(point1,point8,widthBoost,1,1,col)
+	RenderDrawBeam(point4,point5,widthBoost,1,1,col)
+	RenderDrawBeam(point5,point7,widthBoost,1,1,col)
+	RenderDrawBeam(point6,point8,widthBoost,1,1,col)
 end
 
 local RenderCache = Vector()
@@ -112,7 +125,7 @@ hook.Add("PostDrawTranslucentRenderables","DeathrunZoneCuboidDrawing",function()
 	local isRunner = team == DR_TEAM_RUNNER
 	local isDeath = team == DR_TEAM_DEATH
 
-	for name,zone in pairs(MapZones) do
+	for name,zone in next,MapZones do
 		local type = zone.type
 		if not type then return end
 
@@ -131,7 +144,7 @@ hook.Add("PostDrawTranslucentRenderables","DeathrunZoneCuboidDrawing",function()
 			color.r,
 			color.g,
 			color.b,
-			color.a * math.Clamp(DR.InverseLerp(dist,MaxRenderDist,MinRenderDist),0,1)
+			color.a * MathClamp(DR.InverseLerp(dist,MaxRenderDist,MinRenderDist),0,1)
 		)
 
 		ZoneSystem.DrawCuboid(

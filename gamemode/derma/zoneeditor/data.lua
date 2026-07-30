@@ -1,3 +1,5 @@
+local Iterator = ipairs({})
+
 local ColorGrey = DR.Colors.Grey
 
 --- @class DR_ZoneData : DPanel
@@ -26,7 +28,7 @@ function DR_ZoneData:Init()
 end
 
 function DR_ZoneData:Paint()
-	for idx,info in ipairs(self.InfoCache) do
+	for idx,info in Iterator,self.InfoCache,0 do
 		local offset = idx - 1
 
 		draw.SimpleText(info,"Deathrun_Derma_ExtraSmall",0,14 * offset,ColorGrey)

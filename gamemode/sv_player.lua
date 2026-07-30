@@ -1,3 +1,17 @@
+local next = next
+local tonumber = tonumber
+
+local MsgC = MsgC
+
+local MathRandom = math.random
+
+local NetBroadcast = net.Broadcast
+local NetSend = net.Send
+local NetStart = net.Start
+local NetWriteString = net.WriteString
+
+local PlayerIterator = player.Iterator
+
 local DR = DR
 
 local RoundSystem = DR.RoundSystem
@@ -104,7 +118,7 @@ function PlyMeta:ChangeSpectate()
 			-- this means we are spectating a player
 			local pool = {}
 
-			for _,ply in player.Iterator() do
+			for _,ply in PlayerIterator() do
 				if
 					not ply:Alive()
 				or	ply:GetSpectate()
@@ -113,7 +127,7 @@ function PlyMeta:ChangeSpectate()
 				pool[#pool + 1] = ply
 			end
 
-			local newTarget = pool[math.random(#pool)]
+			local newTarget = pool[MathRandom(#pool)]
 
 			-- if they don't then give em one
 			self:SpectateEntity(newTarget)
@@ -132,7 +146,7 @@ function PlyMeta:SpecModify(num)
 
 	local pool = {}
 
-	for _,ply in player.Iterator() do
+	for _,ply in PlayerIterator() do
 		if
 			not ply:Alive()
 		or	ply:GetSpectate()
@@ -238,9 +252,9 @@ end)
 local LastMsg = ""
 
 function PlyMeta:DeathrunChatPrint(msg)
-	net.Start("DeathrunChatMessage")
-		net.WriteString(msg)
-	net.Send(self)
+	NetStart("DeathrunChatMessage")
+		NetWriteString(msg)
+	NetSend(self)
 
 	local printMsg = "Server to " .. self:Nick() .. ": " .. msg .. "\n"
 	if printMsg == LastMsg then return end
@@ -251,15 +265,15 @@ function PlyMeta:DeathrunChatPrint(msg)
 end
 
 function DR.ChatBroadcast(msg)
-	net.Start("DeathrunChatMessage")
-		net.WriteString(msg)
-	net.Broadcast()
+	NetStart("DeathrunChatMessage")
+		NetWriteString(msg)
+	NetBroadcast()
 
 	MsgC(ColorTurq,"Server Broadcast: " .. msg .. "\n")
 end
 
 timer.Create("MoveSpectatorsToCorrectTeam",5,0,function()
-	for _,ply in player.Iterator() do
+	for _,ply in PlayerIterator() do
 		if
 			ply:Team() == DR_TEAM_SPECTATOR
 		or	not ply:ShouldStaySpectating()

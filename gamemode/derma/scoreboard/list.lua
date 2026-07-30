@@ -1,3 +1,5 @@
+local Iterator = ipairs({})
+
 local ColorGrey = DR.Colors.Grey
 
 local CvSmallScoreboard = DR.ConVars.SmallScoreboard
@@ -51,7 +53,7 @@ function DR_ScoreboardList:AddTeamGroup(teamNum)
 
 	local header = self:AddHeader(plyCount .. " players " .. TeamHeaderTexts[teamNum],color)
 
-	for _,ply in ipairs(teamPlys) do
+	for _,ply in Iterator,teamPlys,0 do
 		self:AddPlayer(ply,color)
 	end
 
@@ -103,7 +105,7 @@ local VhsStrings = {
 local function IsSupporting(ply)
 	local name = ply:Nick():lower()
 
-	for _,str in ipairs(VhsStrings) do
+	for _,str in Iterator,VhsStrings,0 do
 		if not name:find(str) then continue end
 
 		return true
@@ -152,7 +154,7 @@ function DR_ScoreboardList:AddPlayer(ply,teamColor)
 	local smallMode = data.SmallMode
 	local customNameColor = special.Color or color_white
 
-	for idx,func in ipairs(Columns) do
+	for idx,func in Iterator,Columns,0 do
 		local offsetHeight = idx - 1
 		local align = .5
 

@@ -1,4 +1,21 @@
 include("sh_init.lua")
+local tobool = tobool
+local tonumber = tonumber
+
+local Lerp = Lerp
+local LocalPlayer = LocalPlayer
+local RunConsoleCommand = RunConsoleCommand
+
+local ChatAddText = chat.AddText
+
+local InputWasKeyPressed = input.WasKeyPressed
+
+local NetReadString = net.ReadString
+local NetReadTable = net.ReadTable
+
+local PlayerGetAll = player.GetAll
+
+local UtilTraceHull = util.TraceHull
 
 include("config.lua")
 
@@ -67,7 +84,7 @@ concommand.Add("deathrun_test_menu",function()
 end)
 
 function DR.ChatMessage(msg)
-	chat.AddText(
+	ChatAddText(
 		ColorClouds,
 		"[",
 		ColorTurq,
@@ -79,13 +96,13 @@ function DR.ChatMessage(msg)
 end
 
 net.Receive("DeathrunChatMessage",function()
-	DR.ChatMessage(net.ReadString())
+	DR.ChatMessage(NetReadString())
 end)
 
 LocalPlayer().MuteList = LocalPlayer().MuteList or {}
 
 net.Receive("DeathrunSyncMutelist",function()
-	LocalPlayer().MuteList = net.ReadTable()
+	LocalPlayer().MuteList = NetReadTable()
 end)
 
 local function ThirdpersonCheck(ply)
@@ -146,9 +163,9 @@ function GM:CalcView(ply,pos,ang,fov,znear,zfar)
 
 	TraceCache.start = pos
 	TraceCache.endpos = posEnd
-	TraceCache.filter = player.GetAll()
+	TraceCache.filter = PlayerGetAll()
 
-	CalcViewTable.origin = util.TraceHull(TraceCache).HitPos
+	CalcViewTable.origin = UtilTraceHull(TraceCache).HitPos
 	CalcViewTable.angles = ang
 	CalcViewTable.fov = targetFov
 	CalcViewTable.znear = znear
@@ -168,7 +185,7 @@ end
 concommand.Add("deathrun_toggle_thirdperson",ThirdpersonToggle)
 
 function GM:CreateMove()
-	if not input.WasKeyPressed(KEY_F8) then return end
+	if not InputWasKeyPressed(KEY_F8) then return end
 
 	ThirdpersonToggle()
 end

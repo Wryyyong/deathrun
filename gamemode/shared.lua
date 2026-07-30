@@ -1,3 +1,19 @@
+local IsValid = IsValid
+local LocalPlayer = LocalPlayer
+local FrameTime = FrameTime
+local Vector = Vector
+
+local Bitband = bit.band
+local Bitbnot = bit.bnot
+
+local HookRun = hook.Run
+
+local MathClamp = math.Clamp
+
+local PlayerIterator = player.Iterator
+
+local Stringformat = string.format
+
 local DR = DR
 
 local Colors = DR.Colors
@@ -45,7 +61,7 @@ sound.Add({
 local NotAmusedSounds = {}
 
 for idx = 1,40 do
-	local pad = string.format("%02d",idx)
+	local pad = Stringformat("%02d",idx)
 	local count = #NotAmusedSounds
 
 	NotAmusedSounds[count + 1] = "vo/npc/male01/answer" .. pad .. ".wav"
@@ -75,7 +91,7 @@ function DR.GetAllPlaying()
 	--- @type Player[]
 	local plyPool = {}
 
-	for _,ply in player.Iterator() do
+	for _,ply in PlayerIterator() do
 		if
 			not IsValid(ply)
 		or	ply:ShouldStaySpectating()
@@ -89,7 +105,7 @@ end
 
 hook.Add("SetupMove","DeathrunDisableSpectatorSpacebar",function(ply,data,cmd)
 	if ply:GetObserverMode() ~= OBS_MODE_NONE then
-		data:SetButtons(bit.band(data:GetButtons(),bit.bnot(IN_JUMP)))
+		data:SetButtons(Bitband(data:GetButtons(),Bitbnot(IN_JUMP)))
 	end
 
 	if
@@ -99,7 +115,7 @@ hook.Add("SetupMove","DeathrunDisableSpectatorSpacebar",function(ply,data,cmd)
 		)
 	then return end
 
-	local block = hook.Run("DeathrunPreventPreptimeMovement") or true
+	local block = HookRun("DeathrunPreventPreptimeMovement") or true
 
 	if
 		block
@@ -226,7 +242,7 @@ function GM:Move(ply,data)
 		speedWish = speedMax
 	end
 
-	speedWish = math.Clamp(speedWish,0,30)
+	speedWish = MathClamp(speedWish,0,30)
 	aimForward:Normalize()
 
 	local speedAdd = speedWish - velocity:Dot(aimForward)
@@ -286,12 +302,12 @@ hook.Add("SetupMove","AutoHop",function(ply,data)
 	local buttonData = data:GetButtons()
 
 	if
-		bit.band(buttonData,IN_JUMP) > 0
+		Bitband(buttonData,IN_JUMP) > 0
 	and	ply:WaterLevel() < 2
 	and	ply:GetMoveType() ~= MOVETYPE_LADDER
 	and	not ply:IsOnGround()
 	then
-		data:SetButtons(bit.band(buttonData,bit.bnot(IN_JUMP)))
+		data:SetButtons(Bitband(buttonData,Bitbnot(IN_JUMP)))
 	end
 end)
 

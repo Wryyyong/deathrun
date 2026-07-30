@@ -1,3 +1,6 @@
+local SurfaceSetDrawColor = CLIENT and surface.SetDrawColor
+local SurfaceDrawRect = CLIENT and surface.DrawRect
+
 --- @class DR_CustomVScrollBar : Panel
 --- @field btnUp DR_CustomVScrollBarButtonUp
 --- @field btnDown DR_CustomVScrollBarButtonDown
@@ -41,8 +44,8 @@ function DR_CustomVScrollBar:Init()
 end
 
 function DR_CustomVScrollBar:Paint(width,height)
-	surface.SetDrawColor(0,0,0,100)
-	surface.DrawRect(
+	SurfaceSetDrawColor(0,0,0,100)
+	SurfaceDrawRect(
 		0,
 		0,
 		width,

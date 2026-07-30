@@ -10,7 +10,7 @@ function DR_ZoneEditComboBox:Init()
 	)
 	self:SetValue(LocalPlayer().LastSelectZone or "Select Zone")
 
-	for name in pairs(ZoneSystem.MapZones) do
+	for name in next,ZoneSystem.MapZones do
 		self:AddChoice(name)
 	end
 end

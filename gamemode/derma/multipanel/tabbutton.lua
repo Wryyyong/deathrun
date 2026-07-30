@@ -1,3 +1,5 @@
+local SurfaceDrawRect = CLIENT and surface.DrawRect
+
 local DermaColors = DR.Colors.Derma
 local DermaColorsGoodDark = DermaColors.GoodDark
 local DermaColorsGood = DermaColors.Good
@@ -24,7 +26,7 @@ function DR_MultiPanelTabButton:PaintOver()
 	local width,height = self:GetSize()
 
 	self:PaintShapes(width,height)
-	surface.DrawRect(
+	SurfaceDrawRect(
 		0,
 		8,
 		width,

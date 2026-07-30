@@ -1,3 +1,23 @@
+local Iterator = ipairs({})
+
+local print = print
+local tonumber = tonumber
+
+local CurTime = CurTime
+local IsValid = IsValid
+local MsgC = MsgC
+
+local GameCleanUpMap = game.CleanUpMap
+
+local NetSend = net.Send
+local NetStart = net.Start
+local NetWriteTable = net.WriteTable
+
+local PlayerGetAll = player.GetAll
+local PlayerIterator = player.Iterator
+
+local UtilTraceHull = util.TraceHull
+
 local DR = DR
 
 local Hulls = DR.Hulls
@@ -25,14 +45,14 @@ local function FindPlayersByName(nick)
 	then
 		return {}
 	elseif nick == "*" then
-		return player.GetAll()
+		return PlayerGetAll()
 	end
 
 	--- @type Player[]
 	local plyList = {}
 	local nickLower = nick:lower()
 
-	for _,ply in player.Iterator() do
+	for _,ply in PlayerIterator() do
 		if not ply:Nick():lower():find(nickLower) then continue end
 
 		plyList[#plyList + 1] = ply
@@ -63,7 +83,7 @@ concommand.Add("deathrun_respawn",function(ply,cmd,args)
 			local playersStr = ""
 
 			if #targetList > 0 then
-				for _,target in ipairs(targetList) do
+				for _,target in Iterator,targetList,0 do
 					target:Respawn()
 
 					playersStr = (playersStr ~= "" and ", " or playersStr) .. target:Nick()
@@ -100,7 +120,7 @@ concommand.Add("deathrun_cleanup",function(ply,cmd,args)
 		DR.CanAccessCommand(ply,cmd)
 	or	RoundSystem.GetCurrent() == DR_ROUND_WAITING
 	then
-		game.CleanUpMap()
+		GameCleanUpMap()
 
 		msg = "Cleaned up the map and reset entities."
 	else
@@ -121,24 +141,24 @@ concommand.Add("deathrun_get_stats",function(ply,cmd,args)
 		if targetCount == 1 then
 			local target = targetList[1]
 
-			net.Start("DeathrunSendStats")
+			NetStart("DeathrunSendStats")
 				local data = Stats.ReturnStats(target)
 				data.Name = target:Nick()
 
-				net.WriteTable(data)
-			net.Send(ply)
+				NetWriteTable(data)
+			NetSend(ply)
 		elseif targetCount > 1 then
 			msg = "One player at a time, please."
 		else
 			msg = "No targets found with that name."
 		end
 	else
-		net.Start("DeathrunSendStats")
+		NetStart("DeathrunSendStats")
 			local data = Stats.ReturnStats(ply)
 			data.Name = ply:Nick()
 
-			net.WriteTable(data)
-		net.Send(ply)
+			NetWriteTable(data)
+		NetSend(ply)
 	end
 
 	if not msg then return end
@@ -217,7 +237,7 @@ concommand.Add("deathrun_unstuck",function(ply,cmd,args)
 	UnstuckTraceCache.endpos = aimVec
 	UnstuckTraceCache.filter = ply
 
-	local trace = util.TraceHull(UnstuckTraceCache)
+	local trace = UtilTraceHull(UnstuckTraceCache)
 	local hitPos = trace.HitPos
 
 	eyePos:Sub(ply:GetPos())

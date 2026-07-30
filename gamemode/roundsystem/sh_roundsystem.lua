@@ -1,3 +1,32 @@
+local Iterator = ipairs({})
+
+local setmetatable = setmetatable
+
+local IsValid = IsValid
+
+local GameCleanUpMap = game.CleanUpMap
+
+local HookRun = hook.Run
+
+local MathCeil = math.ceil
+local MathMax = math.max
+local MathRandom = math.random
+
+local NetSend = SERVER and net.Send
+local NetStart = net.Start
+
+local PlayerIterator = player.Iterator
+
+local SurfacePlaySound = CLIENT and surface.PlaySound
+
+local TableCopy = table.Copy
+local TableRemove = table.remove
+local TableRemoveByValue = table.RemoveByValue
+
+local TimerCreate = timer.Create
+local TimerRemove = timer.Remove
+local TimerSimple = timer.Simple
+
 local DR = DR
 
 local ConVars = DR.ConVars
@@ -81,8 +110,8 @@ end
 
 local TimerInterval = .2
 
-timer.Create("DeathrunRoundTimerCalculate",TimerInterval,0,function()
-	RoundSystem.RoundTimer = math.max(0,RoundSystem.RoundTimer - TimerInterval)
+TimerCreate("DeathrunRoundTimerCalculate",TimerInterval,0,function()
+	RoundSystem.RoundTimer = MathMax(0,RoundSystem.RoundTimer - TimerInterval)
 end)
 
 RoundSystem.RoundsPlayed = RoundSystem.RoundsPlayed or 0
@@ -102,24 +131,24 @@ local function WaitingStateCheck()
 
 	DR.RoundSystem.RoundSwitch(DR_ROUND_PREP)
 
-	timer.Remove("DeathrunWaitingStateCheck")
+	TimerRemove("DeathrunWaitingStateCheck")
 end
 
 RoundSystem.AddState(
 	DR_ROUND_WAITING,
 	function()
-		hook.Run("DeathrunBeginWaiting")
+		HookRun("DeathrunBeginWaiting")
 
 		if not SERVER then return end
 
-		for _,ply in ipairs(DR.GetAllPlaying()) do
+		for _,ply in Iterator,DR.GetAllPlaying(),0 do
 			ply:StripWeapons()
 			ply:RemoveAllAmmo()
 			ply:SetTeam(DR_TEAM_RUNNER)
 			ply:Spawn()
 		end
 
-		timer.Create("DeathrunWaitingStateCheck",5,0,WaitingStateCheck)
+		TimerCreate("DeathrunWaitingStateCheck",5,0,WaitingStateCheck)
 	end,
 	nil
 )
@@ -127,26 +156,26 @@ RoundSystem.AddState(
 RoundSystem.AddState(
 	DR_ROUND_PREP,
 	function()
-		hook.Run("DeathrunBeginPrep")
+		HookRun("DeathrunBeginPrep")
 
 		if CLIENT then
 			-- round start cue
 			if CvPlayRoundCues:GetBool() then
-				surface.PlaySound("Deathrun.RoundStart")
+				SurfacePlaySound("Deathrun.RoundStart")
 			end
 
 			return
 		end
 
-		game.CleanUpMap()
+		GameCleanUpMap()
 
-		timer.Simple(CvPrepDuration:GetInt(),function()
+		TimerSimple(CvPrepDuration:GetInt(),function()
 			DR.RoundSystem.RoundSwitch(DR_ROUND_ACTIVE)
 		end)
 
 		DR.RoundSystem.SetTimer(CvPrepDuration:GetInt())
 
-		for _,ply in player.Iterator() do
+		for _,ply in PlayerIterator() do
 			-- for some reason we need to do this otherwise people spawn as spec when they shouldnt!
 			if not ply:ShouldStaySpectating() then
 				ply:KillSilent()
@@ -161,9 +190,9 @@ RoundSystem.AddState(
 		local deaths = {}
 
 		local plyList = DR.GetAllPlaying()
-		local pool = table.Copy(plyList)
+		local pool = TableCopy(plyList)
 
-		local deathsNeeded = math.ceil(CvDeathRatio:GetFloat() * #plyList)
+		local deathsNeeded = MathCeil(CvDeathRatio:GetFloat() * #plyList)
 		local deathsMax = CvDeathMax:GetInt()
 
 		if deathsNeeded > deathsMax then
@@ -172,14 +201,14 @@ RoundSystem.AddState(
 
 		-- get a list of players, ordered by how many death rounds they have had, lowest to highest
 		local listOrdered = {}
-		local listUnordered = table.Copy(plyList)
+		local listUnordered = TableCopy(plyList)
 
 		for _ = 1,#listUnordered do
 			local lowest = math.huge
 			local lowestIdx = 0
 			local lowestPly
 
-			for idx,ply in pairs(listUnordered) do
+			for idx,ply in next,listUnordered do
 				local deathTime = DeathTimes[ply]
 				if deathTime >= lowest then continue end
 
@@ -195,12 +224,12 @@ RoundSystem.AddState(
 		local poolPunishment = DR.GetOnlineDeathAvoiders()
 
 		-- remove players from orderedpool and pool if they have been death 2 rounds in a row
-		for _,ply in ipairs(plyList) do
+		for _,ply in Iterator,plyList,0 do
 			local streak = DeathTeamStreaks[ply] or 0
 			if streak <= 0 then continue end
 
-			table.RemoveByValue(listOrdered,ply)
-			table.RemoveByValue(pool,ply)
+			TableRemoveByValue(listOrdered,ply)
+			TableRemoveByValue(pool,ply)
 		end
 
 		local timesLooped = 0
@@ -216,25 +245,25 @@ RoundSystem.AddState(
 
 				deaths[#deaths + 1] = ply -- add players to the deaths if they are being punishd for death avoid
 
-				table.RemoveByValue(pool,ply)
-				table.remove(poolPunishment,punishmentCount)
+				TableRemoveByValue(pool,ply)
+				TableRemove(poolPunishment,punishmentCount)
 			elseif #listOrdered > 0 then
 				local ply = listOrdered[1]
 
 				if ply then
 					deaths[#deaths + 1] = ply
 
-					table.remove(listOrdered,1)
-					table.RemoveByValue(pool,ply)
+					TableRemove(listOrdered,1)
+					TableRemoveByValue(pool,ply)
 				end
 			else
-				local randNum = math.random(#pool)
+				local randNum = MathRandom(#pool)
 				local randPly = pool[randNum]
 
 				if randPly then
 					deaths[#deaths + 1] = randPly
 
-					table.remove(pool,randNum)
+					TableRemove(pool,randNum)
 				end
 			end
 
@@ -242,23 +271,23 @@ RoundSystem.AddState(
 		end
 
 		-- Set our selected Deaths
-		for _,death in ipairs(deaths) do
+		for _,death in Iterator,deaths,0 do
 			death:SetTeam(DR_TEAM_DEATH)
 		end
 
 		-- Set everyone left in the pool as Runners
-		for _,runner in ipairs(pool) do
+		for _,runner in Iterator,pool,0 do
 			runner:SetTeam(DR_TEAM_RUNNER)
 		end
 
 		-- make sure nobody is dead??????
-		for _,ply in ipairs(plyList) do
+		for _,ply in Iterator,plyList,0 do
 			ply:StripWeapons()
 			ply:RemoveAllAmmo()
 			ply:Spawn()
 		end
 
-		for _,ply in player.Iterator() do
+		for _,ply in PlayerIterator() do
 			local deathTime = DeathTimes[ply] or 0
 			local deathTeamStreak = DeathTeamStreaks[ply] or 0
 
@@ -273,7 +302,7 @@ RoundSystem.AddState(
 			DeathTeamStreaks[ply] = deathTeamStreak
 		end
 
-		for ply,time in pairs(DeathTimes) do
+		for ply,time in next,DeathTimes do
 			if IsValid(ply) then continue end
 
 			DeathTimes[ply] = nil
@@ -283,13 +312,13 @@ RoundSystem.AddState(
 )
 
 local function AutoslayDelay()
-	for _,ply in ipairs(DR.GetAllPlaying()) do
+	for _,ply in Iterator,DR.GetAllPlaying(),0 do
 		local idleTime = DR.CheckIdleTime()
 
 		if idleTime <= CvAutoslayDelay:GetInt() then continue end
 
-		net.Start("DeathrunSpectatorNotification")
-		net.Send(ply)
+		NetStart("DeathrunSpectatorNotification")
+		NetSend(ply)
 
 		if ply:Team() == DR_TEAM_DEATH then
 			DR.PunishDeathAvoid(ply,CvDeathAvoidPunishment:GetInt())
@@ -304,13 +333,13 @@ end
 RoundSystem.AddState(
 	DR_ROUND_ACTIVE,
 	function()
-		hook.Run("DeathrunBeginActive")
+		HookRun("DeathrunBeginActive")
 
 		if not SERVER then return end
 
 		DR.RoundSystem.SetTimer(CvRoundDuration:GetInt())
 
-		timer.Create("DeathrunAutoslay",CvAutoslayDelay:GetInt() + 5,1,AutoslayDelay)
+		TimerCreate("DeathrunAutoslay",CvAutoslayDelay:GetInt() + 5,1,AutoslayDelay)
 	end,
 	function()
 		if not SERVER then return end
@@ -326,7 +355,7 @@ RoundSystem.AddState(
 		local deaths = {}
 		local runners = {}
 
-		for _,ply in ipairs(playing) do
+		for _,ply in Iterator,playing,0 do
 			if not ply:Alive() then continue end
 
 			local targetTbl
@@ -364,7 +393,7 @@ end
 RoundSystem.AddState(
 	DR_ROUND_OVER,
 	function()
-		hook.Run("DeathrunBeginOver")
+		HookRun("DeathrunBeginOver")
 
 		local roundsPlayed = RoundSystem.RoundsPlayed + 1
 		RoundSystem.RoundsPlayed = roundsPlayed
@@ -374,7 +403,7 @@ RoundSystem.AddState(
 		local roundLimit = CvRoundLimit:GetInt()
 
 		if
-			not hook.Run("DeathrunShouldMapSwitch",roundsPlayed)
+			not HookRun("DeathrunShouldMapSwitch",roundsPlayed)
 		and	roundsPlayed < roundLimit
 		then
 			DR.ChatBroadcast("Round " .. roundsPlayed .. " over. " .. (roundLimit - roundsPlayed) .. " rounds to go!")
@@ -383,12 +412,12 @@ RoundSystem.AddState(
 
 			DR.RoundSystem.SetTimer(finishDur)
 
-			timer.Simple(finishDur,RestartRound)
+			TimerSimple(finishDur,RestartRound)
 		else
 			--DR.ChatBroadcast("Round limit reached. Initiating RTV...")
 
-			timer.Simple(3,function()
-				if hook.Run("DeathrunStartMapvote",roundsPlayed) then return end
+			TimerSimple(3,function()
+				if HookRun("DeathrunStartMapvote",roundsPlayed) then return end
 
 				MapVote.BeginMapVote()
 			end)

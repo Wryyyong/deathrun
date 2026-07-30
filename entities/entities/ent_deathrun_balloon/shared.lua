@@ -1,3 +1,7 @@
+local CurTime = CurTime
+
+local MathRand = math.Rand
+
 ENT.Type = "anim"
 ENT.Base = "base_anim"
 ENT.Spawnable = true
@@ -18,7 +22,7 @@ end
 
 function ENT:Initialize()
 	self:SetBornTime(CurTime())
-	self:SetLifespan(10 + math.random(-2,2))
+	self:SetLifespan(10 + MathRand(-2,2))
 
 	self:Initialize_Realm()
 end

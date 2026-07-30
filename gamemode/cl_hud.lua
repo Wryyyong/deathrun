@@ -1,3 +1,49 @@
+local Iterator = ipairs({})
+
+local setmetatable = setmetatable
+local tonumber = tonumber
+
+local CurTime = CurTime
+local DrawMotionBlur = DrawMotionBlur
+local DrawSharpen = DrawSharpen
+local FrameTime = FrameTime
+local IsValid = IsValid
+local Lerp = Lerp
+local LocalPlayer = LocalPlayer
+local Matrix = Matrix
+local MsgC = MsgC
+local ScrH = ScrH
+local ScrW = ScrW
+
+local DrawRoundedBox = draw.RoundedBox
+
+local HookRun = hook.Run
+
+local MathClamp = math.Clamp
+local MathFloor = math.floor
+local MathRound = math.Round
+local MathSin = math.sin
+
+local NetReadInt = net.ReadInt
+local NetReadString = net.ReadString
+local NetReadTable = net.ReadTable
+
+local PlayerIterator = player.Iterator
+
+local StringToMinutesSeconds = string.ToMinutesSeconds
+local StringToMinutesSecondsMilliseconds = string.ToMinutesSecondsMilliseconds
+
+local SurfaceDrawRect = surface.DrawRect
+local SurfacePlaySound = surface.PlaySound
+local SurfaceSetAlphaMultiplier = surface.SetAlphaMultiplier
+local SurfaceSetDrawColor = surface.SetDrawColor
+
+local TableInsert = table.insert
+local TableRemove = table.remove
+
+local TeamGetColor = team.GetColor
+local TeamGetName = team.GetName
+
 local DR = DR
 
 local Colors = DR.Colors
@@ -67,7 +113,7 @@ hook.Add("HUDPaint","FixCHudAmmo",function()
 end)
 
 cvars.AddChangeCallback("deathrun_hud_theme",function(_,_,new)
-	HideElements["CHudAmmo"] = math.floor(tonumber(new)) == HUDTHEME_CLASSIC
+	HideElements["CHudAmmo"] = MathFloor(tonumber(new)) == HUDTHEME_CLASSIC
 end)
 
 hook.Add("HUDShouldDraw","Deathrun_HUDShouldDraw",function(element)
@@ -125,11 +171,11 @@ local KillfeedTbl_Meta = {
 }
 
 net.Receive("DeathrunAddKillNote",function()
-	HUD.AddKillNote(net.ReadString(),net.ReadInt(8))
+	HUD.AddKillNote(NetReadString(),NetReadInt(8))
 end)
 
 function HUD.AddKillNote(msg,mod)
-	table.insert(KillfeedQueue,1,setmetatable({
+	TableInsert(KillfeedQueue,1,setmetatable({
 		["text"] = msg,
 		["mode"] = mod,
 	},KillfeedTbl_Meta))
@@ -164,7 +210,7 @@ function HUD.DrawKillfeed(x,y)
 
 	--local queueCountHalf = #KillfeedQueue * .5 * Distance
 
-	for idx,obj in ipairs(KillfeedQueue) do
+	for idx,obj in Iterator,KillfeedQueue,0 do
 		local hp = obj.hp - Distance
 		obj.hp = hp
 
@@ -186,7 +232,7 @@ function HUD.DrawKillfeed(x,y)
 
 		dy = dy + 24 * fade
 
-		surface.SetAlphaMultiplier(fade * .75)
+		SurfaceSetAlphaMultiplier(fade * .75)
 		UI.ShadowTextSimple(
 			obj.text,
 			"Deathrun_DefaultHUD_Medium",
@@ -202,12 +248,12 @@ function HUD.DrawKillfeed(x,y)
 	-- Handle notification cleanup separately for safety against undefined behaviour
 	-- from removing and shifting table entries while iterating over the table
 	for idx in next,KillfeedsToCleanup do
-		table.remove(KillfeedQueue,idx)
+		TableRemove(KillfeedQueue,idx)
 
 		KillfeedsToCleanup[idx] = nil
 	end
 
-	surface.SetAlphaMultiplier(1)
+	SurfaceSetAlphaMultiplier(1)
 end
 
 concommand.Add("deathrun_testkillnote",function()
@@ -251,13 +297,13 @@ sound.Add({
 })
 
 net.Receive("DeathrunSendMVPs",function()
-	RoundEndData = net.ReadTable()
+	RoundEndData = NetReadTable()
 
 	RoundEndData.Active = true
 	RoundEndData.BeginTime = CurTime()
 
 	if CvPlayRoundCues:GetBool() then
-		surface.PlaySound(
+		SurfacePlaySound(
 			"Deathrun.RoundEnd." .. (
 				RoundEndData.winteam == DR_WIN_STALEMATE
 			and	"Stalemate"
@@ -266,7 +312,7 @@ net.Receive("DeathrunSendMVPs",function()
 		)
 	end
 
-	hook.Run("DeathrunRoundWin",RoundEndData.winteam)
+	HookRun("DeathrunRoundWin",RoundEndData.winteam)
 end)
 
 local LastTime = CurTime()
@@ -364,31 +410,31 @@ function HUD.DrawCrosshair(x,y)
 	local size = CvCrosshair_Size:GetFloat()
 	local sizeMod = size + gapHalf
 
-	surface.SetDrawColor(
+	SurfaceSetDrawColor(
 		CvCrosshair_ColorR:GetInt(),
 		CvCrosshair_ColorG:GetInt(),
 		CvCrosshair_ColorB:GetInt(),
 		CvCrosshair_ColorA:GetInt()
 	)
-	surface.DrawRect(
+	SurfaceDrawRect(
 		thickModX,
 		y - sizeMod,
 		thick,
 		size
 	)
-	surface.DrawRect(
+	SurfaceDrawRect(
 		thickModX,
 		y + gapHalf,
 		thick,
 		size
 	)
-	surface.DrawRect(
+	SurfaceDrawRect(
 		x + gapHalf,
 		thickModY,
 		size,
 		thick
 	)
-	surface.DrawRect(
+	SurfaceDrawRect(
 		x - sizeMod,
 		thickModY,
 		size,
@@ -433,11 +479,11 @@ function HUD.DrawTargetID()
 	then
 		name = ply:Nick()
 
-		color = team.GetColor(ply:Team())
+		color = TeamGetColor(ply:Team())
 		color.a = alpha ^ .3 * 255 / 255 ^ .3
 
 		UI.ShadowText(
-			name .. "\n" .. math.Round(ply:Health() / ply:GetMaxHealth() * 100) .. "%",
+			name .. "\n" .. MathRound(ply:Health() / ply:GetMaxHealth() * 100) .. "%",
 			"Deathrun_DefaultHUD_Medium",
 			DR.ScreenWidth * .5,
 			DR.ScreenHeight * .5 + 16,
@@ -451,7 +497,7 @@ function HUD.DrawTargetID()
 	-- our benchmark is 100fps
 	-- e.g. our fade time is 3s
 	-- so each frame at 100fps the alpha is: alpha - 1 / (3s * 100f) * 255 * fmul
-	DR.TargetIDAlpha = math.Clamp(alpha - (1 / (CvHud_TargetIdFadeTime:GetFloat() * 100)) * 255 * fadeMultiplier,0,255)
+	DR.TargetIDAlpha = MathClamp(alpha - (1 / (CvHud_TargetIdFadeTime:GetFloat() * 100)) * 255 * fadeMultiplier,0,255)
 	DR.TargetIDColor = color
 	DR.TargetIDName = name
 	DR.TargetIDPlayer = ply
@@ -475,7 +521,7 @@ function HUD.DrawPlayerNames()
 
 	local localPlyEyePos = localPly:EyePos()
 
-	for _,ply in player.Iterator() do
+	for _,ply in PlayerIterator() do
 		local plyTeam = ply:Team()
 		local plyAlive = ply:Alive()
 		local plyActive =
@@ -521,7 +567,7 @@ function HUD.DrawPlayerNames()
 			alpha = DR.InverseLerp(dist,FadeOutDist_End,FadeOutDist_Start) * 255
 		end
 
-		local teamColor = team.GetColor(ply:Team())
+		local teamColor = TeamGetColor(ply:Team())
 		teamColor.a = alpha
 		ColorDummyPlayerName.a = alpha
 
@@ -538,7 +584,7 @@ function HUD.DrawPlayerNames()
 			TEXT_ALIGN_CENTER
 		)
 		UI.ShadowTextSimple(
-			team.GetName(ply:Team()),
+			TeamGetName(ply:Team()),
 			"Deathrun_DefaultHUD_Small",
 			x,
 			y - 16,
@@ -587,7 +633,7 @@ local function DrawPlayerHUDMain(x,y,alpha)
 	and	RoundSystem.GetCurrent() == DR_ROUND_ACTIVE
 	and	plyTeam == DR_TEAM_RUNNER
 
-	local teamColor = team.GetColor(plyTeam)
+	local teamColor = TeamGetColor(plyTeam)
 	local teamColorOrig = teamColor:Copy()
 	teamColor.a = alpha
 
@@ -600,16 +646,16 @@ local function DrawPlayerHUDMain(x,y,alpha)
 	DefaultHud_Turq.a = alpha
 
 	-- Team box
-	surface.SetDrawColor(teamColor)
-	surface.DrawRect(
+	SurfaceSetDrawColor(teamColor)
+	SurfaceDrawRect(
 		x,
 		y,
 		228,
 		16
 	)
 
-	surface.SetDrawColor(0,0,0,100)
-	surface.DrawRect(
+	SurfaceSetDrawColor(0,0,0,100)
+	SurfaceDrawRect(
 		x,
 		y + 14,
 		228,
@@ -620,7 +666,7 @@ local function DrawPlayerHUDMain(x,y,alpha)
 	local teamName
 
 	if isLocalPly then
-		teamName = team.GetName(plyTeam)
+		teamName = TeamGetName(plyTeam)
 	else
 		teamName = ply:Nick()
 	end
@@ -639,8 +685,8 @@ local function DrawPlayerHUDMain(x,y,alpha)
 	y = y + 20 -- 16 + 4
 
 	-- Time Left
-	surface.SetDrawColor(DefaultHud_Clouds_Main)
-	surface.DrawRect(
+	SurfaceSetDrawColor(DefaultHud_Clouds_Main)
+	SurfaceDrawRect(
 		x,
 		y,
 		228,
@@ -660,7 +706,7 @@ local function DrawPlayerHUDMain(x,y,alpha)
 		TEXT_ALIGN_CENTER
 	)
 	UI.ShadowTextSimple(
-		string.ToMinutesSeconds(RoundSystem.GetTimer()),
+		StringToMinutesSeconds(RoundSystem.GetTimer()),
 		"Deathrun_DefaultHUD_Small",
 		x + 224, -- 228 - 4
 		yTimeLeftText,
@@ -682,49 +728,49 @@ local function DrawPlayerHUDMain(x,y,alpha)
 	local hpCur = ply:Health()
 	local hpMax = ply:GetMaxHealth()
 
-	surface.SetDrawColor(DefaultHud_Alizarin)
-	surface.DrawRect(
+	SurfaceSetDrawColor(DefaultHud_Alizarin)
+	SurfaceDrawRect(
 		x,
 		y,
 		32,
 		32
 	)
 
-	surface.SetDrawColor(255,255,255,barAlpha)
-	surface.DrawRect(
+	SurfaceSetDrawColor(255,255,255,barAlpha)
+	SurfaceDrawRect(
 		x,
 		y,
 		32,
 		32
 	)
 
-	surface.SetDrawColor(DefaultHud_Alizarin)
-	surface.DrawRect(
+	SurfaceSetDrawColor(DefaultHud_Alizarin)
+	SurfaceDrawRect(
 		x,
 		y,
 		32,
 		32
 	)
-	surface.DrawRect(
+	SurfaceDrawRect(
 		xBar,
 		y,
 		192,
 		32
 	)
 
-	surface.SetDrawColor(255,255,255,barAlpha)
-	surface.DrawRect(
+	SurfaceSetDrawColor(255,255,255,barAlpha)
+	SurfaceDrawRect(
 		xBar,
 		y,
 		192,
 		32
 	)
 
-	surface.SetDrawColor(DefaultHud_Alizarin)
-	surface.DrawRect(
+	SurfaceSetDrawColor(DefaultHud_Alizarin)
+	SurfaceDrawRect(
 		xBar,
 		y,
-		DR.InverseLerp(math.Clamp(hpCur,0,hpMax),0,hpMax) * 192,
+		DR.InverseLerp(MathClamp(hpCur,0,hpMax),0,hpMax) * 192,
 		32
 	)
 
@@ -760,7 +806,7 @@ local function DrawPlayerHUDMain(x,y,alpha)
 	local velStr =
 		velCur > VelocityMax
 	and	VelocityMaxStr
-	or	math.floor(velCur)
+	or	MathFloor(velCur)
 
 	if
 		ply.AutoJumpEnabled
@@ -769,49 +815,49 @@ local function DrawPlayerHUDMain(x,y,alpha)
 		velStr = velStr .. " AUTO"
 	end
 
-	surface.SetDrawColor(DefaultHud_Turq)
-	surface.DrawRect(
+	SurfaceSetDrawColor(DefaultHud_Turq)
+	SurfaceDrawRect(
 		x,
 		y,
 		32,
 		32
 	)
 
-	surface.SetDrawColor(255,255,255,barAlpha)
-	surface.DrawRect(
+	SurfaceSetDrawColor(255,255,255,barAlpha)
+	SurfaceDrawRect(
 		x,
 		y,
 		32,
 		32
 	)
 
-	surface.SetDrawColor(DefaultHud_Turq)
-	surface.DrawRect(
+	SurfaceSetDrawColor(DefaultHud_Turq)
+	SurfaceDrawRect(
 		x,
 		y,
 		32,
 		32
 	)
-	surface.DrawRect(
+	SurfaceDrawRect(
 		xBar,
 		y,
 		192,
 		32
 	)
 
-	surface.SetDrawColor(255,255,255,barAlpha)
-	surface.DrawRect(
+	SurfaceSetDrawColor(255,255,255,barAlpha)
+	SurfaceDrawRect(
 		xBar,
 		y,
 		192,
 		32
 	)
 
-	surface.SetDrawColor(DefaultHud_Turq)
-	surface.DrawRect(
+	SurfaceSetDrawColor(DefaultHud_Turq)
+	SurfaceDrawRect(
 		xBar,
 		y,
-		DR.InverseLerp(math.Clamp(velCur,0,VelocityMax),0,VelocityMax) * 192,
+		DR.InverseLerp(MathClamp(velCur,0,VelocityMax),0,VelocityMax) * 192,
 		32
 	)
 
@@ -843,38 +889,38 @@ local function DrawPlayerHUDMain(x,y,alpha)
 
 	y = y + 36 -- 32 + 4
 
-	surface.SetDrawColor(255,182,0,alpha)
-	surface.DrawRect(
+	SurfaceSetDrawColor(255,182,0,alpha)
+	SurfaceDrawRect(
 		x,
 		y,
 		32,
 		32
 	)
 
-	surface.SetDrawColor(255,255,255,barAlpha)
-	surface.DrawRect(
+	SurfaceSetDrawColor(255,255,255,barAlpha)
+	SurfaceDrawRect(
 		x,
 		y,
 		32,
 		32
 	)
 
-	surface.SetDrawColor(255,182,0,alpha)
-	surface.DrawRect(
+	SurfaceSetDrawColor(255,182,0,alpha)
+	SurfaceDrawRect(
 		x,
 		y,
 		32,
 		32
 	)
-	surface.DrawRect(
+	SurfaceDrawRect(
 		xBar,
 		y,
 		192,
 		32
 	)
 
-	surface.SetDrawColor(255,255,255,barAlpha)
-	surface.DrawRect(
+	SurfaceSetDrawColor(255,255,255,barAlpha)
+	SurfaceDrawRect(
 		xBar,
 		y,
 		192,
@@ -895,7 +941,7 @@ local function DrawPlayerHUDMain(x,y,alpha)
 		1
 	)
 	UI.ShadowTextSimple(
-		string.ToMinutesSecondsMilliseconds(CurTime() - (ply.StartTime or 0)),
+		StringToMinutesSecondsMilliseconds(CurTime() - (ply.StartTime or 0)),
 		"Deathrun_DefaultHUD_Large",
 		xBarLarge,
 		yTimeText,
@@ -945,16 +991,16 @@ local function DrawPlayerHUDAmmo(x,y,alpha)
 	DefaultHud_Clouds_Ammo.a = alpha
 	DefaultHud_Orange_Transparent.a = alphaPercent * 200
 
-	surface.SetDrawColor(DefaultHud_Clouds_Ammo)
-	surface.DrawRect(
+	SurfaceSetDrawColor(DefaultHud_Clouds_Ammo)
+	SurfaceDrawRect(
 		x,
 		y,
 		228,
 		16
 	)
 
-	surface.SetDrawColor(DefaultHud_Orange_Transparent)
-	surface.DrawRect(
+	SurfaceSetDrawColor(DefaultHud_Orange_Transparent)
+	SurfaceDrawRect(
 		x,
 		y,
 		228,
@@ -964,24 +1010,24 @@ local function DrawPlayerHUDAmmo(x,y,alpha)
 	y = y + 20 -- 16 + 4
 
 	-- Weapon name
-	surface.SetDrawColor(DefaultHud_Orange)
-	surface.DrawRect(
+	SurfaceSetDrawColor(DefaultHud_Orange)
+	SurfaceDrawRect(
 		x,
 		y,
 		228,
 		32
 	)
 
-	surface.SetDrawColor(255,255,255,barAlpha)
-	surface.DrawRect(
+	SurfaceSetDrawColor(255,255,255,barAlpha)
+	SurfaceDrawRect(
 		x,
 		y,
 		228,
 		32
 	)
 
-	surface.SetDrawColor(DefaultHud_Orange)
-	surface.DrawRect(
+	SurfaceSetDrawColor(DefaultHud_Orange)
+	SurfaceDrawRect(
 		x,
 		y,
 		228,
@@ -1000,47 +1046,47 @@ local function DrawPlayerHUDAmmo(x,y,alpha)
 
 	y = y + 36 -- 32 + 4
 
-	local clipPercent = math.Clamp(weaponData.Clip1 / weaponData.Clip1Max,0,1)
-	surface.SetDrawColor(DefaultHud_Orange)
-	surface.DrawRect(
+	local clipPercent = MathClamp(weaponData.Clip1 / weaponData.Clip1Max,0,1)
+	SurfaceSetDrawColor(DefaultHud_Orange)
+	SurfaceDrawRect(
 		x,
 		y,
 		32,
 		32
 	)
 
-	surface.SetDrawColor(255,255,255,barAlpha)
-	surface.DrawRect(
+	SurfaceSetDrawColor(255,255,255,barAlpha)
+	SurfaceDrawRect(
 		x,
 		y,
 		32,
 		32
 	)
 
-	surface.SetDrawColor(DefaultHud_Orange)
-	surface.DrawRect(
+	SurfaceSetDrawColor(DefaultHud_Orange)
+	SurfaceDrawRect(
 		x,
 		y,
 		32,
 		32
 	)
-	surface.DrawRect(
+	SurfaceDrawRect(
 		xBar,
 		y,
 		192,
 		32
 	)
 
-	surface.SetDrawColor(255,255,255,barAlpha)
-	surface.DrawRect(
+	SurfaceSetDrawColor(255,255,255,barAlpha)
+	SurfaceDrawRect(
 		xBar,
 		y,
 		192,
 		32
 	)
 
-	surface.SetDrawColor(DefaultHud_Orange)
-	surface.DrawRect(
+	SurfaceSetDrawColor(DefaultHud_Orange)
+	SurfaceDrawRect(
 		xBar,
 		y,
 		clipPercent * 192,
@@ -1072,16 +1118,16 @@ local function DrawPlayerHUDAmmo(x,y,alpha)
 
 	y = y + 36 -- 32 + 4
 
-	surface.SetDrawColor(DefaultHud_Clouds_Ammo)
-	surface.DrawRect(
+	SurfaceSetDrawColor(DefaultHud_Clouds_Ammo)
+	SurfaceDrawRect(
 		x,
 		y,
 		228,
 		16
 	)
 
-	surface.SetDrawColor(DefaultHud_Orange_Transparent)
-	surface.DrawRect(
+	SurfaceSetDrawColor(DefaultHud_Orange_Transparent)
+	SurfaceDrawRect(
 		x,
 		y,
 		228,
@@ -1155,26 +1201,21 @@ concommand.Add("deathrun_test_notification",function(_,_,args)
 	)
 end)
 
-local LastCycle = CurTime()
-
 local ColorNotifBlack = color_black:Copy()
 local ColorNotifWhite = color_white:Copy()
 
 function HUD.DrawNotifications()
-	local curTime = CurTime()
+	local fadeMul = 100 / (1 / FrameTime())
 
-	local fadeMul = 100 / (1 / (curTime - LastCycle))
-	LastCycle = curTime
-
-	for idx,notif in ipairs(NotificationQueue) do
+	for idx,notif in Iterator,NotificationQueue,0 do
 		local text = notif.text
 		local x = notif.x
 		local y = notif.y
 		local dx = notif.dx
 		local dy = notif.dy
-		local timeElapsed = curTime - notif.born
+		local timeElapsed = CurTime() - notif.born
 
-		local fadeIn = math.Clamp(Lerp(DR.InverseLerp(timeElapsed,0,.5),0,255),0,255)
+		local fadeIn = MathClamp(Lerp(DR.InverseLerp(timeElapsed,0,.5),0,255),0,255)
 		ColorNotifBlack.a = fadeIn
 		ColorNotifWhite.a = fadeIn
 
@@ -1210,7 +1251,7 @@ function HUD.DrawNotifications()
 	-- Handle notification cleanup separately for safety against undefined behaviour
 	-- from removing and shifting table entries while iterating over the table
 	for idx in next,NotificationsToCleanup do
-		table.remove(NotificationQueue,idx)
+		TableRemove(NotificationQueue,idx)
 
 		NotificationsToCleanup[idx] = nil
 	end
@@ -1233,21 +1274,21 @@ local function DrawWinners(winteam,tbl_mvps,x,y,stalemate)
 	local teamColor =
 		stalemate
 	and	ColorGrey
-	or	team.GetColor(winteam)
+	or	TeamGetColor(winteam)
 
 	local xWidthHalf = x + WinnerWidth * .5
 	local yHeightGap = y + WinnerHeightGap
 	local yHeightGapPlusMhHalfMinusOne = yHeightGap + WinnerMhHalfMinusOne
 
-	surface.SetDrawColor(teamColor)
-	surface.DrawRect(
+	SurfaceSetDrawColor(teamColor)
+	SurfaceDrawRect(
 		x,
 		y,
 		WinnerWidth,
 		WinnerHeight
 	)
 	UI.ShadowTextSimple(
-		stalemate and "STALEMATE!" or (team.GetName(winteam) .. " win the round!"):upper(),
+		stalemate and "STALEMATE!" or (TeamGetName(winteam) .. " win the round!"):upper(),
 		"Deathrun_DefaultHUD_ExtraLarge",
 		xWidthHalf,
 		y + WinnerHeightHalf,
@@ -1257,8 +1298,8 @@ local function DrawWinners(winteam,tbl_mvps,x,y,stalemate)
 		1
 	)
 
-	surface.SetDrawColor(ColorClouds)
-	surface.DrawRect(
+	SurfaceSetDrawColor(ColorClouds)
+	SurfaceDrawRect(
 		x,
 		yHeightGap,
 		WinnerWidth,
@@ -1277,8 +1318,8 @@ local function DrawWinners(winteam,tbl_mvps,x,y,stalemate)
 
 	if stalemate then return end
 
-	surface.SetDrawColor(ColorClouds)
-	surface.DrawRect(
+	SurfaceSetDrawColor(ColorClouds)
+	SurfaceDrawRect(
 		x,
 		yHeightGap,
 		WinnerWidth,
@@ -1296,12 +1337,12 @@ local function DrawWinners(winteam,tbl_mvps,x,y,stalemate)
 	)
 
 	-- Draw MVPs
-	surface.SetDrawColor(teamColor)
+	SurfaceSetDrawColor(teamColor)
 
-	for idx,mvp in ipairs(tbl_mvps) do
+	for idx,mvp in Iterator,tbl_mvps,0 do
 		local offsetY = yHeightGap + WinnerGapMh * idx
 
-		surface.DrawRect(
+		SurfaceDrawRect(
 			x,
 			offsetY,
 			WinnerWidth,
@@ -1430,8 +1471,8 @@ local function DrawPlayerHUDMainSass(x,y,alpha)
 
 	-- size of avatar: 48x48
 	-- size of container: 52x52
-	surface.SetDrawColor(SassHud_DarkGrey)
-	draw.RoundedBox(
+	SurfaceSetDrawColor(SassHud_DarkGrey)
+	DrawRoundedBox(
 		2,
 		x + 4,
 		y - 34,
@@ -1448,7 +1489,7 @@ local function DrawPlayerHUDMainSass(x,y,alpha)
 	-- hp bar
 	-- width 164
 	-- height 20
-	draw.RoundedBox(
+	DrawRoundedBox(
 		2,
 		xBar,
 		y - 10,
@@ -1457,8 +1498,8 @@ local function DrawPlayerHUDMainSass(x,y,alpha)
 		SassHud_DarkGrey
 	)
 
-	surface.SetDrawColor(SassHud_LightGrey)
-	surface.DrawRect(
+	SurfaceSetDrawColor(SassHud_LightGrey)
+	SurfaceDrawRect(
 		xBar,
 		yHpBar,
 		SassHud_BarInner_Width,
@@ -1466,7 +1507,7 @@ local function DrawPlayerHUDMainSass(x,y,alpha)
 	)
 
 	-- velocity
-	draw.RoundedBox(
+	DrawRoundedBox(
 		2,
 		xBar,
 		y + 8,
@@ -1475,8 +1516,8 @@ local function DrawPlayerHUDMainSass(x,y,alpha)
 		SassHud_DarkGrey
 	)
 
-	surface.SetDrawColor(SassHud_LightGrey)
-	surface.DrawRect(
+	SurfaceSetDrawColor(SassHud_LightGrey)
+	SurfaceDrawRect(
 		xBar,
 		yVelBar,
 		SassHud_BarInner_Width,
@@ -1497,20 +1538,20 @@ local function DrawPlayerHUDMainSass(x,y,alpha)
 		(
 			velCurBreaksCap
 		and	VelocityMaxStr
-		or	math.floor(velCur)
+		or	MathFloor(velCur)
 		)
 	..	" VL"
 
-	surface.SetDrawColor(50,50,255,alpha)
-	surface.DrawRect(
+	SurfaceSetDrawColor(50,50,255,alpha)
+	SurfaceDrawRect(
 		xBar,
 		yVelBar,
 		velPercent,
 		6
 	)
 
-	surface.SetDrawColor(255,255,255,5 * alphaMult)
-	surface.DrawRect(
+	SurfaceSetDrawColor(255,255,255,5 * alphaMult)
+	SurfaceDrawRect(
 		xBar,
 		yVelBar,
 		velPercent,
@@ -1520,17 +1561,17 @@ local function DrawPlayerHUDMainSass(x,y,alpha)
 	local hpCur = ply:Health()
 	local hpMax = ply:GetMaxHealth()
 
-	local hpPercent = DR.InverseLerp(math.Clamp(hpCur,0,hpMax),0,hpMax) * SassHud_BarInner_Width
+	local hpPercent = DR.InverseLerp(MathClamp(hpCur,0,hpMax),0,hpMax) * SassHud_BarInner_Width
 
-	surface.SetDrawColor(50,255,50,alpha)
-	surface.DrawRect(
+	SurfaceSetDrawColor(50,255,50,alpha)
+	SurfaceDrawRect(
 		xBar,
 		yHpBar,
 		hpPercent,
 		16
 	)
-	surface.SetDrawColor(255,255,255,40 * alphaMult)
-	surface.DrawRect(
+	SurfaceSetDrawColor(255,255,255,40 * alphaMult)
+	SurfaceDrawRect(
 		xBar,
 		yHpBar,
 		hpPercent,
@@ -1576,13 +1617,13 @@ local function DrawPlayerHUDMainSass(x,y,alpha)
 	local teamName
 
 	if isLocalPly then
-		teamName = team.GetName(plyTeam)
+		teamName = TeamGetName(plyTeam)
 	else
 		teamName = ply:Nick()
 	end
 
 	UI.ShadowTextSimple(
-		teamName .. " - " .. string.ToMinutesSeconds(RoundSystem.GetTimer()),
+		teamName .. " - " .. StringToMinutesSeconds(RoundSystem.GetTimer()),
 		"Deathrun_SassHUD_Small",
 		x + 8,
 		yLowerText,
@@ -1698,7 +1739,7 @@ local function DrawPlayerHUDClassic(x,y,alpha)
 	ClassicHud_HpBar_Bg.a = 255 * alphaMult ^ 2
 	ClassicHud_HpBar_Fg.a = 255 * alphaMult
 
-	draw.RoundedBox(
+	DrawRoundedBox(
 		4,
 		xMinusWidthHalf,
 		y,
@@ -1706,7 +1747,7 @@ local function DrawPlayerHUDClassic(x,y,alpha)
 		ClassicHud_Height,
 		ClassicHud_Background
 	)
-	draw.RoundedBox(
+	DrawRoundedBox(
 		0,
 		xMinusWidthHalfPlus4,
 		yPlus4,
@@ -1718,11 +1759,11 @@ local function DrawPlayerHUDClassic(x,y,alpha)
 	local hpCur = ply:Health()
 	local hpMax = ply:GetMaxHealth()
 
-	draw.RoundedBox(
+	DrawRoundedBox(
 		0,
 		xMinusWidthHalfPlus4,
 		yPlus4,
-		DR.InverseLerp(math.Clamp(hpCur,0,hpMax),0,hpMax) * ClassicHud_WidthMinus8,
+		DR.InverseLerp(MathClamp(hpCur,0,hpMax),0,hpMax) * ClassicHud_WidthMinus8,
 		ClassicHud_HeightMinus8,
 		ClassicHud_HpBar_Fg
 	)
@@ -1740,7 +1781,7 @@ local function DrawPlayerHUDClassic(x,y,alpha)
 	-- timer
 	local timerY = y - 4 - ClassicHud_Timer_Height
 
-	draw.RoundedBox(
+	DrawRoundedBox(
 		4,
 		xMinusWidthQuar,
 		timerY,
@@ -1749,7 +1790,7 @@ local function DrawPlayerHUDClassic(x,y,alpha)
 		ClassicHud_Background
 	)
 	UI.ShadowText(
-		string.ToMinutesSeconds(RoundSystem.GetTimer()),
+		StringToMinutesSeconds(RoundSystem.GetTimer()),
 		"Deathrun_ClassicHUD_Large",
 		xMinusWidthQuarPlusClassicHudWidthQuar,
 		timerY + 4,
@@ -1811,10 +1852,10 @@ hook.Add("HUDPaintBackground","Vaporwave",function()
 
 	matrix:Translate(Vaporwave_Translate1)
 
-	Vaporwave_Rotate[2] = math.sin(curTime * .5) * 5
+	Vaporwave_Rotate[2] = MathSin(curTime * .5) * 5
 	matrix:Rotate(Vaporwave_Rotate)
 
-	local scale = math.sin(curTime * .3) * .2 + .9
+	local scale = MathSin(curTime * .3) * .2 + .9
 	Vaporwave_Scale:SetUnpacked(
 		scale,
 		scale,

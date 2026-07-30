@@ -1,3 +1,45 @@
+local Iterator = ipairs({})
+
+local next = next
+local istable = istable
+local print = print
+local tonumber = tonumber
+local tostring = tostring
+
+local CurTime = CurTime
+local Vector = Vector
+
+local EngineTickInterval = engine.TickInterval
+
+local EntsFindInBox = ents.FindInBox
+
+local FileCreateDir = file.CreateDir
+local FileExists = file.Exists
+local FileRead = file.Read
+local FileWrite = file.Write
+
+local GameGetMap = game.GetMap
+
+local HookRun = hook.Run
+
+local MathRound = math.Round
+
+local NetBroadcast = net.Broadcast
+local NetSend = net.Send
+local NetStart = net.Start
+local NetWriteTable = net.WriteTable
+
+local PlayerIterator = player.Iterator
+
+local StringToMinutesSecondsMilliseconds = string.ToMinutesSecondsMilliseconds
+
+local TableCopyFromTo = table.CopyFromTo
+
+local TeamGetPlayers = team.GetPlayers
+
+local UtilJSONToTable = util.JSONToTable
+local UtilTableToJSON = util.TableToJSON
+
 local DR = DR
 
 local RoundSystem = DR.RoundSystem
@@ -8,7 +50,7 @@ local MapZones = ZoneSystem.MapZones
 ZoneSystem.StartTime = ZoneSystem.StartTime or -1
 
 local ZoneDataDir = "deathrun/zones"
-local ZoneDataFilepath = ZoneDataDir .. "/" .. game.GetMap() .. ".json"
+local ZoneDataFilepath = ZoneDataDir .. "/" .. GameGetMap() .. ".json"
 
 util.AddNetworkString("DeathrunSendZones")
 
@@ -78,13 +120,13 @@ end
 
 --- @param ply Player?
 function ZoneSystem.SendZones(ply)
-	net.Start("DeathrunSendZones")
-		net.WriteTable(MapZones)
+	NetStart("DeathrunSendZones")
+		NetWriteTable(MapZones)
 
 	if ply then
-		net.Send(ply)
+		NetSend(ply)
 	else
-		net.Broadcast()
+		NetBroadcast()
 	end
 end
 
@@ -95,28 +137,28 @@ hook.Add("PlayerInitialSpawn","DeathrunSetupPlayerZones",function(ply)
 end)
 
 function ZoneSystem.Save()
-	file.Write(
+	FileWrite(
 		ZoneDataFilepath,
-		util.TableToJSON(MapZones,true)
+		UtilTableToJSON(MapZones,true)
 	)
 
 	print("Zones were saved.")
 end
 
 function ZoneSystem.Load()
-	if not file.Exists(ZoneDataDir,"DATA") then
-		file.CreateDir(ZoneDataDir)
+	if not FileExists(ZoneDataDir,"DATA") then
+		FileCreateDir(ZoneDataDir)
 	end
 
 	local data
 
-	if file.Exists(ZoneDataFilepath,"DATA") then
-		data = util.JSONToTable(file.Read(ZoneDataFilepath,"DATA"))
+	if FileExists(ZoneDataFilepath,"DATA") then
+		data = UtilJSONToTable(FileRead(ZoneDataFilepath,"DATA"))
 	else
 		data = {}
 	end
 
-	table.CopyFromTo(data,MapZones)
+	TableCopyFromTo(data,MapZones)
 
 	print("Zones were loaded.")
 end
@@ -156,7 +198,7 @@ local ScanRate
 local SkipCounter = -1
 
 -- makes it a bit less taxing, at the cost of reducing the resolution of records
-local TickRate = math.Round(1 / engine.TickInterval())
+local TickRate = MathRound(1 / EngineTickInterval())
 
 if TickRate >= 100 then
 	ScanRate = 3
@@ -173,7 +215,7 @@ hook.Add("Tick","ZoneTick",function()
 	SkipCounter = (SkipCounter + 1) % ScanRate
 	if SkipCounter ~= 0 then return end
 
-	for name,zone in pairs(MapZones) do
+	for name,zone in next,MapZones do
 		if not zone.type then continue end
 
 		local pos1 = zone.pos1
@@ -183,7 +225,7 @@ hook.Add("Tick","ZoneTick",function()
 		posMin:Sub(ZoneBorder)
 		posMax:Add(ZoneBorder)
 
-		for _,ent in ipairs(ents.FindInBox(posMin,posMax)) do
+		for _,ent in Iterator,EntsFindInBox(posMin,posMax),0 do
 			if not ent:IsPlayer() then continue end
 
 			local inZones = ent.InZones
@@ -208,7 +250,7 @@ hook.Add("Tick","ZoneTick",function()
 
 			if not hasChanged then continue end
 
-			hook.Run("DeathrunPlayerEnteredZone",ent,name,zone)
+			HookRun("DeathrunPlayerEnteredZone",ent,name,zone)
 		end
 	end
 end)
@@ -244,7 +286,7 @@ concommand.Add("zone_create",function(ply,cmd,args)
 
 		msg = "Created zone \"" .. name .. "\" of type \"" .. type .. "\"."
 
-		hook.Run("DeathrunZonesUpdated")
+		HookRun("DeathrunZonesUpdated")
 	else
 		ply.LastZoneDenied = name
 
@@ -255,7 +297,6 @@ concommand.Add("zone_create",function(ply,cmd,args)
 end)
 
 concommand.Add("zone_remove",function(ply,cmd,args)
-	-- e.g. zone_create endmap end
 	local name = args[1]
 
 	if not DR.CanAccessCommand(ply,cmd) then
@@ -273,7 +314,7 @@ concommand.Add("zone_remove",function(ply,cmd,args)
 	ZoneSystem.Save()
 	ZoneSystem.SendZones()
 
-	hook.Run("DeathrunZonesUpdated")
+	HookRun("DeathrunZonesUpdated")
 
 	DR.SafeChatPrint(ply,"Deleted zone \"" .. name .. "\"")
 end)
@@ -313,7 +354,7 @@ concommand.Add("zone_setpos",function(ply,cmd,args)
 
 			msg = name .. ".pos" .. pos .. " set to " .. tostring(hitPos) .. "."
 
-			hook.Run("DeathrunZonesUpdated")
+			HookRun("DeathrunZonesUpdated")
 		else
 			msg = "Bad \"pos\" argument, please use either \"1\" or \"2\"."
 		end
@@ -357,7 +398,7 @@ concommand.Add("zone_setcolor",function(ply,cmd,args)
 
 		msg = name .. ".color set to " .. colR .. " " .. colG .. " " .. colB .. " " .. colA .. "."
 
-		hook.Run("DeathrunZonesUpdated")
+		HookRun("DeathrunZonesUpdated")
 	else
 		msg = "Zone does not exist."
 	end
@@ -396,7 +437,7 @@ concommand.Add("zone_settype",function(ply,cmd,args)
 
 		msg = name .. ".type set to " .. type .. "."
 
-		hook.Run("DeathrunZonesUpdated")
+		HookRun("DeathrunZonesUpdated")
 	else
 		msg = "Zone does not exist."
 	end
@@ -408,11 +449,11 @@ end)
 local FinishOrder = {}
 
 hook.Add("DeathrunBeginPrep","DeathrunResetFinishers",function()
-	for _,ply in player.Iterator() do
+	for _,ply in PlayerIterator() do
 		ply.HasFinishedMap = false
 	end
 
-	for idx in ipairs(FinishOrder) do
+	for idx in Iterator,FinishOrder,0 do
 		FinishOrder[idx] = nil
 	end
 end)
@@ -478,16 +519,16 @@ hook.Add("DeathrunPlayerEnteredZone","DeathrunPlayerFinishMap",function(ply,name
 
 	local finishTime = CurTime() - ZoneSystem.StartTime
 
-	DR.ChatBroadcast(ply:Nick() .. " has finished the map in " .. placeTxt .. " place with a time of " .. string.ToMinutesSecondsMilliseconds(finishTime) .. "!")
+	DR.ChatBroadcast(ply:Nick() .. " has finished the map in " .. placeTxt .. " place with a time of " .. StringToMinutesSecondsMilliseconds(finishTime) .. "!")
 
 	if place == 1 then
 		-- deaths lose sprint when the first runner finishes
-		for _,death in ipairs(team.GetPlayers(DR_TEAM_DEATH)) do
+		for _,death in Iterator,TeamGetPlayers(DR_TEAM_DEATH),0 do
 			death:SetRunSpeed(250)
 		end
 	end
 
-	hook.Run("DeathrunPlayerFinishMap",ply,name,zone,place,finishTime)
+	HookRun("DeathrunPlayerFinishMap",ply,name,zone,place,finishTime)
 end)
 
 DR.AddChatCommand("createzone",function(ply,args)

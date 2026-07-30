@@ -1,3 +1,9 @@
+local Iterator = ipairs({})
+
+local IsFirstTimePredicted = IsFirstTimePredicted
+
+local VguiCreate = vgui.Create
+
 local DR = DR
 
 local ConVars = DR.ConVars
@@ -53,7 +59,7 @@ local SETTINGTYPE_UPDATETEXT = 7
 --- @param list DR_MenuList
 --- @param settings table
 local function SetupMenuList(list,settings)
-	for _,data in ipairs(settings) do
+	for _,data in Iterator,settings,0 do
 		-- ConVar type
 		local cvType = data[1]
 
@@ -120,7 +126,7 @@ function DR.AddSetting(tbl)
 end
 
 concommand.Add("deathrun_open_settings",function()
-	local frame = vgui.Create("DR_SettingsFrame")
+	local frame = VguiCreate("DR_SettingsFrame")
 	local inner = frame:Add("DR_MenuInner")
 	frame.InnerWindow = inner
 
@@ -144,7 +150,7 @@ local SettingsCrosshair = {
 }
 
 concommand.Add("deathrun_open_crosshair_creator",function()
-	local frame = vgui.Create("DR_CrosshairCreatorFrame")
+	local frame = VguiCreate("DR_CrosshairCreatorFrame")
 	local inner = frame:Add("DR_MenuInner")
 	frame.InnerWindow = inner
 
@@ -157,13 +163,13 @@ concommand.Add("deathrun_open_crosshair_creator",function()
 end)
 
 concommand.Add("deathrun_open_help",function()
-	vgui.Create("DR_HelpFrame")
+	VguiCreate("DR_HelpFrame")
 end)
 
 concommand.Add("deathrun_open_zone_editor",function(ply,cmd)
 	if not DR.CanAccessCommand(ply,cmd) then return end
 
-	local frame = vgui.Create("DR_ZoneEditorFrame")
+	local frame = VguiCreate("DR_ZoneEditorFrame")
 	local inner = frame:Add("DR_MenuInner")
 	frame.InnerWindow = inner
 
@@ -208,7 +214,7 @@ concommand.Add("deathrun_open_zone_editor",function(ply,cmd)
 end)
 
 local function OpenQuickInfo()
-	vgui.Create("DR_QuickInfoFrame")
+	VguiCreate("DR_QuickInfoFrame")
 end
 
 concommand.Add("deathrun_open_quickinfo",OpenQuickInfo)
@@ -227,7 +233,7 @@ end)
 
 -- waiting menu
 function UI.OpenWaitingMenu()
-	local frame = vgui.Create("DR_WaitingMenuFrame")
+	local frame = VguiCreate("DR_WaitingMenuFrame")
 
 	frame:Add("DR_WaitingMenuInner")
 end
@@ -236,7 +242,7 @@ concommand.Add("deathrun_open_waitingmenu",UI.OpenWaitingMenu)
 
 --- @param returning boolean?
 function UI.OpenMovedToSpectatorMenu(returning)
-	local frame = vgui.Create("DR_MovedToSpectatorFrame")
+	local frame = VguiCreate("DR_MovedToSpectatorFrame")
 
 	local inner = frame:Add("DR_MovedToSpectatorInner" .. (returning and "Returning" or "AFK"))
 

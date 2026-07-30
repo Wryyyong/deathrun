@@ -1,3 +1,6 @@
+local SurfaceSetDrawColor = CLIENT and surface.SetDrawColor
+local SurfaceDrawRect = CLIENT and surface.DrawRect
+
 local DR = DR
 
 local Colors = DR.Colors
@@ -22,8 +25,8 @@ local DR_MovedToSpectatorInnerBase = {
 }
 
 function DR_MovedToSpectatorInnerBase:Paint(width,height)
-	surface.SetDrawColor(ColorClouds)
-	surface.DrawRect(
+	SurfaceSetDrawColor(ColorClouds)
+	SurfaceDrawRect(
 		0,
 		0,
 		width,

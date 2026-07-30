@@ -1,3 +1,5 @@
+local DermaSkinHook = derma.SkinHook
+
 --- @class DR_CustomVScrollBarButtonBase : DButton
 --- @field Parent DR_CustomVScrollBar
 local DR_CustomVScrollBarButtonBase = {
@@ -12,7 +14,7 @@ function DR_CustomVScrollBarButtonBase:Init()
 end
 
 function DR_CustomVScrollBarButtonBase:Paint(width,height)
-	derma.SkinHook("Paint",self.ScrollHook,self,width,height)
+	DermaSkinHook("Paint",self.ScrollHook,self,width,height)
 end
 
 function DR_CustomVScrollBarButtonBase:DoClock()

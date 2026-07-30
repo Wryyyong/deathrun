@@ -1,6 +1,17 @@
+local setmetatable = setmetatable
+
+local IsValid = IsValid
+
+local HookRun = hook.Run
+
+local InputWasMousePressed = input.WasMousePressed
+
+local VguiCreate = vgui.Create
+
 local DR = DR
 
 local UI = DR.UI
+local Scoreboard = UI.Scoreboard
 
 local ColorTurq = DR.Colors.Turq
 
@@ -16,9 +27,6 @@ local Special_Default = {}
 local Special_Meta = {
 	["__index"] = Special_Default,
 }
-
-local Scoreboard = UI.Scoreboard or {}
-UI.Scoreboard = Scoreboard
 
 --- @type table<string,DeathrunScoreboardSpecial>
 local Specials = Scoreboard.Specials or setmetatable({},{
@@ -46,7 +54,7 @@ end
 function Scoreboard.Create()
 	if IsValid(Scoreboard.Panel) then return end
 
-	local scoreboard = vgui.Create("DR_Scoreboard")
+	local scoreboard = VguiCreate("DR_Scoreboard")
 	Scoreboard.Set(scoreboard)
 
 	local scroll = scoreboard:Add("DR_ScoreboardScrollPanel")
@@ -80,7 +88,7 @@ Scoreboard.Destroy()
 
 function GM:ScoreboardShow()
 	-- return false to suppress scoreboard opening
-	if hook.Run("DeathrunOpenScoreboard") == false then return end
+	if HookRun("DeathrunOpenScoreboard") == false then return end
 
 	Scoreboard.Create()
 end
@@ -90,7 +98,7 @@ hook.Add("CreateMove","DeathrunScoreboardPopup",function(cmd)
 		not (
 			Panel
 		and	Panel.IsOpen
-		and	input.WasMousePressed(MOUSE_RIGHT)
+		and	InputWasMousePressed(MOUSE_RIGHT)
 		)
 	then return end
 

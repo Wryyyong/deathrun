@@ -1,3 +1,5 @@
+local Iterator = ipairs({})
+
 local ColorTurq = DR.Colors.Turq
 
 --- @class DR_MapVoteListBase : DR_List
@@ -40,7 +42,7 @@ function DR_MapVoteListBase:FinishRow(row)
 	width = width + 8
 	height = height * .5
 
-	for idx,columnText in ipairs(row.Columns) do
+	for idx,columnText in Iterator,row.Columns,0 do
 		local offsetHeight = idx - 1
 		local align = .5
 

@@ -1,3 +1,6 @@
+local SurfaceSetDrawColor = CLIENT and surface.SetDrawColor
+local SurfaceDrawRect = CLIENT and surface.DrawRect
+
 local Colors = DR.Colors
 
 --- @class DR_MapVoteRowBase : DPanel
@@ -22,8 +25,8 @@ function DR_MapVoteRowBase:Init()
 end
 
 function DR_MapVoteRowBase:Paint(width,height)
-	surface.SetDrawColor(self.CustomColor)
-	surface.DrawRect(
+	SurfaceSetDrawColor(self.CustomColor)
+	SurfaceDrawRect(
 		0,
 		0,
 		width,

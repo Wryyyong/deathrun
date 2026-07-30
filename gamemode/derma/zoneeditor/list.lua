@@ -64,7 +64,7 @@ function DR_ZoneEditorList:AddComboBox(caption,choiceTbl,defaultChoice)
 		18
 	)
 
-	for _,val in pairs(choiceTbl) do
+	for _,val in next,choiceTbl do
 		comboBox:AddChoice(val)
 	end
 

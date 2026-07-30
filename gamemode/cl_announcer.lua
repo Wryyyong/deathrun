@@ -1,3 +1,8 @@
+local next = next
+local tonumber = tonumber
+
+local ChatAddText = chat.AddText
+
 local DR = DR
 
 local Colors = DR.Colors
@@ -37,7 +42,7 @@ end
 timer.Create("DeathrunAnnouncementTimer",CvAnnouncements_Interval:GetFloat(),0,function()
 	if not CvAnnouncements_Enabled:GetBool() then return end
 
-	chat.AddText(
+	ChatAddText(
 		ColorClouds,
 		"[",
 		DR.AnnouncerColor,

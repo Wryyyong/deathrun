@@ -1,3 +1,26 @@
+local Iterator = ipairs({})
+
+local IsValid = IsValid
+local RunConsoleCommand = RunConsoleCommand
+
+local GameGetMap = game.GetMap
+
+local InputWasKeyPressed = input.WasKeyPressed
+
+local NetReadBool = net.ReadBool
+local NetReadFloat = net.ReadFloat
+local NetReadTable = net.ReadTable
+
+local StringToMinutesSeconds = string.ToMinutesSeconds
+
+local TableCopyFromTo = table.CopyFromTo
+local TableEmpty = table.Empty
+local TableHasValue = table.HasValue
+
+local TimerSimple = timer.Simple
+
+local VguiCreate = vgui.Create
+
 local MapVote = DR.MapVote
 
 MapVote.Active = MapVote.Active or false
@@ -18,11 +41,11 @@ local Nominations = MapVote.Nominations or {}
 MapVote.Nominations = Nominations
 
 function MapVote.IsMapNominated(mapname)
-	return table.HasValue(Nominations,mapname)
+	return TableHasValue(Nominations,mapname)
 end
 
 function MapVote.OpenFullMapList()
-	local frame = vgui.Create("DR_MapVoteMapListFrame")
+	local frame = VguiCreate("DR_MapVoteMapListFrame")
 	local inner = frame:Add("DR_MapVoteInner")
 	local scroll = inner:Add("DR_MapVoteScrollPanel")
 	local list = scroll:Add("DR_MapVoteListMapList")
@@ -47,9 +70,9 @@ function MapVote.RepopulateMapList()
 	local inner = list:Add("DR_Inner")
 	inner:SetSize(list:GetWide(),8)
 
-	local curMap = game.GetMap()
+	local curMap = GameGetMap()
 
-	for _,map in ipairs(maps) do
+	for _,map in Iterator,maps,0 do
 		if map == curMap then continue end
 
 		list:AddRow(map)
@@ -58,7 +81,7 @@ end
 
 -- actual voting menu place
 function MapVote.OpenVotingPanel()
-	local frame = vgui.Create("DR_MapVoteFrameVoting")
+	local frame = VguiCreate("DR_MapVoteFrameVoting")
 	local inner = frame:Add("DR_MenuInner")
 	local list = inner:Add("DR_MapVoteListVoting")
 
@@ -78,18 +101,18 @@ function MapVote.RefreshVotingPanel()
 	local winner
 	local winningVotes = 0
 
-	for map,voteCount in pairs(VotingMapList) do
+	for map,voteCount in next,VotingMapList do
 		if winningVotes >= voteCount then continue end
 
 		winningVotes = voteCount
 		winner = map
 	end
 
-	table.Empty(VotingMapsNoVotes)
+	TableEmpty(VotingMapsNoVotes)
 
 	local num = 0
 
-	for map,voteCount in pairs(VotingMapList) do
+	for map,voteCount in next,VotingMapList do
 		num = num + 1
 
 		VotingMapsNoVotes[#VotingMapsNoVotes + 1] = map
@@ -109,10 +132,10 @@ timer.Create("MapvoteCountdownTimer",.2,0,function()
 	MapVote.TimeLeft = MapVote.TimeLeft - .2
 
 	if IsValid(MapVote.VotingPanelDerma) then
-		MapVote.VotingPanelDerma:SetTitle("Mapvote - " .. string.ToMinutesSeconds(MapVote.TimeLeft > 0 and MapVote.TimeLeft or 0))
+		MapVote.VotingPanelDerma:SetTitle("Mapvote - " .. StringToMinutesSeconds(MapVote.TimeLeft > 0 and MapVote.TimeLeft or 0))
 
 		if MapVote.TimeLeft <= 0 then
-			timer.Simple(4,function()
+			TimerSimple(4,function()
 				if not IsValid(MapVote.VotingPanelDerma) then return end
 
 				MapVote.VotingPanelDerma:Close()
@@ -142,7 +165,7 @@ hook.Add("SetupMove","MapvoteReceiveKeys",function()
 	if not MapVote.Active then return end
 
 	for idx = 1,#KeyNums do
-		if not input.WasKeyPressed(KeyNums[idx]) then continue end
+		if not InputWasKeyPressed(KeyNums[idx]) then continue end
 
 		RunConsoleCommand("mapvote_vote",VotingMapsNoVotes[idx])
 
@@ -151,27 +174,27 @@ hook.Add("SetupMove","MapvoteReceiveKeys",function()
 end)
 
 net.Receive("MapvoteUpdateMapList",function()
-	table.CopyFromTo(net.ReadTable(),VotingMapList)
+	TableCopyFromTo(NetReadTable(),VotingMapList)
 
 	MapVote.RefreshVotingPanel()
 end)
 
 net.Receive("MapvoteSetActive",function()
-	local active = net.ReadBool()
+	local active = NetReadBool()
 	MapVote.Active = active
 
 	local sourceTbl
 	local newTime
 
 	if active then
-		sourceTbl = net.ReadTable()
-		newTime = net.ReadFloat()
+		sourceTbl = NetReadTable()
+		newTime = NetReadFloat()
 	else
 		sourceTbl = {}
 		newTime = -1
 	end
 
-	table.CopyFromTo(sourceTbl,VotingMapList)
+	TableCopyFromTo(sourceTbl,VotingMapList)
 	MapVote.TimeLeft = newTime
 
 	if not active then return end
@@ -181,13 +204,13 @@ net.Receive("MapvoteSetActive",function()
 end)
 
 net.Receive("MapvoteSyncNominations",function()
-	table.CopyFromTo(net.ReadTable(),Nominations)
+	TableCopyFromTo(NetReadTable(),Nominations)
 
 	MapVote.RepopulateMapList()
 end)
 
 net.Receive("MapvoteSendAllMaps",function()
-	table.CopyFromTo(net.ReadTable().maps,MapList)
+	TableCopyFromTo(NetReadTable().maps,MapList)
 
 	MapVote.OpenFullMapList()
 end)

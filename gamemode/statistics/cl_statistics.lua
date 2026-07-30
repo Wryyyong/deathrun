@@ -1,3 +1,35 @@
+local Iterator = ipairs({})
+
+local CurTime = CurTime
+local IsValid = IsValid
+local LocalPlayer = LocalPlayer
+
+local CamEnd3D2D = cam.End3D2D
+local CamStart3D2D = cam.Start3D2D
+
+local MathClamp = math.Clamp
+
+local NetReadBool = net.ReadBool
+local NetReadDouble = net.ReadDouble
+local NetReadFloat = net.ReadFloat
+local NetReadString = net.ReadString
+local NetReadTable = net.ReadTable
+
+local RenderClearStencil = render.ClearStencil
+local RenderSetStencilCompareFunction = render.SetStencilCompareFunction
+local RenderSetStencilEnable = render.SetStencilEnable
+local RenderSetStencilFailOperation = render.SetStencilFailOperation
+local RenderSetStencilPassOperation = render.SetStencilPassOperation
+local RenderSetStencilReferenceValue = render.SetStencilReferenceValue
+local RenderSetStencilZFailOperation = render.SetStencilZFailOperation
+
+local StringToMinutesSecondsMilliseconds = string.ToMinutesSecondsMilliseconds
+
+local SurfaceDrawRect = surface.DrawRect
+local SurfaceSetDrawColor = surface.SetDrawColor
+
+local UtilJSONToTable = util.JSONToTable
+
 local DR = DR
 
 local Colors = DR.Colors
@@ -42,21 +74,21 @@ net.Receive("DeathrunSendMapRecords",function()
 
 	local idx = 0
 
-	while net.ReadBool() do
+	while NetReadBool() do
 		idx = idx + 1
 		local rank = MapRecordsCache[idx]
 
-		rank.Name = net.ReadString()
-		rank.Seconds = string.ToMinutesSecondsMilliseconds(net.ReadFloat())
+		rank.Name = NetReadString()
+		rank.Seconds = StringToMinutesSecondsMilliseconds(NetReadFloat())
 	end
 end)
 
 net.Receive("DeathrunSendMapPersonalBest",function()
-	Stats.PersonalBestCache = string.ToMinutesSecondsMilliseconds(net.ReadFloat())
+	Stats.PersonalBestCache = StringToMinutesSecondsMilliseconds(NetReadFloat())
 end)
 
 net.Receive("DeathrunSendStats",function()
-	local data = net.ReadTable()
+	local data = NetReadTable()
 	PlayerStatsCache[data.SteamID64] = data
 
 	local msg = [[Stats for ]] .. data.Name .. [[:
@@ -103,7 +135,7 @@ net.Receive("DeathrunDisplayStats",function()
 
 	Stats3D.Position = eyePos
 	Stats3D.Angle = eyeAng
-	Stats3D.Data = util.JSONToTable(net.ReadString()) or {}
+	Stats3D.Data = UtilJSONToTable(NetReadString()) or {}
 	Stats3D.Born = CurTime() + .45
 end)
 
@@ -130,16 +162,16 @@ local function DrawYourStats()
 	if duration < PopUp_Stats_Lifetime then
 		PopUp_Stats_Height = 80 + 75 * PopUp_Stats_LabelCount
 
-		cam.Start3D2D(Stats3D.Position,Stats3D.Angle,.04)
+		CamStart3D2D(Stats3D.Position,Stats3D.Angle,.04)
 
 		-- i dont know how this works?!?!?!?
-		render.ClearStencil()
-		render.SetStencilEnable(true)
-		render.SetStencilFailOperation(STENCILOPERATION_KEEP)
-		render.SetStencilZFailOperation(STENCILOPERATION_REPLACE)
-		render.SetStencilPassOperation(STENCILOPERATION_REPLACE)
-		render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_ALWAYS)
-		render.SetStencilReferenceValue(1)
+		RenderClearStencil()
+		RenderSetStencilEnable(true)
+		RenderSetStencilFailOperation(STENCILOPERATION_KEEP)
+		RenderSetStencilZFailOperation(STENCILOPERATION_REPLACE)
+		RenderSetStencilPassOperation(STENCILOPERATION_REPLACE)
+		RenderSetStencilCompareFunction(STENCILCOMPARISONFUNCTION_ALWAYS)
+		RenderSetStencilReferenceValue(1)
 
 		local fromInv,toInv
 		local fromQuad,toQuad
@@ -157,13 +189,13 @@ local function DrawYourStats()
 			toQuad = 0
 		end
 
-		surface.SetDrawColor(color_black)
-		surface.DrawRect(
+		SurfaceSetDrawColor(color_black)
+		SurfaceDrawRect(
 			PopUp_Stats_PosX,
 			PopUp_Stats_PosY,
 			PopUp_Stats_Width,
 			PopUp_Stats_Height * DR.QuadLerp(
-				math.Clamp(
+				MathClamp(
 					DR.InverseLerp(
 						duration,
 						fromInv,
@@ -177,20 +209,20 @@ local function DrawYourStats()
 			)
 		)
 
-		render.SetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
-		render.SetStencilPassOperation(STENCILOPERATION_REPLACE)
+		RenderSetStencilCompareFunction(STENCILCOMPARISONFUNCTION_EQUAL)
+		RenderSetStencilPassOperation(STENCILOPERATION_REPLACE)
 
 		-- draw
-		surface.SetDrawColor(ColorClouds)
-		surface.DrawRect(
+		SurfaceSetDrawColor(ColorClouds)
+		SurfaceDrawRect(
 			PopUp_Stats_PosX,
 			PopUp_Stats_PosY,
 			PopUp_Stats_Width,
 			PopUp_Stats_Height
 		)
 
-		surface.SetDrawColor(ColorTurq)
-		surface.DrawRect(
+		SurfaceSetDrawColor(ColorTurq)
+		SurfaceDrawRect(
 			PopUp_Stats_PosX,
 			PopUp_Stats_PosY,
 			PopUp_Stats_Width,
@@ -237,9 +269,9 @@ local function DrawYourStats()
 		end
 
 		-- close stencil
-		render.SetStencilEnable(false)
+		RenderSetStencilEnable(false)
 
-		cam.End3D2D()
+		CamEnd3D2D()
 	end
 end
 
@@ -261,10 +293,10 @@ local function DrawMapRecords()
 	eyeAng[3] = 90
 
 	-- end
-	cam.Start3D2D(MapRecordsDrawPos,eyeAng,.1)
+	CamStart3D2D(MapRecordsDrawPos,eyeAng,.1)
 
-	surface.SetDrawColor(ColorTurq)
-	surface.DrawRect(
+	SurfaceSetDrawColor(ColorTurq)
+	SurfaceDrawRect(
 		-700,
 		-300,
 		PopUp_Records_Width,
@@ -281,7 +313,7 @@ local function DrawMapRecords()
 		2
 	)
 
-	for idx,data in ipairs(MapRecordsCache) do
+	for idx,data in Iterator,MapRecordsCache,0 do
 		local offsetY = -150 + 100 * (idx - 1)
 
 		UI.ShadowTextSimple(
@@ -305,8 +337,8 @@ local function DrawMapRecords()
 			2
 		)
 
-		surface.SetDrawColor(ColorTurq)
-		surface.DrawRect(
+		SurfaceSetDrawColor(ColorTurq)
+		SurfaceDrawRect(
 			-700,
 			offsetY + 80,
 			PopUp_Records_Width,
@@ -337,15 +369,15 @@ local function DrawMapRecords()
 		2
 	)
 
-	surface.SetDrawColor(ColorTurq)
-	surface.DrawRect(
+	SurfaceSetDrawColor(ColorTurq)
+	SurfaceDrawRect(
 		-700,
 		offsetY + 80,
 		PopUp_Records_Width,
 		2
 	)
 
-	cam.End3D2D()
+	CamEnd3D2D()
 end
 
 hook.Add("PostDrawTranslucentRenderables","DeathrunStatsDisplay",function()

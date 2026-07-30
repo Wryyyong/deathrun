@@ -1,3 +1,11 @@
+local CurTime = CurTime
+local EffectData = EffectData
+local HSVToColor = HSVToColor
+
+local MathRandom = math.random
+
+local UtilEffect = util.Effect
+
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 
@@ -18,8 +26,8 @@ local StartCache = Vector()
 function ENT:Initialize_Realm()
 	local models = self.Models
 
-	self:SetModel(models[math.random(#models)])
-	self:SetColor(ColorTable[math.random(ColorCount)])
+	self:SetModel(models[MathRandom(#models)])
+	self:SetColor(ColorTable[MathRandom(ColorCount)])
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
@@ -46,7 +54,7 @@ function ENT:DoExplosion()
 	effect:SetOrigin(self:GetPos())
 	effect:SetStart(StartCache)
 
-	util.Effect("balloon_pop",effect)
+	UtilEffect("balloon_pop",effect)
 
 	self:Remove()
 end

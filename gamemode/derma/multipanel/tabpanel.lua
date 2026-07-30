@@ -1,3 +1,6 @@
+local SurfaceSetDrawColor = CLIENT and surface.SetDrawColor
+local SurfaceDrawRect = CLIENT and surface.DrawRect
+
 local DermaColors = DR.Colors.Derma
 local DermaColorsGoodDark = DermaColors.GoodDark
 local DermaColorsGood = DermaColors.Good
@@ -15,8 +18,8 @@ function DR_MultiPanelTabPanel:Init()
 end
 
 function DR_MultiPanelTabPanel.Paint(self,width,height)
-	surface.SetDrawColor(225,225,225)
-	surface.DrawRect( -- meh
+	SurfaceSetDrawColor(225,225,225)
+	SurfaceDrawRect( -- meh
 		0,
 		0,
 		width,

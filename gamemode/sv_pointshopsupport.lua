@@ -1,3 +1,5 @@
+local Iterator = ipairs({})
+
 --- @diagnostic disable: undefined-field
 local DR = DR
 
@@ -56,7 +58,7 @@ hook.Add("PlayerDeath","PointshopRewards",function(ply,_,attacker)
 end)
 
 hook.Add("DeathrunRoundWin","PointshopRewards",function(winteam)
-	for _,ply in ipairs(DR.GetAllPlaying()) do
+	for _,ply in Iterator,DR.GetAllPlaying(),0 do
 		if ply:Team() ~= winteam then continue end
 
 		DR.RewardPlayer(ply,CvWinReward:GetInt(),"Winning the round")

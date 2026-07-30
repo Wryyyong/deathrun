@@ -1,3 +1,6 @@
+local SurfaceSetDrawColor = CLIENT and surface.SetDrawColor
+local SurfaceDrawRect = CLIENT and surface.DrawRect
+
 local ColorNeutralLow = DR.Colors.Derma.NeutralLow
 
 --- @class DR_MultiPanelSpacer : DPanel
@@ -8,8 +11,8 @@ function DR_MultiPanelSpacer:Init()
 end
 
 function DR_MultiPanelSpacer:Paint()
-	surface.SetDrawColor(ColorNeutralLow)
-	surface.DrawRect(
+	SurfaceSetDrawColor(ColorNeutralLow)
+	SurfaceDrawRect(
 		0,
 		0,
 		self:GetSize()

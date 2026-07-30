@@ -1,3 +1,5 @@
+local Iterator = ipairs({})
+
 AddCSLuaFile( )
 ENT.Type 		= "anim"
 ENT.Base 		= "base_entity"
@@ -16,9 +18,9 @@ ENT.WorldModel = "models/weapons/w_eq_fraggrenade_thrown.mdl"
 function ENT:Initialize()
 
 	self:SetModel( self.WorldModel )
-	self:SetMoveType( MOVETYPE_VPHYSICS )   
-	self:SetSolid( SOLID_VPHYSICS )	 
- 	
+	self:SetMoveType( MOVETYPE_VPHYSICS )
+	self:SetSolid( SOLID_VPHYSICS )
+
 	if ( SERVER ) then self:PhysicsInitSphere( 1, "grenade" ) end
 
 	local phys = self:GetPhysicsObject()
@@ -48,7 +50,7 @@ function ENT:PhysicsCollide(data,phys)
 	phys:SetVelocityInstantaneous( reflectionDir*efficiency )
 	if data.Speed > 50 then
 	   	self.Entity:EmitSound(Sound("weapons/hegrenade/he_bounce-1.wav"))
-	end 
+	end
 end
 
 if SERVER then
@@ -78,7 +80,7 @@ if SERVER then
 		util.Effect( "Explosion", effectdata )
 
 		local entities = ents.FindInSphere( self:GetPos(), 300 )
-		for k, e in ipairs( entities ) do
+		for k, e in Iterator,entities,0 do
 			local td = {
 				start = e:IsPlayer() and e:EyePos() or e:GetPos() + e:OBBCenter(),
 				endpos = self:GetPos(),
