@@ -72,7 +72,7 @@ function DR_ZoneEditorList:AddComboBox(caption,choiceTbl,defaultChoice)
 		comboBox:SetValue(defaultChoice)
 	end
 
-	return label,comboBox
+	return comboBox
 end
 
 function DR_ZoneEditorList:AddZoneEditComboBox()
