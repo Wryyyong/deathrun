@@ -50,6 +50,7 @@ local Colors = DR.Colors
 local ConVars = DR.ConVars
 local RoundSystem = DR.RoundSystem
 local UI = DR.UI
+local HUD = UI.HUD
 
 local ColorClouds = Colors.Clouds
 local ColorGrey = Colors.Grey
@@ -94,9 +95,6 @@ local HUDPOS_CENTRE_BOTTOM = 8
 local HUDPOS_RIGHT_TOP     = 3
 local HUDPOS_RIGHT_MIDDLE  = 6
 local HUDPOS_RIGHT_BOTTOM  = 9
-
-local HUD = UI.HUD or {}
-UI.HUD = HUD
 
 local HideElements = {
 	["CHudAmmo"] = false,

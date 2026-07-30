@@ -52,8 +52,7 @@ local KillfeedTbl_Meta = {
 	["__index"] = RoundStateDefault,
 }
 
-local RoundSystem = DR.RoundSystem or {}
-DR.RoundSystem = RoundSystem
+local RoundSystem = DR.RoundSystem
 
 -- Create round state constants
 RoundSystem.CurrentState = RoundSystem.CurrentState or DR_ROUND_WAITING

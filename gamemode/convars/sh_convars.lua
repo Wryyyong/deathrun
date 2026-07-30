@@ -1,7 +1,6 @@
 local DR = DR
 
-local ConVars = DR.ConVars or {}
-DR.ConVars = ConVars
+local ConVars = DR.ConVars
 
 local DefaultFlags =
 	FCVAR_NONE -- cleaner diffs for version control

@@ -1,4 +1,3 @@
-include("sh_init.lua")
 local tobool = tobool
 local tonumber = tonumber
 
@@ -17,27 +16,20 @@ local PlayerGetAll = player.GetAll
 
 local UtilTraceHull = util.TraceHull
 
-include("config.lua")
+include("sh_init.lua")
 
 include("convars/sh_convars.lua")
 include("convars/cl_convars.lua")
 
-include("roundsystem/sh_roundsystem.lua")
-include("roundsystem/cl_roundsystem.lua")
+include("config.lua")
 
 include("shared.lua")
 
-include("cl_fonts.lua")
+include("roundsystem/sh_roundsystem.lua")
+include("roundsystem/cl_roundsystem.lua")
 
-include("cl_derma.lua")
-
-include("cl_hud.lua")
-include("cl_menus.lua")
-
-include("cl_scoreboard.lua")
-
-include("mapvote/sh_mapvote.lua")
-include("mapvote/cl_mapvote.lua")
+include("statistics/sh_statistics.lua")
+include("statistics/cl_statistics.lua")
 
 include("zones/sh_zone.lua")
 include("zones/cl_zone.lua")
@@ -45,10 +37,18 @@ include("zones/cl_zone.lua")
 include("buttonclaiming/sh_buttonclaiming.lua")
 include("buttonclaiming/cl_buttonclaiming.lua")
 
-include("cl_announcer.lua")
+include("mapvote/sh_mapvote.lua")
+include("mapvote/cl_mapvote.lua")
 
-include("statistics/sh_statistics.lua")
-include("statistics/cl_statistics.lua")
+include("cl_fonts.lua")
+
+include("cl_derma.lua")
+
+include("cl_hud.lua")
+include("cl_menus.lua")
+include("cl_scoreboard.lua")
+
+include("cl_announcer.lua")
 
 local DR = DR
 

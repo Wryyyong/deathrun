@@ -9,8 +9,7 @@ local DR = DR
 -- corner2
 -- color
 -- type <start|end>
-local ZoneSystem = DR.ZoneSystem or {}
-DR.ZoneSystem = ZoneSystem
+local ZoneSystem = DR.ZoneSystem
 
 ZoneSystem.ZoneTypes = {
 	"start",

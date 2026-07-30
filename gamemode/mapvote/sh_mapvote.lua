@@ -1,5 +1,4 @@
-local MapVote = DR.MapVote or {}
-DR.MapVote = MapVote
+local MapVote = DR.MapVote
 
 MapVote.MaxMaps = 5 -- maximum number of maps on the mapvote when synced
 MapVote.VotingTime = 20 -- how many seconds the player has to vote

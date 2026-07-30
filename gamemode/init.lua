@@ -50,11 +50,6 @@ AddCSLuaFile("sh_init.lua")
 
 include("sh_init.lua")
 
--- config
-AddCSLuaFile("config.lua")
-
-include("config.lua")
-
 -- convars
 AddCSLuaFile("convars/sh_convars.lua")
 AddCSLuaFile("convars/cl_convars.lua")
@@ -62,12 +57,10 @@ AddCSLuaFile("convars/cl_convars.lua")
 include("convars/sh_convars.lua")
 include("convars/sv_convars.lua")
 
--- Round System
-AddCSLuaFile("roundsystem/sh_roundsystem.lua")
-AddCSLuaFile("roundsystem/cl_roundsystem.lua")
+-- config
+AddCSLuaFile("config.lua")
 
-include("roundsystem/sh_roundsystem.lua")
-include("roundsystem/sv_roundsystem.lua")
+include("config.lua")
 
 -- init
 AddCSLuaFile("shared.lua")
@@ -77,29 +70,25 @@ include("shared.lua")
 -- commands
 include("sv_commands.lua")
 
--- fonts
-AddCSLuaFile("cl_fonts.lua")
+-- player
+include("sv_player.lua")
 
--- derma
-AddCSLuaFile("cl_derma.lua")
+-- pointshop support
+include("sv_pointshopsupport.lua")
 
-for _,fileName in ipairs(file.Find("gamemodes/deathrun/gamemode/derma/dr_*.lua","GAME") or {}) do
-	AddCSLuaFile("derma/" .. fileName)
-end
+-- Round System
+AddCSLuaFile("roundsystem/sh_roundsystem.lua")
+AddCSLuaFile("roundsystem/cl_roundsystem.lua")
 
--- base
-AddCSLuaFile("cl_hud.lua")
-AddCSLuaFile("cl_menus.lua")
+include("roundsystem/sh_roundsystem.lua")
+include("roundsystem/sv_roundsystem.lua")
 
--- scoreboard
-AddCSLuaFile("cl_scoreboard.lua")
+-- statistics
+AddCSLuaFile("statistics/sh_statistics.lua")
+AddCSLuaFile("statistics/cl_statistics.lua")
 
--- map votes
-AddCSLuaFile("mapvote/sh_mapvote.lua")
-AddCSLuaFile("mapvote/cl_mapvote.lua")
-
-include("mapvote/sh_mapvote.lua")
-include("mapvote/sv_mapvote.lua")
+include("statistics/sh_statistics.lua")
+include("statistics/sv_statistics.lua")
 
 -- zones
 AddCSLuaFile("zones/sh_zone.lua")
@@ -108,9 +97,6 @@ AddCSLuaFile("zones/cl_zone.lua")
 include("zones/sh_zone.lua")
 include("zones/sv_zone.lua")
 
--- player
-include("sv_player.lua")
-
 -- button claiming
 AddCSLuaFile("buttonclaiming/sh_buttonclaiming.lua")
 AddCSLuaFile("buttonclaiming/cl_buttonclaiming.lua")
@@ -118,18 +104,30 @@ AddCSLuaFile("buttonclaiming/cl_buttonclaiming.lua")
 include("buttonclaiming/sh_buttonclaiming.lua")
 include("buttonclaiming/sv_buttonclaiming.lua")
 
+-- map votes
+AddCSLuaFile("mapvote/sh_mapvote.lua")
+AddCSLuaFile("mapvote/cl_mapvote.lua")
+
+include("mapvote/sh_mapvote.lua")
+include("mapvote/sv_mapvote.lua")
+
+-- fonts
+AddCSLuaFile("cl_fonts.lua")
+
+-- derma
+AddCSLuaFile("cl_derma.lua")
+
+for _,fileName in ipairs(file.Find("gamemodes/deathrun/gamemode/derma/dr_*.lua","GAME",0 or {})) do
+	AddCSLuaFile("derma/" .. fileName)
+end
+
+-- base
+AddCSLuaFile("cl_hud.lua")
+AddCSLuaFile("cl_menus.lua")
+AddCSLuaFile("cl_scoreboard.lua")
+
 -- announcements
 AddCSLuaFile("cl_announcer.lua")
-
--- pointshop support
-include("sv_pointshopsupport.lua")
-
--- statistics
-AddCSLuaFile("statistics/sh_statistics.lua")
-AddCSLuaFile("statistics/cl_statistics.lua")
-
-include("statistics/sh_statistics.lua")
-include("statistics/sv_statistics.lua")
 
 util.AddNetworkString("DeathrunChatMessage")
 util.AddNetworkString("DeathrunSyncMutelist")

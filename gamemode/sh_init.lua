@@ -1,7 +1,17 @@
 print("Creating global table DR...")
-DR = DR or {}
 
-DR.UI = DR.UI or {}
+DR = DR or {
+	["ButtonClaimSystem"] = {},
+	["ConVars"] = {},
+	["MapVote"] = {},
+	["RoundSystem"] = {},
+	["Stats"] = {},
+	["UI"] = {
+		["HUD"] = {},
+		["Scoreboard"] = {},
+	},
+	["ZoneSystem"] = {},
+}
 
 GM.Name = "Deathrun"
 GM.Author = "Arizard"
