@@ -109,7 +109,7 @@ if CLIENT then
 					if ply:SteamID() == v.claimedPlayer then claimtext = "Claimed by " .. ply:Nick() end
 				end
 
-				draw.SimpleText(claimtext,"DeathrunDermaTiny",x,y,Color(v.claimed and 255 or 100,not v.claimed and 255 or 100,100,alpha),TEXT_ALIGN_CENTER)
+				draw.SimpleText(claimtext,"Deathrun_Derma_ExtraSmall",x,y,Color(v.claimed and 255 or 100,not v.claimed and 255 or 100,100,alpha),TEXT_ALIGN_CENTER)
 			end
 		end
 	end)

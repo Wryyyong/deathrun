@@ -1,40 +1,5 @@
 local Iterator = ipairs({})
 
-if not DR.FontsInitialized then
-	surface.CreateFont("DeathrunDermaLarge",{
-		["font"] = "Roboto Black",
-		["size"] = 45,
-		["antialias"] = true,
-	})
-
-	surface.CreateFont("DeathrunDermaMedium",{
-		["font"] = "Roboto Medium",
-		["size"] = 34,
-		["weight"] = 200,
-	})
-
-	surface.CreateFont("DeathrunDermaSmall",{
-		["font"] = "Roboto Medium",
-		["size"] = 24,
-		["antialias"] = true,
-	})
-
-	surface.CreateFont("DeathrunDermaTiny",{
-		["font"] = "Roboto Regular",
-		["size"] = 18,
-		["antialias"] = true,
-		["weight"] = 500,
-	})
-
-	surface.CreateFont("DeathrunDermaWindowTitle",{
-		["font"] = "Roboto Black",
-		["size"] = 18,
-		["antialias"] = true,
-	})
-
-	DR.FontsInitialized = true
-end
-
 local Colors = DR.Colors
 local ColorClouds = Colors.Clouds
 local ColorTurq = Colors.Turq
@@ -207,7 +172,7 @@ function DR_Window:Paint(width,height)
 	-- title
 	DR.ShadowTextSimple(
 		self.Title,
-		"DeathrunDermaWindowTitle",
+		"Deathrun_Derma_WindowTitle",
 		8,
 		14,
 		ColorClouds,
@@ -284,7 +249,7 @@ local DR_Button = {
 	["Hover"] = false,
 	["Active"] = false,
 	["Disabled"] = false,
-	["Font"] = "DeathrunDermaSmall",
+	["Font"] = "Deathrun_Derma_Small",
 	["Text"] = "Label",
 	["TextColor"] = color_white,
 	["TextFunction"] = DR.ShadowTextSimple,
@@ -731,7 +696,7 @@ vgui.Register("DR_MultiPanelTabPanel",DR_MultiPanelTabPanel,"DR_Button")
 local DR_AuToggle = {
 	["State"] = false,
 	["Text"] = "AuToggle Toggle Switch",
-	["Font"] = "DeathrunDermaTiny",
+	["Font"] = "Deathrun_Derma_ExtraSmall",
 	["Time"] = 0,
 }
 

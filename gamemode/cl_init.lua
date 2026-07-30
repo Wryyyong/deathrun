@@ -1,5 +1,6 @@
 include("hexcolor.lua")
 include("config.lua")
+include("cl_fonts.lua")
 include("cl_derma.lua")
 include("shared.lua")
 include("cl_scoreboard.lua")

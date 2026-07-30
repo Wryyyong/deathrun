@@ -5,6 +5,8 @@ end
 --hexcolor
 AddCSLuaFile("hexcolor.lua")
 include("hexcolor.lua")
+--fonts
+AddCSLuaFile("cl_fonts.lua")
 --derma
 AddCSLuaFile("cl_derma.lua")
 -- base
