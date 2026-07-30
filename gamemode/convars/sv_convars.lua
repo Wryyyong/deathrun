@@ -70,3 +70,12 @@ ConVars.DisableDefaultDeathSpeed = CreateConVar(
 	0,
 	1
 )
+
+ConVars.MapVoteRTVRatio = CreateConVar(
+	"deathrun_mapvote_rtv_ratio",
+	.5,
+	DefaultFlags,
+	"The ratio between votes and players in order to initiate a mapvote.",
+	0,
+	1
+)

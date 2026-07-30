@@ -417,7 +417,7 @@ ROUND.AddState(
 			timer.Simple(3,function()
 				if hook.Run("DeathrunStartMapvote",roundsPlayed) then return end
 
-				MV:BeginMapVote()
+				MV.BeginMapVote()
 			end)
 		end
 	end,

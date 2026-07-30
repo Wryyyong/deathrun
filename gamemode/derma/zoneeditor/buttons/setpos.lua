@@ -15,7 +15,6 @@ function DR_ZoneEditorButtonSetPosBase:DoClick()
 	local command = "zone_setpos \"" .. self.ZoneEdit:GetValue() .. "\" " .. self.Pos
 
 	LocalPlayer():ConCommand(command)
-	print(command)
 end
 
 --- @class DR_ZoneEditorButtonSetPos1 : DR_ZoneEditorButtonSetPosBase

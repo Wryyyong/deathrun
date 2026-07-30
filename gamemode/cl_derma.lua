@@ -144,6 +144,7 @@ for _,panelName in ipairs({
 	"crosshaircreator/preview",
 	"customscrollpanel/main",
 	"inner",
+	"mapvote/row",
 	"menu/controls",
 	"menu/spacer",
 	"multipanel/spacer",
@@ -163,6 +164,8 @@ for _,panelName in ipairs({
 	"button",
 	"customscrollpanel/button",
 	"scoreboard/player/button",
+	"mapvote/maplist/button",
+	"mapvote/voting/button",
 	"subbutton",
 	"togglebutton",
 
@@ -180,9 +183,11 @@ for _,panelName in ipairs({
 	"customscrollpanel/grip",
 
 	-- DMenu
+	"mapvote/menu",
 	"scoreboard/player/menu",
 
 	-- DMenuOption
+	"mapvote/maplist/nominateoption",
 	"scoreboard/player/menuoptions/_base",
 
 	-- DNumSlider
@@ -206,14 +211,18 @@ for _,panelName in ipairs({
 	"menu/frame",
 
 	-- DR_Inner
+	"mapvote/inner",
 	"menu/inner",
 
 	-- DR_List
+	"mapvote/list",
 	"menu/list",
 	"scoreboard/list",
 
 	-- DR_MenuFrame
 	"crosshaircreator/frame",
+	"mapvote/maplist/frame",
+	"mapvote/voting/frame",
 	"misc/movedtospec/frame",
 	"misc/waitingmenu/frame",
 	"zoneeditor/frame",
@@ -224,6 +233,19 @@ for _,panelName in ipairs({
 
 	-- DR_MenuList
 	"zoneeditor/list",
+
+	-- DR_MenuItemBase
+	"mapvote/item",
+
+	-- DR_MenuScrollPanel
+	"mapvote/maplist/scrollpanel",
+
+	-- DR_MapVoteRowBase
+	"mapvote/voting/row",
+
+	-- DR_MapVoteListBase
+	"mapvote/maplist/list",
+	"mapvote/voting/list",
 
 	-- DR_ScoreboardItemBase
 	"scoreboard/player/data",

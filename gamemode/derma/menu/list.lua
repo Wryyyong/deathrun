@@ -2,7 +2,7 @@
 local DR_MenuList = {}
 
 function DR_MenuList:Init()
-	self:SetSize(self:GetParent():GetSize())
+	self:SetSize(self.Parent:GetSize())
 end
 
 --- @param text string

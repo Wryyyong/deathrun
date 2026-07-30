@@ -7,7 +7,7 @@ local DR_ScoreboardList = {}
 
 function DR_ScoreboardList:Init()
 	self:SetSize(
-		self:GetParent():GetWide(),
+		self.Parent:GetWide(),
 		1500
 	)
 end

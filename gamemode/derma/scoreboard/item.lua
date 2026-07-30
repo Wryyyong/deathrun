@@ -1,5 +1,6 @@
-local ColorClouds = DR.Colors.Clouds
-local ColorGrey = DR.Colors.Grey
+local Colors = DR.Colors
+local ColorClouds = Colors.Clouds
+local ColorGrey = Colors.Grey
 
 local CvSmallScoreboard = DR.ConVars.SmallScoreboard
 

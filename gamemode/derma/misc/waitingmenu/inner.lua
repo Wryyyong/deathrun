@@ -1,7 +1,8 @@
 local DR = DR
 
-local ColorClouds = DR.Colors.Clouds
-local ColorGrey = DR.Colors.Grey
+local Colors = DR.Colors
+local ColorClouds = Colors.Clouds
+local ColorGrey = Colors.Grey
 
 local TextWidth = 600 - 24
 local TextFont = "Deathrun_DefaultHUD_MediumLight"

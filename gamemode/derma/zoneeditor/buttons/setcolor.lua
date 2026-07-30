@@ -11,7 +11,6 @@ function DR_ZoneEditorButtonSetColor:DoClick()
 	local command = "zone_setcolor \"" .. self.ZoneEdit:GetValue() .. "\" " .. tostring(self.Mixer:GetColor())
 
 	LocalPlayer():ConCommand(command)
-	print(command)
 end
 
 derma.DefineControl("DR_ZoneEditorButtonSetColor","",DR_ZoneEditorButtonSetColor,"DR_ZoneEditorButtonBase")

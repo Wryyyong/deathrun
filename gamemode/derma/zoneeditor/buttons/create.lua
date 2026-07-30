@@ -11,7 +11,6 @@ function DR_ZoneEditorButtonCreate:DoClick()
 	local command = "zone_create \"" .. self.ZoneName:GetText() .. "\" \"" .. self.ZoneType:GetValue() .. "\""
 
 	LocalPlayer():ConCommand(command)
-	print(command)
 end
 
 derma.DefineControl("DR_ZoneEditorButtonCreate","",DR_ZoneEditorButtonCreate,"DR_ZoneEditorButtonBase")

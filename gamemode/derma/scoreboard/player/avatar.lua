@@ -1,3 +1,5 @@
+local ColorAlizarin = DR.Colors.Alizarin
+
 local IconMute = Material("icon16/sound_mute.png")
 
 --- @class DR_ScoreboardPlayerAvatar : AvatarImage
@@ -31,7 +33,7 @@ function DR_ScoreboardPlayerAvatar:PaintOver(width,height)
 			"Deathrun_Derma_Medium",
 			widthHalf,
 			heightHalf - 1,
-			DR.Colors.Alizarin,
+			ColorAlizarin,
 			TEXT_ALIGN_CENTER,
 			TEXT_ALIGN_CENTER
 		)

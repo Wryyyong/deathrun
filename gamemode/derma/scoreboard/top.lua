@@ -1,6 +1,7 @@
-local ColorClouds = DR.Colors.Clouds
-local ColorGrey = DR.Colors.Grey
-local ColorTurq = DR.Colors.Turq
+local Colors = DR.Colors
+local ColorClouds = Colors.Clouds
+local ColorGrey = Colors.Grey
+local ColorTurq = Colors.Turq
 
 --- @class DR_ScoreboardTop : DR_ScoreboardItemBase
 local DR_ScoreboardTop = {

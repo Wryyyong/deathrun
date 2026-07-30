@@ -1,8 +1,12 @@
 --- @class DR_MenuScrollPanel : DR_CustomScrollPanel
+--- @field Parent DR_Inner
 local DR_MenuScrollPanel = {}
 
 function DR_MenuScrollPanel:Init()
-	local width,height = self:GetParent():GetSize()
+	local parent = self:GetParent()
+	self.Parent = parent
+
+	local width,height = parent:GetSize()
 
 	self.pnlCanvas:SetSize(
 		width - 16,
