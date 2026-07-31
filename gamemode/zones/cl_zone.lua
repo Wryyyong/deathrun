@@ -4,7 +4,10 @@ local LocalPlayer = LocalPlayer
 local MathClamp = math.Clamp
 local MathFloor = math.floor
 
-local NetReadTable = net.ReadTable
+local NetReadBool = net.ReadBool
+local NetReadColor = net.ReadColor
+local NetReadDouble = net.ReadDouble
+local NetReadString = net.ReadString
 
 local RenderDrawBeam = render.DrawBeam
 local RenderSetMaterial = render.SetMaterial
@@ -20,8 +23,33 @@ local CvRenderZones = DR.ConVars.RenderZones
 
 local MatLine = Material("color.vmt")
 
-net.Receive("DeathrunSendZones",function()
-	TableCopyFromTo(NetReadTable(),MapZones)
+net.Receive("DeathrunSendZones",function(len)
+	local newData = {}
+
+	while NetReadBool() do
+		local zone = {}
+		newData[NetReadString()] = zone
+
+		zone.type = NetReadString()
+		zone.color = NetReadColor(true)
+		zone.pos1 = Vector(
+			NetReadDouble(),
+			NetReadDouble(),
+			NetReadDouble()
+		)
+		zone.pos2 = Vector(
+			NetReadDouble(),
+			NetReadDouble(),
+			NetReadDouble()
+		)
+		zone.dir = Vector(
+			NetReadDouble(),
+			NetReadDouble(),
+			NetReadDouble()
+		)
+	end
+
+	TableCopyFromTo(newData,MapZones)
 end)
 
 local BaseBeamWidth = 2

@@ -54,6 +54,7 @@ DR.Permissions = {
 	["deathrun_unstuck"] = 1, -- edit this to change unstuck permissions
 	["deathrun_punish"] = 2,
 	["zone_create"] = 3,
+	["zone_goto"] = 3,
 	["zone_remove"] = 3,
 	["zone_setpos"] = 3,
 	["zone_setposxyz"] = 3,

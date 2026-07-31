@@ -182,6 +182,7 @@ local function SendEndZone(ply)
 
 	net.Start("DeathrunSendEndZone")
 		local location = endZone.pos1 + endZone.pos2
+
 		location:Mul(.5)
 		location:Add(endZone.dir)
 

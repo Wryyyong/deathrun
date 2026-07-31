@@ -16,6 +16,7 @@ local EntsFindInBox = ents.FindInBox
 
 local FileCreateDir = file.CreateDir
 local FileExists = file.Exists
+local FileIsDir = file.IsDir
 local FileRead = file.Read
 local FileWrite = file.Write
 
@@ -28,7 +29,10 @@ local MathRound = math.Round
 local NetBroadcast = net.Broadcast
 local NetSend = net.Send
 local NetStart = net.Start
-local NetWriteTable = net.WriteTable
+local NetWriteBool = net.WriteBool
+local NetWriteColor = net.WriteColor
+local NetWriteDouble = net.WriteDouble
+local NetWriteString = net.WriteString
 
 local PlayerIterator = player.Iterator
 
@@ -55,8 +59,8 @@ local ZoneDataFilepath = ZoneDataDir .. "/" .. GameGetMap() .. ".json"
 
 --- @type Zone
 local Zone_Default = {
-	["color"] = color_white,
 	["type"] = "start",
+	["color"] = color_white,
 	["pos1"] = vector_origin,
 	["pos2"] = vector_origin,
 	["dir"] = vector_origin,
@@ -134,7 +138,30 @@ end
 --- @param ply Player?
 function ZoneSystem.SendZones(ply)
 	NetStart("DeathrunSendZones")
-		NetWriteTable(MapZones)
+		for name,zone in next,MapZones do
+			NetWriteBool(true)
+
+			NetWriteString(name)
+			NetWriteString(zone.type)
+			NetWriteColor(zone.color,true)
+
+			local pos1 = zone.pos1
+			NetWriteDouble(pos1[1])
+			NetWriteDouble(pos1[2])
+			NetWriteDouble(pos1[3])
+
+			local pos2 = zone.pos2
+			NetWriteDouble(pos2[1])
+			NetWriteDouble(pos2[2])
+			NetWriteDouble(pos2[3])
+
+			local dir = zone.dir
+			NetWriteDouble(dir[1])
+			NetWriteDouble(dir[2])
+			NetWriteDouble(dir[3])
+		end
+
+		NetWriteBool(false)
 
 	if ply then
 		NetSend(ply)
@@ -159,7 +186,7 @@ function ZoneSystem.Save()
 end
 
 function ZoneSystem.Load()
-	if not FileExists(ZoneDataDir,"DATA") then
+	if not FileIsDir(ZoneDataDir,"DATA") then
 		FileCreateDir(ZoneDataDir)
 	end
 
@@ -173,7 +200,16 @@ function ZoneSystem.Load()
 
 	TableCopyFromTo(data,MapZones)
 
-	for _,zone in next,MapZones do
+	for name,zone in next,MapZones do
+		local color = zone.color
+
+		zone.color = Color(
+			color.r,
+			color.g,
+			color.b,
+			color.a
+		)
+
 		setmetatable(zone,Zone_Meta)
 	end
 
@@ -198,11 +234,11 @@ function ZoneSystem.Create(name,pos1,pos2,dir,color,type,force)
 	or	force
 	then
 		MapZones[name] = setmetatable({
+			["type"] = type,
+			["color"] = color,
 			["pos1"] = pos1,
 			["pos2"] = pos2,
 			["dir"] = dir,
-			["color"] = color,
-			["type"] = type,
 		},Zone_Meta)
 
 		ZoneSystem.Save()
@@ -227,7 +263,7 @@ else
 	ScanRate = 1
 end
 
-local ZoneBorder = Vector(20,20,20)
+--local ZoneBorder = Vector(20,20,20)
 
 -- cycle through zones and check for players
 hook.Add("Tick","ZoneTick",function()
@@ -241,8 +277,8 @@ hook.Add("Tick","ZoneTick",function()
 		local pos2 = zone.pos2
 
 		local posMin,posMax = DR.VectorMinMax(pos1,pos2)
-		posMin:Sub(ZoneBorder)
-		posMax:Add(ZoneBorder)
+		--posMin:Sub(ZoneBorder)
+		--posMax:Add(ZoneBorder)
 
 		for _,ent in Iterator,EntsFindInBox(posMin,posMax),0 do
 			if not ent:IsPlayer() then continue end
@@ -297,7 +333,7 @@ concommand.Add("zone_create",function(ply,cmd,args)
 
 	local msg
 
-	if ZoneSystem.Create(name,Vector(),Vector(),Vector(),color_white,type,ply.LastZoneDenied == name) then
+	if ZoneSystem.Create(name,Vector(),Vector(),Vector(),color_white:Copy(),type,ply.LastZoneDenied == name) then
 		ZoneSystem.Save()
 		ZoneSystem.SendZones()
 
@@ -563,6 +599,33 @@ concommand.Add("zone_settype",function(ply,cmd,args)
 	DR.SafeChatPrint(ply,msg)
 end)
 
+concommand.Add("zone_goto",function(ply,cmd,args)
+	local name = args[1]
+	local zone = MapZones[name]
+
+	if not DR.CanAccessCommand(ply,cmd) then
+		DR.SafeChatPrint(ply,"Insufficient permissions.")
+
+		return
+	elseif not zone then
+		DR.SafeChatPrint(ply,"Invalid command arguments.")
+
+		return
+	end
+
+	local newPos = zone.pos1 + zone.pos2
+	newPos:Mul(.5)
+
+	local eyePos = ply:EyePos()
+	eyePos:Sub(ply:GetPos())
+	newPos:Sub(eyePos)
+
+	ply:SetPos(newPos)
+	ply:SetLocalVelocity(vector_origin)
+
+	DR.SafeChatPrint(ply,"Teleporetd to zone \"" .. name .. "\"")
+end)
+
 -- timing and rewards
 local FinishOrder = {}
 
@@ -580,7 +643,7 @@ hook.Add("DeathrunBeginActive","DeathrunResetZoneTimer",function()
 	ZoneSystem.StartTime = CurTime()
 end)
 
-hook.Add("DeathrunPlayerInsideZone","DeathrunPlayerDenyZones",function(ply,_,zone)
+hook.Add("DeathrunPlayerEnteredZone","DeathrunPlayerDenyZones",function(ply,_,zone)
 	local type = zone.type
 	local plyTeam = ply:Team()
 

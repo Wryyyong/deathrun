@@ -292,6 +292,7 @@ for _,panelName in ipairs({
 	"zoneeditor/buttons/setpos_eyetrace",
 	"zoneeditor/buttons/setpos_wang",
 	"zoneeditor/buttons/setcolor",
+	"zoneeditor/buttons/teleport",
 }) do
 	include("derma/" .. panelName .. ".lua")
 end
