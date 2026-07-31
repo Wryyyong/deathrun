@@ -175,7 +175,7 @@ local function UpdateMapRecords(plyFinish)
 	end
 end
 
---- @param plyFinish Player?
+--- @param ply Player?
 local function SendEndZone(ply)
 	local endZone = Stats.EndZone
 	if not endZone then return end
@@ -183,7 +183,7 @@ local function SendEndZone(ply)
 	net.Start("DeathrunSendEndZone")
 		local location = endZone.pos1 + endZone.pos2
 		location:Mul(.5)
-		location[1] = location[1] - 90
+		location:Add(endZone.dir)
 
 		net.WriteDouble(location[1])
 		net.WriteDouble(location[2])
@@ -199,6 +199,7 @@ end
 local function FindEndZone()
 	if not ZoneSystem.MapZones then return end
 
+	--- @param zone Zone
 	for _,zone in next,ZoneSystem.MapZones do
 		if zone.type ~= "end" then continue end
 

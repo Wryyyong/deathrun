@@ -56,6 +56,7 @@ DR.Permissions = {
 	["zone_create"] = 3,
 	["zone_remove"] = 3,
 	["zone_setpos"] = 3,
+	["zone_setdir"] = 3,
 	["zone_setcolor"] = 3,
 	["zone_settype"] = 3,
 	["deathrun_force_spectate"] = 2,

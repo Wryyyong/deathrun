@@ -203,6 +203,7 @@ concommand.Add("deathrun_open_zone_editor",function(ply,cmd)
 	local buttonSetColor = list:Add("DR_ZoneEditorButtonSetColor")
 	local buttonSetPos1 = list:Add("DR_ZoneEditorButtonSetPos1")
 	local buttonSetPos2 = list:Add("DR_ZoneEditorButtonSetPos2")
+	local buttonSetDir = list:Add("DR_ZoneEditorButtonSetDir")
 	local buttonRemove = list:Add("DR_ZoneEditorButtonRemove")
 
 	colorMixer.ZoneEdit = zoneEditCombo
@@ -210,6 +211,7 @@ concommand.Add("deathrun_open_zone_editor",function(ply,cmd)
 	buttonSetColor.Mixer = colorMixer
 	buttonSetPos1.ZoneEdit = zoneEditCombo
 	buttonSetPos2.ZoneEdit = zoneEditCombo
+	buttonSetDir.ZoneEdit = zoneEditCombo
 	buttonRemove.ZoneEdit = zoneEditCombo
 end)
 

@@ -12,6 +12,7 @@ local InfoCache_Default = {
 	"Zone Type: ---------",
 	"Pos1: --- --- ---",
 	"Pos2: --- --- ---",
+	"Dir: --- --- ---",
 	"Color: --- --- --- ---",
 }
 local InfoCache_Meta = {

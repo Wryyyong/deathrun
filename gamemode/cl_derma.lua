@@ -285,6 +285,7 @@ for _,panelName in ipairs({
 	-- DR_ZoneEditorButtonBase
 	"zoneeditor/buttons/create",
 	"zoneeditor/buttons/remove",
+	"zoneeditor/buttons/setdir",
 	"zoneeditor/buttons/setpos",
 	"zoneeditor/buttons/setcolor",
 }) do

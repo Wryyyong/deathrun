@@ -2,6 +2,14 @@ local Vector = Vector
 
 local DR = DR
 
+--- @alias Zone {
+--- 	type: string,
+--- 	color: Color,
+--- 	pos1: Vector,
+--- 	pos2: Vector,
+--- 	dir: Vector,
+--- }
+
 -- zone format
 -- table containing the following
 -- name (unique identifier)
@@ -24,7 +32,7 @@ ZoneSystem.ZoneTypes = {
 	"custom3",
 }
 
---- @type table
+--- @type table<string,Zone>
 ZoneSystem.MapZones = ZoneSystem.MapZones or {}
 
 function DR.VectorMinMax(vec1,vec2)

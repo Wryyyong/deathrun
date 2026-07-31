@@ -29,7 +29,8 @@ function DR_ZoneEditComboBox:OnSelect(_,value)
 	cache[2] = "Zone Type: " .. zone.type
 	cache[3] = "Pos1: " .. tostring(zone.pos1)
 	cache[4] = "Pos2: " .. tostring(zone.pos2)
-	cache[5] = "Color: " .. color.r .. " " .. color.g .. " " .. color.b .. " " .. color.a
+	cache[5] = "Dir: " .. tostring(zone.dir)
+	cache[6] = "Color: " .. color.r .. " " .. color.g .. " " .. color.b .. " " .. color.a
 end
 
 derma.DefineControl("DR_ZoneEditComboBox","",DR_ZoneEditComboBox,"DComboBox")

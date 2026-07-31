@@ -3,6 +3,7 @@ local Iterator = ipairs({})
 local next = next
 local istable = istable
 local print = print
+local setmetatable = setmetatable
 local tonumber = tonumber
 local tostring = tostring
 
@@ -51,6 +52,18 @@ ZoneSystem.StartTime = ZoneSystem.StartTime or -1
 
 local ZoneDataDir = "deathrun/zones"
 local ZoneDataFilepath = ZoneDataDir .. "/" .. GameGetMap() .. ".json"
+
+--- @type Zone
+local Zone_Default = {
+	["color"] = color_white,
+	["type"] = "start",
+	["pos1"] = vector_origin,
+	["pos2"] = vector_origin,
+	["dir"] = vector_origin,
+}
+local Zone_Meta = {
+	["__index"] = Zone_Default,
+}
 
 util.AddNetworkString("DeathrunSendZones")
 
@@ -160,6 +173,10 @@ function ZoneSystem.Load()
 
 	TableCopyFromTo(data,MapZones)
 
+	for _,zone in next,MapZones do
+		setmetatable(zone,Zone_Meta)
+	end
+
 	print("Zones were loaded.")
 end
 
@@ -168,9 +185,10 @@ ZoneSystem.Load()
 --- @param name string
 --- @param pos1 Vector
 --- @param pos2 Vector
+--- @param dir Vector
 --- @param color Color
 --- @param force boolean
-function ZoneSystem.Create(name,pos1,pos2,color,type,force)
+function ZoneSystem.Create(name,pos1,pos2,dir,color,type,force)
 	local targetZone = MapZones[name]
 
 	-- empty table
@@ -179,12 +197,13 @@ function ZoneSystem.Create(name,pos1,pos2,color,type,force)
 	or	next(targetZone) == nil
 	or	force
 	then
-		MapZones[name] = {
+		MapZones[name] = setmetatable({
 			["pos1"] = pos1,
 			["pos2"] = pos2,
+			["dir"] = dir,
 			["color"] = color,
 			["type"] = type,
-		}
+		},Zone_Meta)
 
 		ZoneSystem.Save()
 
@@ -278,7 +297,7 @@ concommand.Add("zone_create",function(ply,cmd,args)
 
 	local msg
 
-	if ZoneSystem.Create(name,Vector(),Vector(),color_white,type,ply.LastZoneDenied == name) then
+	if ZoneSystem.Create(name,Vector(),Vector(),Vector(),color_white,type,ply.LastZoneDenied == name) then
 		ZoneSystem.Save()
 		ZoneSystem.SendZones()
 
@@ -358,6 +377,51 @@ concommand.Add("zone_setpos",function(ply,cmd,args)
 		else
 			msg = "Bad \"pos\" argument, please use either \"1\" or \"2\"."
 		end
+	else
+		msg = "Zone does not exist."
+	end
+
+	DR.SafeChatPrint(ply,msg)
+end)
+
+concommand.Add("zone_setdir",function(ply,cmd,args)
+	local name = args[1]
+
+	if not DR.CanAccessCommand(ply,cmd) then
+		DR.SafeChatPrint(ply,"Insufficient permissions.")
+
+		return
+	elseif not name then
+		DR.SafeChatPrint(ply,"Invalid command arguments.")
+
+		return
+	end
+
+	local zone = MapZones[name]
+	local msg
+
+	if zone then
+		local ang = ply:EyeAngles()
+
+		ang:SnapTo("pitch",90)
+		ang:SnapTo("yaw",90)
+		ang:SnapTo("roll",90)
+
+		local dir = ang:Forward()
+		dir:Mul(150)
+
+		dir[1] = MathRound(dir[1])
+		dir[2] = MathRound(dir[2])
+		dir[3] = MathRound(dir[3])
+
+		zone["dir"] = dir
+
+		ZoneSystem.Save()
+		ZoneSystem.SendZones()
+
+		msg = name .. ".dir" .. " set to " .. tostring(dir) .. "."
+
+		HookRun("DeathrunZonesUpdated")
 	else
 		msg = "Zone does not exist."
 	end
@@ -540,11 +604,15 @@ DR.AddChatCommand("removezone",function(ply,args)
 end)
 
 DR.AddChatCommand("setzonepos1",function(ply,args)
-	ply:ConCommand("zone_setpos " .. (args[1] or "") .. "1")
+	ply:ConCommand("zone_setpos " .. (args[1] or "") .. " 1")
 end)
 
 DR.AddChatCommand("setzonepos2",function(ply,args)
-	ply:ConCommand("zone_setpos " .. (args[1] or "") .. "2")
+	ply:ConCommand("zone_setpos " .. (args[1] or "") .. " 2")
+end)
+
+DR.AddChatCommand("setzonedir",function(ply,args)
+	ply:ConCommand("zone_setdir " .. (args[1] or ""))
 end)
 
 DR.AddChatCommand("setzonecolor",function(ply,args)
