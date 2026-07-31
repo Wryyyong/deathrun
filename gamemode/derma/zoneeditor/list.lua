@@ -79,4 +79,25 @@ function DR_ZoneEditorList:AddZoneEditComboBox()
 	return self:Add("DR_ZoneEditComboBox")
 end
 
+--- @param num 1 | 2
+function DR_ZoneEditorList:AddPosWangSet(num)
+	local split = self:GetWide() * .5 - 2
+
+	local label = self:AddLabel("Pos" .. num .. ":")
+	label:SetWide(split)
+
+	local posX = self:Add("DR_ZoneEditorPosWangX")
+	local posY = self:Add("DR_ZoneEditorPosWangY")
+	local posZ = self:Add("DR_ZoneEditorPosWangZ")
+
+	local buttonWangs = self:Add("DR_ZoneEditorButtonSetPosWang" .. num)
+	local buttonEyeTrace = self:Add("DR_ZoneEditorButtonSetPosEyeTrace" .. num)
+
+	buttonWangs.PosWangX = posX
+	buttonWangs.PosWangY = posY
+	buttonWangs.PosWangZ = posZ
+
+	return buttonWangs,buttonEyeTrace
+end
+
 derma.DefineControl("DR_ZoneEditorList","",DR_ZoneEditorList,"DR_MenuList")

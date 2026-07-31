@@ -207,6 +207,9 @@ for _,panelName in ipairs({
 	-- DNumSlider
 	"menu/numslider",
 
+	-- DNumberWang
+	"zoneeditor/poswang",
+
 	-- DTextEntry
 	"zoneeditor/name",
 
@@ -286,7 +289,8 @@ for _,panelName in ipairs({
 	"zoneeditor/buttons/create",
 	"zoneeditor/buttons/remove",
 	"zoneeditor/buttons/setdir",
-	"zoneeditor/buttons/setpos",
+	"zoneeditor/buttons/setpos_eyetrace",
+	"zoneeditor/buttons/setpos_wang",
 	"zoneeditor/buttons/setcolor",
 }) do
 	include("derma/" .. panelName .. ".lua")

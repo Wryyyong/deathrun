@@ -193,26 +193,46 @@ concommand.Add("deathrun_open_zone_editor",function(ply,cmd)
 
 	local zoneEditCombo = list:Add("DR_ZoneEditComboBox")
 
+	buttonCreate.ZoneEdit = zoneEditCombo
+
 	local zoneDataText = list:Add("DR_ZoneData")
 
 	zoneDataText.ZoneEdit = zoneEditCombo
 	zoneEditCombo.ZoneData = zoneDataText
 
+	local buttonTeleport = list:Add("DR_ZoneEditorButtonTeleport")
+	buttonTeleport.ZoneEdit = zoneEditCombo
+
+	list:Add("DR_MenuSpacerSmall")
+
+	local buttonSetPosWang1,buttonSetPosEyeTrace1 = list:AddPosWangSet(1)
+	local buttonSetPosWang2,buttonSetPosEyeTrace2 = list:AddPosWangSet(2)
+
+	list:Add("DR_MenuSpacerSmall")
+
+	local buttonSetDir = list:Add("DR_ZoneEditorButtonSetDir")
+
+	buttonSetPosWang1.ZoneEdit = zoneEditCombo
+	buttonSetPosWang2.ZoneEdit = zoneEditCombo
+	buttonSetPosEyeTrace1.ZoneEdit = zoneEditCombo
+	buttonSetPosEyeTrace2.ZoneEdit = zoneEditCombo
+	buttonSetDir.ZoneEdit = zoneEditCombo
+
+	zoneEditCombo.Pos1Wangs = buttonSetPosWang1
+	zoneEditCombo.Pos2Wangs = buttonSetPosWang2
+
 	local colorMixer = list:Add("DR_ZoneEditorColorMixer")
 
 	local buttonSetColor = list:Add("DR_ZoneEditorButtonSetColor")
-	local buttonSetPos1 = list:Add("DR_ZoneEditorButtonSetPos1")
-	local buttonSetPos2 = list:Add("DR_ZoneEditorButtonSetPos2")
-	local buttonSetDir = list:Add("DR_ZoneEditorButtonSetDir")
 	local buttonRemove = list:Add("DR_ZoneEditorButtonRemove")
+
+	buttonSetColor.Mixer = colorMixer
 
 	colorMixer.ZoneEdit = zoneEditCombo
 	buttonSetColor.ZoneEdit = zoneEditCombo
-	buttonSetColor.Mixer = colorMixer
-	buttonSetPos1.ZoneEdit = zoneEditCombo
-	buttonSetPos2.ZoneEdit = zoneEditCombo
-	buttonSetDir.ZoneEdit = zoneEditCombo
 	buttonRemove.ZoneEdit = zoneEditCombo
+
+	zoneEditCombo:ChooseOption(LocalPlayer().LastSelectZone or "Select Zone")
 end)
 
 local function OpenQuickInfo()

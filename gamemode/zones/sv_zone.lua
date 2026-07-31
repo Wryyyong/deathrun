@@ -384,6 +384,60 @@ concommand.Add("zone_setpos",function(ply,cmd,args)
 	DR.SafeChatPrint(ply,msg)
 end)
 
+concommand.Add("zone_setposxyz",function(ply,cmd,args)
+	local name = args[1]
+	local pos = args[2]
+	local x = args[3]
+	local y = args[4]
+	local z = args[5]
+
+	if not DR.CanAccessCommand(ply,cmd) then
+		DR.SafeChatPrint(ply,"Insufficient permissions.")
+
+		return
+	elseif
+		not (
+			name
+		and pos
+		and x
+		and y
+		and z
+		)
+	then
+		DR.SafeChatPrint(ply,"Invalid command arguments.")
+
+		return
+	end
+
+	local zone = MapZones[name]
+	local msg
+
+	if zone then
+		if
+			pos == "1"
+		or	pos == "2"
+		then
+			local vec = zone["pos" .. pos]
+			if not vec then return end
+
+			vec:SetUnpacked(x,y,z)
+
+			ZoneSystem.Save()
+			ZoneSystem.SendZones()
+
+			msg = name .. ".pos" .. pos .. " set to " .. tostring(vec) .. "."
+
+			HookRun("DeathrunZonesUpdated")
+		else
+			msg = "Bad \"pos\" argument, please use either \"1\" or \"2\"."
+		end
+	else
+		msg = "Zone does not exist."
+	end
+
+	DR.SafeChatPrint(ply,msg)
+end)
+
 concommand.Add("zone_setdir",function(ply,cmd,args)
 	local name = args[1]
 

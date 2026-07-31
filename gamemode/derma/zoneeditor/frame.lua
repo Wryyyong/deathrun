@@ -2,7 +2,7 @@
 local DR_ZoneEditorFrame = {
 	["Title"] = "Zone Editor",
 	["Width"] = 480,
-	["Height"] = 480,
+	["Height"] = 720,
 }
 
 function DR_ZoneEditorFrame:Init()
