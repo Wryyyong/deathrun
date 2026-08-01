@@ -63,10 +63,18 @@ concommand.Add("round_switch",function(ply,_,args)
 	RoundSystem.RoundSwitch(tonumber(args[1]))
 end)
 
-hook.Add("PlayerInitialSpawn","RoundSyncCurrent",function(ply)
+hook.Add("DeathrunClientInitialized","DeathrunSyncRoundsWithNewClient",function(ply)
 	NetStart("DeathrunUpdateRoundState")
 		NetWriteUInt(RoundSystem.GetCurrent(),16)
 	NetSend(ply)
+
+	RoundSystem.SyncTimer(ply)
+
+	if PlayerGetCount() > 1 then return end
+
+	GameCleanUpMap()
+
+	DR.ChatBroadcast("Cleaned up the map.")
 end)
 
 --- @param ply Player?
@@ -87,16 +95,6 @@ function RoundSystem.SetTimer(seconds)
 
 	RoundSystem.SyncTimer()
 end
-
-hook.Add("PlayerInitialSpawn","DeathrunCleanupSinglePlayer",function(ply)
-	RoundSystem.SyncTimer(ply)
-
-	if PlayerGetCount() > 1 then return end
-
-	GameCleanUpMap()
-
-	DR.ChatBroadcast("Cleaned up the map.")
-end)
 
 -- handle death avoidance here, using the functions defined in init.lua
 hook.Add("PlayerDisconnected","DeathrunWatchDeathAvoid",function(ply)

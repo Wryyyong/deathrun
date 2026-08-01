@@ -11,8 +11,6 @@ local NetReadBool = net.ReadBool
 local NetReadDouble = net.ReadDouble
 local NetReadPlayer = net.ReadPlayer
 local NetReadUInt = net.ReadUInt
-local NetSendToServer = net.SendToServer
-local NetStart = net.Start
 
 local DR = DR
 
@@ -26,11 +24,6 @@ local ClaimColors = {
 	[true] = Color(255,100,100),
 	[false] = Color(100,255,100),
 }
-
-hook.Add("InitPostEntity","DeathrunButtonEntsClientReady",function()
-	NetStart("DeathrunButtonEntsClientReady")
-	NetSendToServer()
-end)
 
 net.Receive("DeathrunButtonEntsUpdateFull",function(len)
 	local entBits = NetReadUInt(16)
@@ -68,7 +61,7 @@ end)
 hook.Add("HUDPaint","DeathrunButtonClaimHUD",function()
 	local localPly = LocalPlayer()
 
-	if localPly:Team() == DR_TEAM_RUNNER then return end
+	if localPly:Team() ~= DR_TEAM_DEATH then return end
 
 	local eyePos = localPly:EyePos()
 

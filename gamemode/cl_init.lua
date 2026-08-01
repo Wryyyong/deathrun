@@ -11,6 +11,8 @@ local InputWasKeyPressed = input.WasKeyPressed
 
 local NetReadString = net.ReadString
 local NetReadTable = net.ReadTable
+local NetSendToServer = net.SendToServer
+local NetStart = net.Start
 
 local PlayerGetAll = player.GetAll
 
@@ -72,6 +74,11 @@ local CvThirdPerson_OffsetYaw = ConVarsThirdPerson.OffsetYaw
 local CvThirdPerson_OffsetRoll = ConVarsThirdPerson.OffsetRoll
 local CvThirdPerson_Opacity = ConVarsThirdPerson.Opacity
 local CvThirdPerson_FadeDistance = ConVarsThirdPerson.FadeDistance
+
+hook.Add("InitPostEntity","DeathrunClientInitialized",function()
+	NetStart("DeathrunClientInitialized")
+	NetSendToServer()
+end)
 
 concommand.Add("deathrun_test_menu",function()
 	local frame = vgui.Create("Panel")

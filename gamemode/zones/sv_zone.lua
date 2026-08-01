@@ -170,7 +170,7 @@ function ZoneSystem.SendZones(ply)
 	end
 end
 
-hook.Add("PlayerInitialSpawn","DeathrunSetupPlayerZones",function(ply)
+hook.Add("DeathrunClientInitialized","DeathrunSendZonesToNewClient",function(ply)
 	ply.InZones = {}
 
 	ZoneSystem.SendZones(ply)

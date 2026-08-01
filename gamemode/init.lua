@@ -129,6 +129,20 @@ AddCSLuaFile("cl_scoreboard.lua")
 -- announcements
 AddCSLuaFile("cl_announcer.lua")
 
+local DR = DR
+
+local ConVars = DR.ConVars
+local RoundSystem = DR.RoundSystem
+
+local CvAllTalk = ConVars.AllTalk
+local CvDeathModel = ConVars.DeathModel
+local CvDeathSprint = ConVars.DeathSprint
+local CvDisableDefaultDeathSpeed = ConVars.DisableDefaultDeathSpeed
+local CvDrownTimer = ConVars.DrownTimer
+local CvIdleTimer = ConVars.IdleTimer
+local CvStartingWeapon = ConVars.StartingWeapon
+
+util.AddNetworkString("DeathrunClientInitialized")
 util.AddNetworkString("DeathrunChatMessage")
 util.AddNetworkString("DeathrunSyncMutelist")
 util.AddNetworkString("DeathrunNotification")
@@ -142,18 +156,11 @@ RunConsoleCommand("sv_sticktoground",0)
 RunConsoleCommand("sv_airaccelerate",0)
 RunConsoleCommand("sv_gravity",800)
 
-local DR = DR
+net.Receive("DeathrunClientInitialized",function(_,ply)
+	ply.Initialized = true
 
-local ConVars = DR.ConVars
-local RoundSystem = DR.RoundSystem
-
-local CvAllTalk = ConVars.AllTalk
-local CvDeathModel = ConVars.DeathModel
-local CvDeathSprint = ConVars.DeathSprint
-local CvDisableDefaultDeathSpeed = ConVars.DisableDefaultDeathSpeed
-local CvDrownTimer = ConVars.DrownTimer
-local CvIdleTimer = ConVars.IdleTimer
-local CvStartingWeapon = ConVars.StartingWeapon
+	HookRun("DeathrunClientInitialized",ply)
+end)
 
 local PlayerModels = {
 	"models/player/group01/male_01.mdl",
@@ -174,7 +181,7 @@ local PlayerModels = {
 }
 local PlayerModelCount = #PlayerModels
 
-hook.Add("PlayerInitialSpawn","DeathrunPlayerInitialSpawn",function(ply)
+hook.Add("DeathrunClientInitialized","DeathrunPlayerFirstSpawn",function(ply)
 	ply.FirstSpawn = true
 	ply:SetTeam(DR_TEAM_SPECTATOR)
 

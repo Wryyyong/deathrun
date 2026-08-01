@@ -28,7 +28,6 @@ local ClaimRadius = ButtonClaimSystem.ClaimRadius
 
 util.AddNetworkString("DeathrunButtonEntsUpdateFull")
 util.AddNetworkString("DeathrunButtonEntsUpdateSimple")
-util.AddNetworkString("DeathrunButtonEntsClientReady")
 
 hook.Add("InitPostEntity","SetupButtonEntData",function()
 	local maxId = -1
@@ -65,7 +64,7 @@ local function SingleUpdate(mapId,data)
 	NetSendPVS(data.Position)
 end
 
-net.Receive("DeathrunButtonEntsClientReady",function(_,ply)
+hook.Add("DeathrunClientInitialized","DeathrunSendButtonEntsToNewClient",function(ply)
 	local entBits = ButtonClaimSystem.EntBits
 
 	NetStart("DeathrunButtonEntsUpdateFull")
