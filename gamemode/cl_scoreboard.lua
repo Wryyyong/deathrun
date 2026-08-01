@@ -203,6 +203,6 @@ Scoreboard.SetDisplay(
 )
 
 -- do not remove or i kill u
-hook.Add("GetScoreboardSpecial","DeathrunInternalGetScoreboardSpecial",function(ply)
-	return Specials[ply:SteamID64()]
+hook.Add("GetScoreboardSpecial","DeathrunInternalGetScoreboardSpecial",function(_,id64)
+	return Specials[id64]
 end)

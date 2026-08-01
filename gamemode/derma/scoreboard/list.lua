@@ -74,7 +74,7 @@ function DR_ScoreboardList:AddTeamGroup(teamNum)
 	return header
 end
 
---- @alias ColumnFunction fun(ply: Player, specialData: table): string
+--- @alias ColumnFunction fun(ply: Player, id64: string, usergroup: string, specialData: table): string
 
 --- @type ColumnFunction[]
 local Columns = {
@@ -88,18 +88,20 @@ local Columns = {
 		return "" -- empty space to even the spacings out
 	end,
 
-	-- Title
-	function(_,specialData)
+	-- Tag
+	function(ply,id64,userGroup,specialData)
 		return
 			specialData.Tag
+		or	hook.Run("GetScoreboardTag",ply,id64,userGroup)
 		or	""
 	end,
 
 	-- Rank
-	function(ply,specialData)
+	function(ply,id64,userGroup,specialData)
 		return
 			specialData.Rank
-		or	ply:GetUserGroup():upper()
+		or	hook.Run("GetScoreboardRank",ply,id64,userGroup)
+		or	userGroup:upper()
 	end,
 
 	-- Ping
@@ -131,6 +133,9 @@ end
 --- @param ply Player
 --- @param teamColor Color
 function DR_ScoreboardList:AddPlayer(ply,teamColor)
+	local id64 = ply:SteamID64()
+	local userGroup = ply:GetUserGroup()
+
 	local panel = self:Add("DR_ScoreboardPlayerPanel")
 	panel.BgColor = teamColor
 	panel.Player = ply
@@ -148,7 +153,7 @@ function DR_ScoreboardList:AddPlayer(ply,teamColor)
 	local icon = panel:Add("DR_ScoreboardPlayerIcon")
 	panel.Icon = icon
 
-	local special = hook.Run("GetScoreboardSpecial",ply)
+	local special = hook.Run("GetScoreboardSpecial",ply,id64)
 	local iconPath
 
 	if ply:IsSuperAdmin() or ply:IsAdmin() then
@@ -157,7 +162,10 @@ function DR_ScoreboardList:AddPlayer(ply,teamColor)
 		iconPath = "icon16/heart.png"
 	end
 
-	iconPath = special.Icon or iconPath
+	iconPath =
+		special.Icon
+	or	hook.Run("GetScoreboardIcon",ply,id64,userGroup)
+	or	iconPath
 
 	icon.Material =
 		iconPath
@@ -166,7 +174,10 @@ function DR_ScoreboardList:AddPlayer(ply,teamColor)
 
 	local labelOffset = (data:GetWide() - 8) / ColumnCountMinusOne
 	local smallMode = data.SmallMode
-	local customNameColor = special.Color or color_white
+	local customNameColor =
+		special.Color
+	or	hook.Run("GetScoreboardNameColor",ply,id64,userGroup)
+	or	color_white
 
 	for idx,func in Iterator,Columns,0 do
 		local offsetHeight = idx - 1
@@ -179,7 +190,7 @@ function DR_ScoreboardList:AddPlayer(ply,teamColor)
 		end
 
 		local label = data:Add("DLabel")
-		label:SetText(func(ply,special))
+		label:SetText(func(ply,id64,userGroup,special))
 		label:SetTextColor(customNameColor)
 		label:SetFont(smallMode and "Deathrun_Derma_ExtraSmall" or "Deathrun_Derma_Small")
 		label:SetExpensiveShadow(1,color_black)
