@@ -139,6 +139,7 @@ local RoundSystem = DR.RoundSystem
 local CvAllTalk = ConVars.AllTalk
 local CvDeathSprint = ConVars.DeathSprint
 local CvDisableDefaultDeathSpeed = ConVars.DisableDefaultDeathSpeed
+local CvDoPlayerConnectionNotifcations = ConVars.DoPlayerConnectionNotifcations
 local CvDrownTimer = ConVars.DrownTimer
 local CvIdleTimer = ConVars.IdleTimer
 local CvStartingWeapon = ConVars.StartingWeapon
@@ -182,11 +183,17 @@ local PlayerModelCount_Death = #PlayerModels_Death
 hook.Add("DeathrunClientInitialized","DeathrunPlayerFirstSpawn",function(ply)
 	ply.FirstSpawn = true
 	ply:SetTeam(DR_TEAM_SPECTATOR)
+end)
 
-	DR.ChatBroadcast(ply:Nick() .. " has joined the server.")
+hook.Add("PlayerConnect","DeathrunPlayerConnectMessage",function(name)
+	if not CvDoPlayerConnectionNotifcations:GetBool() then return end
+
+	DR.ChatBroadcast(name .. " has joined the server.")
 end)
 
 hook.Add("PlayerDisconnected","DeathrunPlayerDisconnectMessage",function(ply)
+	if not CvDoPlayerConnectionNotifcations:GetBool() then return end
+
 	DR.ChatBroadcast(ply:Nick() .. " has left the server.")
 end)
 

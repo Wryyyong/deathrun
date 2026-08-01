@@ -101,7 +101,8 @@ hook.Add("PlayerDisconnected","DeathrunWatchDeathAvoid",function(ply)
 	local roundState = RoundSystem.GetCurrent()
 
 	if
-		not (
+		ply:IsBot()
+	or	not (
 			(
 				roundState == DR_ROUND_PREP
 			or	roundState == DR_ROUND_ACTIVE

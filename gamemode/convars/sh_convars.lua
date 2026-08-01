@@ -107,6 +107,15 @@ ConVars.HelpURL = CreateConVar(
 	"The URL to open when the player types !help."
 )
 
+ConVars.DoPlayerConnectionNotifcations = CreateConVar(
+	"deathrun_player_connect_notifications",
+	1,
+	DefaultFlags,
+	"Send notifications to everyone's chat whenever a player joins/leaves.",
+	0,
+	1
+)
+
 -- AutoJump
 local AutoJump = ConVars.AutoJump or {}
 ConVars.AutoJump = AutoJump

@@ -62,6 +62,7 @@ local ConVars = DR.ConVars
 local ColorClouds = Colors.Clouds
 local ColorTurq = Colors.Turq
 
+local CvDoPlayerConnectionNotifcations = ConVars.DoPlayerConnectionNotifcations
 local CvSpectateOnly = ConVars.SpectateOnly
 
 local CvAutoJump_Enabled = ConVars.AutoJump.Enabled
@@ -103,6 +104,15 @@ function DR.ChatMessage(msg)
 		msg
 	)
 end
+
+hook.Add("ChatText","DeathrunBlockDefaultMsgs",function(_,_,_,type)
+	if
+		not CvDoPlayerConnectionNotifcations:GetBool()
+	or	type ~= "joinleave"
+	then return end
+
+	return true
+end)
 
 net.Receive("DeathrunChatMessage",function()
 	DR.ChatMessage(NetReadString())
