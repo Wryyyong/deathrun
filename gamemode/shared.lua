@@ -22,7 +22,7 @@ local RoundSystem = DR.RoundSystem
 local ConVarsAutoJump = DR.ConVars.AutoJump
 local CvAutoJump_Allowed = ConVarsAutoJump.Allowed
 local CvAutoJump_VelocityCap = ConVarsAutoJump.VelocityCap
-local CvAutoJump_Enabled = CLIENT and ConVarsAutoJump.Enabled
+local CvAutoJump_Enabled = ConVarsAutoJump.Enabled
 
 local ColorRunner = Colors.RunnerTeam
 local ColorDeath = Colors.DeathTeam

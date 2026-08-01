@@ -1,17 +1,17 @@
-print("Creating global table DR...")
+print("Creating global tables...")
 
-DR = DR or {
-	["ButtonClaimSystem"] = {},
-	["ConVars"] = {},
-	["MapVote"] = {},
-	["RoundSystem"] = {},
-	["Stats"] = {},
-	["UI"] = {
-		["HUD"] = {},
-		["Scoreboard"] = {},
-	},
-	["ZoneSystem"] = {},
-}
+DR = DR or {}
+
+DR.ButtonClaimSystem = DR.ButtonClaimSystem or {}
+DR.ConVars = DR.ConVars or {}
+DR.MapVote = DR.MapVote or {}
+DR.Players = DR.Players or {}
+DR.RoundSystem = DR.RoundSystem or {}
+DR.Stats = DR.Stats or {}
+DR.UI = DR.UI or {}
+DR.UI.HUD = DR.UI.HUD or {}
+DR.UI.Scoreboard = DR.UI.Scoreboard or {}
+DR.ZoneSystem = DR.ZoneSystem or {}
 
 GM.Name = "Deathrun"
 GM.Author = "Arizard"

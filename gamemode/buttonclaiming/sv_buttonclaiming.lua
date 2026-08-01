@@ -8,8 +8,8 @@ local HookRun = hook.Run
 
 local MathMax = math.max
 
+local NetBroadcast = net.Broadcast
 local NetSend = net.Send
-local NetSendPVS = net.SendPVS
 local NetStart = net.Start
 local NetWriteBool = net.WriteBool
 local NetWriteDouble = net.WriteDouble
@@ -61,7 +61,7 @@ local function SingleUpdate(mapId,data)
 		if claimed then
 			NetWritePlayer(data.ClaimingPlayer)
 		end
-	NetSendPVS(data.Position)
+	NetBroadcast()
 end
 
 hook.Add("DeathrunClientInitialized","DeathrunSendButtonEntsToNewClient",function(ply)
