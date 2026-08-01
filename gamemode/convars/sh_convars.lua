@@ -102,7 +102,7 @@ ConVars.UnstuckCooldown = CreateConVar(
 
 ConVars.HelpURL = CreateConVar(
 	"deathrun_help_url",
-	"https://github.com/Arizard/deathrun/blob/master/help.md",
+	"https://github.com/Wryyyong/deathrun/blob/master/help.md",
 	DefaultFlags,
 	"The URL to open when the player types !help."
 )
