@@ -176,6 +176,15 @@ hook.Add("DeathrunClientInitialized","DeathrunSendZonesToNewClient",function(ply
 	ZoneSystem.SendZones(ply)
 end)
 
+local function UpdateZones()
+	ZoneSystem.Save()
+	ZoneSystem.SendZones()
+
+	ZoneSystem.CreateZonesExtraData()
+
+	HookRun("DeathrunZonesUpdated")
+end
+
 function ZoneSystem.Save()
 	FileWrite(
 		ZoneDataFilepath,
@@ -213,6 +222,8 @@ function ZoneSystem.Load()
 		setmetatable(zone,Zone_Meta)
 	end
 
+	UpdateZones()
+
 	print("Zones were loaded.")
 end
 
@@ -240,8 +251,6 @@ function ZoneSystem.Create(name,pos1,pos2,dir,color,type,force)
 			["pos2"] = pos2,
 			["dir"] = dir,
 		},Zone_Meta)
-
-		ZoneSystem.Save()
 
 		return true
 	end
@@ -334,14 +343,11 @@ concommand.Add("zone_create",function(ply,cmd,args)
 	local msg
 
 	if ZoneSystem.Create(name,Vector(),Vector(),Vector(),color_white:Copy(),type,ply.LastZoneDenied == name) then
-		ZoneSystem.Save()
-		ZoneSystem.SendZones()
-
 		ply.LastZoneDenied = nil
 
 		msg = "Created zone \"" .. name .. "\" of type \"" .. type .. "\"."
 
-		HookRun("DeathrunZonesUpdated")
+		UpdateZones()
 	else
 		ply.LastZoneDenied = name
 
@@ -366,10 +372,7 @@ concommand.Add("zone_remove",function(ply,cmd,args)
 
 	MapZones[name] = nil
 
-	ZoneSystem.Save()
-	ZoneSystem.SendZones()
-
-	HookRun("DeathrunZonesUpdated")
+	UpdateZones()
 
 	DR.SafeChatPrint(ply,"Deleted zone \"" .. name .. "\"")
 end)
@@ -404,12 +407,9 @@ concommand.Add("zone_setpos",function(ply,cmd,args)
 			local hitPos = ply:GetEyeTrace().HitPos
 			zone["pos" .. pos] = hitPos
 
-			ZoneSystem.Save()
-			ZoneSystem.SendZones()
-
 			msg = name .. ".pos" .. pos .. " set to " .. tostring(hitPos) .. "."
 
-			HookRun("DeathrunZonesUpdated")
+			UpdateZones()
 		else
 			msg = "Bad \"pos\" argument, please use either \"1\" or \"2\"."
 		end
@@ -458,12 +458,9 @@ concommand.Add("zone_setposxyz",function(ply,cmd,args)
 
 			vec:SetUnpacked(x,y,z)
 
-			ZoneSystem.Save()
-			ZoneSystem.SendZones()
-
 			msg = name .. ".pos" .. pos .. " set to " .. tostring(vec) .. "."
 
-			HookRun("DeathrunZonesUpdated")
+			UpdateZones()
 		else
 			msg = "Bad \"pos\" argument, please use either \"1\" or \"2\"."
 		end
@@ -506,12 +503,9 @@ concommand.Add("zone_setdir",function(ply,cmd,args)
 
 		zone["dir"] = dir
 
-		ZoneSystem.Save()
-		ZoneSystem.SendZones()
-
 		msg = name .. ".dir" .. " set to " .. tostring(dir) .. "."
 
-		HookRun("DeathrunZonesUpdated")
+		UpdateZones()
 	else
 		msg = "Zone does not exist."
 	end
@@ -547,12 +541,9 @@ concommand.Add("zone_setcolor",function(ply,cmd,args)
 		color.b = colB
 		color.a = colA
 
-		ZoneSystem.Save()
-		ZoneSystem.SendZones()
-
 		msg = name .. ".color set to " .. colR .. " " .. colG .. " " .. colB .. " " .. colA .. "."
 
-		HookRun("DeathrunZonesUpdated")
+		UpdateZones()
 	else
 		msg = "Zone does not exist."
 	end
@@ -586,12 +577,9 @@ concommand.Add("zone_settype",function(ply,cmd,args)
 	if zone then
 		zone.type = type
 
-		ZoneSystem.Save()
-		ZoneSystem.SendZones()
-
 		msg = name .. ".type set to " .. type .. "."
 
-		HookRun("DeathrunZonesUpdated")
+		UpdateZones()
 	else
 		msg = "Zone does not exist."
 	end
