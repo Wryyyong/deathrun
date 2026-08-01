@@ -4,6 +4,20 @@ local ColorGrey = DR.Colors.Grey
 
 local CvSmallScoreboard = DR.ConVars.SmallScoreboard
 
+local IconCache = {}
+
+--- @param path string
+local function GetIconMaterial(path)
+	local icon = IconCache[path]
+
+	if not icon then
+		icon = Material(path)
+		IconCache[path] = icon
+	end
+
+	return icon
+end
+
 --- @class DR_ScoreboardList : DR_List
 local DR_ScoreboardList = {}
 
@@ -147,7 +161,7 @@ function DR_ScoreboardList:AddPlayer(ply,teamColor)
 
 	icon.Material =
 		iconPath
-	and	Material(iconPath)
+	and	GetIconMaterial(iconPath)
 	or	nil
 
 	local labelOffset = (data:GetWide() - 8) / ColumnCountMinusOne
