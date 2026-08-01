@@ -181,6 +181,10 @@ function GM:CalcView(ply,pos,ang,fov,znear,zfar)
 	return CalcViewTable
 end
 
+function GM:OnSpawnMenuOpen()
+    RunConsoleCommand("deathrun_dropweapon")
+end
+
 function GM:ShouldDrawLocalPlayer()
 	return ThirdpersonCheck(LocalPlayer())
 end
