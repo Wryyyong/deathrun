@@ -34,7 +34,6 @@ local PlayerIterator = player.Iterator
 
 local TableHasValue = table.HasValue
 
-local TeamGetColor = team.GetColor
 local TeamGetSpawnPoints = team.GetSpawnPoints
 
 local TimerSimple = timer.Simple
@@ -71,6 +70,9 @@ include("shared.lua")
 include("sv_commands.lua")
 
 -- player
+AddCSLuaFile("sh_player.lua")
+
+include("sh_player.lua")
 include("sv_player.lua")
 
 -- pointshop support
@@ -310,7 +312,7 @@ function GM:PlayerLoadout(ply)
 	ply:RemoveAllAmmo()
 	ply:Give(CvStartingWeapon:GetString() or "weapon_crowbar")
 
-	ply:SetPlayerColor(TeamGetColor(plyTeam):ToVector())
+	ply:SetPlayerColor(ply:GetTeamColor():ToVector())
 
 	-- run speeds and jump powah
 	ply:SetRunSpeed(250)

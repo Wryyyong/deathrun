@@ -477,7 +477,7 @@ function HUD.DrawTargetID()
 	then
 		name = ply:Nick()
 
-		color = TeamGetColor(ply:Team())
+		color = ply:GetTeamColor()
 		color.a = alpha ^ .3 * 255 / 255 ^ .3
 
 		UI.ShadowText(
@@ -565,7 +565,7 @@ function HUD.DrawPlayerNames()
 			alpha = DR.InverseLerp(dist,FadeOutDist_End,FadeOutDist_Start) * 255
 		end
 
-		local teamColor = TeamGetColor(ply:Team())
+		local teamColor = ply:GetTeamColor()
 		teamColor.a = alpha
 		ColorDummyPlayerName.a = alpha
 
@@ -631,9 +631,9 @@ local function DrawPlayerHUDMain(x,y,alpha)
 	and	RoundSystem.GetCurrent() == DR_ROUND_ACTIVE
 	and	plyTeam == DR_TEAM_RUNNER
 
-	local teamColor = TeamGetColor(plyTeam)
-	local teamColorOrig = teamColor:Copy()
-	teamColor.a = alpha
+	local teamColor = ply:GetTeamColor()
+	local teamColorTrans = teamColor:Copy()
+	teamColorTrans.a = alpha
 
 	if shouldDrawTime then
 		y = y - 36 -- 32 - 4
@@ -644,7 +644,7 @@ local function DrawPlayerHUDMain(x,y,alpha)
 	DefaultHud_Turq.a = alpha
 
 	-- Team box
-	SurfaceSetDrawColor(teamColor)
+	SurfaceSetDrawColor(teamColorTrans)
 	SurfaceDrawRect(
 		x,
 		y,
@@ -699,7 +699,7 @@ local function DrawPlayerHUDMain(x,y,alpha)
 		"Deathrun_DefaultHUD_Small",
 		x + 4,
 		yTimeLeftText,
-		teamColorOrig,
+		teamColor,
 		TEXT_ALIGN_LEFT,
 		TEXT_ALIGN_CENTER
 	)
@@ -708,7 +708,7 @@ local function DrawPlayerHUDMain(x,y,alpha)
 		"Deathrun_DefaultHUD_Small",
 		x + 224, -- 228 - 4
 		yTimeLeftText,
-		teamColorOrig,
+		teamColor,
 		TEXT_ALIGN_RIGHT,
 		TEXT_ALIGN_CENTER
 	)

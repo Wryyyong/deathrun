@@ -27,6 +27,8 @@ include("config.lua")
 
 include("shared.lua")
 
+include("sh_player.lua")
+
 include("roundsystem/sh_roundsystem.lua")
 include("roundsystem/cl_roundsystem.lua")
 
