@@ -137,7 +137,6 @@ local ConVars = DR.ConVars
 local RoundSystem = DR.RoundSystem
 
 local CvAllTalk = ConVars.AllTalk
-local CvDeathModel = ConVars.DeathModel
 local CvDeathSprint = ConVars.DeathSprint
 local CvDisableDefaultDeathSpeed = ConVars.DisableDefaultDeathSpeed
 local CvDrownTimer = ConVars.DrownTimer
@@ -164,24 +163,21 @@ net.Receive("DeathrunClientInitialized",function(_,ply)
 	HookRun("DeathrunClientInitialized",ply)
 end)
 
-local PlayerModels = {
-	"models/player/group01/male_01.mdl",
-	"models/player/group01/male_02.mdl",
-	"models/player/group01/male_03.mdl",
-	"models/player/group01/male_04.mdl",
-	"models/player/group01/male_05.mdl",
-	"models/player/group01/male_06.mdl",
-	"models/player/group01/male_07.mdl",
-	"models/player/group01/male_08.mdl",
-	"models/player/group01/male_09.mdl",
-	"models/player/group01/female_01.mdl",
-	"models/player/group01/female_02.mdl",
-	"models/player/group01/female_03.mdl",
-	"models/player/group01/female_04.mdl",
-	"models/player/group01/female_05.mdl",
-	"models/player/group01/female_06.mdl",
+local PlayerModels_Runner = {
+	"models/player/gasmask.mdl",
+	"models/player/riot.mdl",
+	"models/player/urban.mdl",
+	"models/player/swat.mdl",
 }
-local PlayerModelCount = #PlayerModels
+local PlayerModelCount_Runner = #PlayerModels_Runner
+
+local PlayerModels_Death = {
+	"models/player/arctic.mdl",
+	"models/player/guerilla.mdl",
+	"models/player/leet.mdl",
+	"models/player/phoenix.mdl",
+}
+local PlayerModelCount_Death = #PlayerModels_Death
 
 hook.Add("DeathrunClientInitialized","DeathrunPlayerFirstSpawn",function(ply)
 	ply.FirstSpawn = true
@@ -197,16 +193,10 @@ end)
 hook.Add("PlayerSpawn","DeathrunSetPlayerModels",function(ply)
 	local plyTeam = ply:Team()
 
-	if plyTeam == DR_TEAM_DEATH then
-		local mdl = CvDeathModel:GetString()
-
-		if mdl:sub(-4,-1) == ".mdl" then
-			ply:SetModel(mdl)
-		else
-			print("The default death model is not a valid .mdl file ('" .. mdl .. "'). Please change the deathrun_death_model ConVar.")
-		end
-	elseif plyTeam == DR_TEAM_RUNNER then
-		ply:SetModel(PlayerModels[PlayerModelCount])
+	if plyTeam == DR_TEAM_RUNNER then
+		ply:SetModel(PlayerModels_Runner[MathRandom(PlayerModelCount_Runner)])
+	elseif plyTeam == DR_TEAM_DEATH then
+		ply:SetModel(PlayerModels_Death[MathRandom(PlayerModelCount_Death)])
 	end
 
 	local mdl = HookRun("ChangePlayerModel",ply)
@@ -214,11 +204,16 @@ hook.Add("PlayerSpawn","DeathrunSetPlayerModels",function(ply)
 	if mdl then
 		ply:SetModel(mdl)
 	else
+		local curMdl = ply:GetModel()
+
 		-- don't override the current set model if there is one
-		if not ply:GetModel() or ply:GetModel() == "models/player.mdl" then
+		if
+			not curMdl
+		or	curMdl == "models/player.mdl"
+		then
 			print("Player " .. ply:Nick() .. " did not have a model - setting them a new one.")
 
-			ply:SetModel(PlayerModels[PlayerModelCount])
+			ply:SetModel(PlayerModels_Runner[PlayerModelCount_Runner])
 		end
 	end
 end)

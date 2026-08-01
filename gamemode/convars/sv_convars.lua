@@ -6,13 +6,6 @@ local DefaultFlags =
 +	FCVAR_NOTIFY
 +	FCVAR_SERVER_CAN_EXECUTE
 
-ConVars.DeathModel = CreateConVar(
-	"deathrun_death_model",
-	"models/player/monk.mdl",
-	DefaultFlags,
-	"The default model for the Deaths."
-)
-
 ConVars.DropWeaponsOnDeath = CreateConVar(
 	"deathrun_drop_weapons_on_death",
 	1,
