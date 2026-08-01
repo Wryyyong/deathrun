@@ -440,7 +440,7 @@ function GM:PlayerDeath(ply,inflictor,attacker)
 		else
 			attackerName = CausesOfDeath[MathRandom(#CausesOfDeath)]
 		end
-	end
+	else return end
 
 	DR.DeathNotification(attackerName .. "\t" .. "✕" .. "\t" .. ply:Nick(),1)
 end
