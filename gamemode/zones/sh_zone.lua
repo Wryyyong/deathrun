@@ -1,7 +1,5 @@
 local Vector = Vector
 
-local DR = DR
-
 --- @alias Zone {
 --- 	type: string,
 --- 	color: Color,
@@ -33,35 +31,39 @@ ZoneSystem.ZoneTypes = {
 }
 
 --- @type table<string,Zone>
-ZoneSystem.MapZones = ZoneSystem.MapZones or {}
+local MapZones = ZoneSystem.MapZones or {}
+ZoneSystem.MapZones = MapZones
 
-function DR.VectorMinMax(vec1,vec2)
-	local min = Vector()
-	local max = Vector()
+local ZonesExtraData = ZoneSystem.ZonesExtraData or {}
+ZoneSystem.ZonesExtraData = ZonesExtraData
 
-	if vec1[1] > vec2[1] then
-		max[1] = vec1[1]
-		min[1] = vec2[1]
-	else
-		max[1] = vec2[1]
-		min[1] = vec1[1]
+local ZoneBorder = Vector(20,20,20)
+
+function ZoneSystem.CreateZonesExtraData()
+	for name,zone in next,MapZones do
+		local posMin = Vector(zone.pos1)
+		local posMax = Vector(zone.pos2)
+
+		OrderVectors(posMin,posMax)
+
+		local posMinBorder = Vector(posMin)
+		local posMaxBorder = Vector(posMax)
+
+		local posCentre = Vector()
+
+		ZonesExtraData[name] = {
+			["min"] = posMin,
+			["max"] = posMax,
+			["minBorder"] = posMinBorder,
+			["maxBorder"] = posMaxBorder,
+			["centre"] = posCentre,
+		}
+
+		posMinBorder:Sub(ZoneBorder)
+		posMaxBorder:Add(ZoneBorder)
+
+		posCentre:Add(posMin)
+		posCentre:Add(posMax)
+		posCentre:Mul(.5)
 	end
-
-	if vec1[2] > vec2[2] then
-		max[2] = vec1[2]
-		min[2] = vec2[2]
-	else
-		max[2] = vec2[2]
-		min[2] = vec1[2]
-	end
-
-	if vec1[3] > vec2[3] then
-		max[3] = vec1[3]
-		min[3] = vec2[3]
-	else
-		max[3] = vec2[3]
-		min[3] = vec1[3]
-	end
-
-	return min,max
 end

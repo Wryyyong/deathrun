@@ -17,7 +17,9 @@ local TableCopyFromTo = table.CopyFromTo
 local DR = DR
 
 local ZoneSystem = DR.ZoneSystem
+
 local MapZones = ZoneSystem.MapZones
+local ZonesExtraData = ZoneSystem.ZonesExtraData
 
 local CvRenderZones = DR.ConVars.RenderZones
 
@@ -50,95 +52,83 @@ net.Receive("DeathrunSendZones",function(len)
 	end
 
 	TableCopyFromTo(newData,MapZones)
+
+	ZoneSystem.CreateZonesExtraData()
 end)
 
 local BaseBeamWidth = 2
-local BeamPointCache = {
-	Vector(),
-	Vector(),
-	Vector(),
-	Vector(),
-	Vector(),
-	Vector(),
-	Vector(),
-	Vector(),
-}
+local BeamPointCached1 = Vector()
+local BeamPointCached2 = Vector()
+local BeamPointCached3 = Vector()
+local BeamPointCached4 = Vector()
+local BeamPointCached5 = Vector()
+local BeamPointCached6 = Vector()
+local BeamPointCached7 = Vector()
+local BeamPointCached8 = Vector()
 
-function ZoneSystem.DrawCuboid(pos1,pos2,col,alt)
-	local posMin,posMax = DR.VectorMinMax(pos1,pos2)
-
+function ZoneSystem.DrawCuboid(posMin,posMax,col,alt)
 	local rangeX = posMax[1] - posMin[1]
 	local rangeY = posMax[2] - posMin[2]
 
-	local point1 = BeamPointCache[1]
-	local point2 = BeamPointCache[2]
-	local point3 = BeamPointCache[3]
-	local point4 = BeamPointCache[4]
-	local point5 = BeamPointCache[5]
-	local point6 = BeamPointCache[6]
-	local point7 = BeamPointCache[7]
-	local point8 = BeamPointCache[8]
-
-	point1:Set(posMin)
+	BeamPointCached1:Set(posMin)
 
 	-- top level
-	point2:SetUnpacked(rangeX,0,0)
-	point2:Add(posMin)
+	BeamPointCached2:SetUnpacked(rangeX,0,0)
+	BeamPointCached2:Add(posMin)
 
-	point3:SetUnpacked(0,rangeY,0)
-	point3:Add(point2)
+	BeamPointCached3:SetUnpacked(0,rangeY,0)
+	BeamPointCached3:Add(BeamPointCached2)
 
-	point4:SetUnpacked(0,rangeY,0)
-	point4:Add(posMin)
+	BeamPointCached4:SetUnpacked(0,rangeY,0)
+	BeamPointCached4:Add(posMin)
 
-	point5:SetUnpacked(0,0,posMax[3] - posMin[3])
-	point5:Add(posMin)
+	BeamPointCached5:SetUnpacked(0,0,posMax[3] - posMin[3])
+	BeamPointCached5:Add(posMin)
 
-	point6:SetUnpacked(rangeX,0,0)
-	point6:Add(point5)
+	BeamPointCached6:SetUnpacked(rangeX,0,0)
+	BeamPointCached6:Add(BeamPointCached5)
 
-	point7:SetUnpacked(0,rangeY,0)
-	point7:Add(point6)
+	BeamPointCached7:SetUnpacked(0,rangeY,0)
+	BeamPointCached7:Add(BeamPointCached6)
 
-	point8:SetUnpacked(0,rangeY,0)
-	point8:Add(point5)
+	BeamPointCached8:SetUnpacked(0,rangeY,0)
+	BeamPointCached8:Add(BeamPointCached5)
 
 	RenderSetMaterial(MatLine)
 
-	RenderDrawBeam(point1,point2,BaseBeamWidth,1,1,col)
-	RenderDrawBeam(point2,point3,BaseBeamWidth,1,1,col)
-	RenderDrawBeam(point3,point4,BaseBeamWidth,1,1,col)
-	RenderDrawBeam(point4,point1,BaseBeamWidth,1,1,col) -- top level
-	RenderDrawBeam(point5,point6,BaseBeamWidth,1,1,col) -- bottom level
-	RenderDrawBeam(point6,point7,BaseBeamWidth,1,1,col)
-	RenderDrawBeam(point7,point8,BaseBeamWidth,1,1,col)
-	RenderDrawBeam(point8,point5,BaseBeamWidth,1,1,col)
+	RenderDrawBeam(BeamPointCached1,BeamPointCached2,BaseBeamWidth,1,1,col)
+	RenderDrawBeam(BeamPointCached2,BeamPointCached3,BaseBeamWidth,1,1,col)
+	RenderDrawBeam(BeamPointCached3,BeamPointCached4,BaseBeamWidth,1,1,col)
+	RenderDrawBeam(BeamPointCached4,BeamPointCached1,BaseBeamWidth,1,1,col) -- top level
+	RenderDrawBeam(BeamPointCached5,BeamPointCached6,BaseBeamWidth,1,1,col) -- bottom level
+	RenderDrawBeam(BeamPointCached6,BeamPointCached7,BaseBeamWidth,1,1,col)
+	RenderDrawBeam(BeamPointCached7,BeamPointCached8,BaseBeamWidth,1,1,col)
+	RenderDrawBeam(BeamPointCached8,BeamPointCached5,BaseBeamWidth,1,1,col)
 
 	-- Vertical connectors
-	RenderDrawBeam(point1,point5,BaseBeamWidth,1,1,col)
-	RenderDrawBeam(point2,point6,BaseBeamWidth,1,1,col)
-	RenderDrawBeam(point3,point7,BaseBeamWidth,1,1,col)
-	RenderDrawBeam(point4,point8,BaseBeamWidth,1,1,col)
+	RenderDrawBeam(BeamPointCached1,BeamPointCached5,BaseBeamWidth,1,1,col)
+	RenderDrawBeam(BeamPointCached2,BeamPointCached6,BaseBeamWidth,1,1,col)
+	RenderDrawBeam(BeamPointCached3,BeamPointCached7,BaseBeamWidth,1,1,col)
+	RenderDrawBeam(BeamPointCached4,BeamPointCached8,BaseBeamWidth,1,1,col)
 
 	if not alt then return end
 
 	local widthBoost = BaseBeamWidth * .5 * (1 + MathFloor(CurTime() * 4) % 2)
 
-	RenderDrawBeam(point1,point3,widthBoost,1,1,col)
-	RenderDrawBeam(point2,point4,widthBoost,1,1,col)
-	RenderDrawBeam(point1,point6,widthBoost,1,1,col)
-	RenderDrawBeam(point2,point5,widthBoost,1,1,col)
-	RenderDrawBeam(point4,point7,widthBoost,1,1,col)
-	RenderDrawBeam(point3,point8,widthBoost,1,1,col)
-	RenderDrawBeam(point3,point6,widthBoost,1,1,col)
-	RenderDrawBeam(point2,point7,widthBoost,1,1,col)
-	RenderDrawBeam(point1,point8,widthBoost,1,1,col)
-	RenderDrawBeam(point4,point5,widthBoost,1,1,col)
-	RenderDrawBeam(point5,point7,widthBoost,1,1,col)
-	RenderDrawBeam(point6,point8,widthBoost,1,1,col)
+	RenderDrawBeam(BeamPointCached1,BeamPointCached3,widthBoost,1,1,col)
+	RenderDrawBeam(BeamPointCached2,BeamPointCached4,widthBoost,1,1,col)
+	RenderDrawBeam(BeamPointCached1,BeamPointCached6,widthBoost,1,1,col)
+	RenderDrawBeam(BeamPointCached2,BeamPointCached5,widthBoost,1,1,col)
+	RenderDrawBeam(BeamPointCached4,BeamPointCached7,widthBoost,1,1,col)
+	RenderDrawBeam(BeamPointCached3,BeamPointCached8,widthBoost,1,1,col)
+	RenderDrawBeam(BeamPointCached3,BeamPointCached6,widthBoost,1,1,col)
+	RenderDrawBeam(BeamPointCached2,BeamPointCached7,widthBoost,1,1,col)
+	RenderDrawBeam(BeamPointCached1,BeamPointCached8,widthBoost,1,1,col)
+	RenderDrawBeam(BeamPointCached4,BeamPointCached5,widthBoost,1,1,col)
+	RenderDrawBeam(BeamPointCached5,BeamPointCached7,widthBoost,1,1,col)
+	RenderDrawBeam(BeamPointCached6,BeamPointCached8,widthBoost,1,1,col)
 end
 
-local RenderCache = Vector()
 local ColorCache = color_white:Copy()
 local MaxRenderDist = 1000 ^ 2
 local MinRenderDist = 400 ^ 2
@@ -157,14 +147,9 @@ hook.Add("PostDrawTranslucentRenderables","DeathrunZoneCuboidDrawing",function()
 		local type = zone.type
 		if not type then return end
 
-		local pos1 = zone.pos1
-		local pos2 = zone.pos2
-		RenderCache:SetUnpacked(0,0,0)
-		RenderCache:Add(pos1)
-		RenderCache:Add(pos2)
-		RenderCache:Mul(.5)
+		local exData = ZonesExtraData[name]
 
-		local dist = pos:DistToSqr(RenderCache)
+		local dist = pos:DistToSqr(exData.centre)
 		if dist >= MaxRenderDist then continue end
 
 		local color = zone.color
@@ -175,9 +160,12 @@ hook.Add("PostDrawTranslucentRenderables","DeathrunZoneCuboidDrawing",function()
 			color.a * MathClamp(DR.InverseLerp(dist,MaxRenderDist,MinRenderDist),0,1)
 		)
 
+		local posMin = exData.min
+		local posMax = exData.max
+
 		ZoneSystem.DrawCuboid(
-			pos1,
-			pos2,
+			posMin,
+			posMax,
 			ColorCache,
 
 				type == "deny"

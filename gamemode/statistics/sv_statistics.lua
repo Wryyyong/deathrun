@@ -181,14 +181,12 @@ local function SendEndZone(ply)
 	if not endZone then return end
 
 	net.Start("DeathrunSendEndZone")
-		local location = endZone.pos1 + endZone.pos2
+		local dir = endZone.dir
+		local centre = Stats.EndZoneExtraData.centre
 
-		location:Mul(.5)
-		location:Add(endZone.dir)
-
-		net.WriteDouble(location[1])
-		net.WriteDouble(location[2])
-		net.WriteDouble(location[3])
+		net.WriteDouble(centre[1] + dir[1])
+		net.WriteDouble(centre[2] + dir[2])
+		net.WriteDouble(centre[3] + dir[3])
 
 	if ply then
 		net.Send(ply)
@@ -200,11 +198,15 @@ end
 local function FindEndZone()
 	if not ZoneSystem.MapZones then return end
 
+	Stats.EndZone = nil
+	Stats.EndZoneExtraData = nil
+
 	--- @param zone Zone
-	for _,zone in next,ZoneSystem.MapZones do
+	for name,zone in next,ZoneSystem.MapZones do
 		if zone.type ~= "end" then continue end
 
 		Stats.EndZone = zone
+		Stats.EndZoneExtraData = ZoneSystem.ZonesExtraData[name]
 
 		break
 	end

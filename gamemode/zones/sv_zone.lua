@@ -12,8 +12,6 @@ local Vector = Vector
 
 local EngineTickInterval = engine.TickInterval
 
-local EntsFindInBox = ents.FindInBox
-
 local FileCreateDir = file.CreateDir
 local FileExists = file.Exists
 local FileIsDir = file.IsDir
@@ -51,6 +49,7 @@ local RoundSystem = DR.RoundSystem
 local ZoneSystem = DR.ZoneSystem
 
 local MapZones = ZoneSystem.MapZones
+local ZonesExtraData = ZoneSystem.ZonesExtraData
 
 ZoneSystem.StartTime = ZoneSystem.StartTime or -1
 
@@ -70,70 +69,6 @@ local Zone_Meta = {
 }
 
 util.AddNetworkString("DeathrunSendZones")
-
--- check if vector is within cuboid
-local function VectorInCuboid(pos,min,max)
-	-- get the min and max of the two corners
-	local newMin,newMax = DR.VectorMinMax(min,max)
-
-	local posX = pos[1]
-	local posY = pos[2]
-	local posZ = pos[3]
-
-	return
-		posX > newMin[1]
-	and	posX < newMax[1]
-
-	and	posY > newMin[2]
-	and	posY < newMax[2]
-
-	and	posZ > newMin[3]
-	and	posZ < newMax[3]
-end
-
-local function CuboidOverlap(min1,max1,min2,max2)
-	local pos1Min,pos1Max = DR.VectorMinMax(min1,max1)
-	local pos2Min,pos2Max = DR.VectorMinMax(min2,max2)
-
-	local pos1Min_X = pos1Min[1]
-	local pos1Min_Y = pos1Min[2]
-	local pos1Min_Z = pos1Min[3]
-
-	local pos2Min_X = pos2Min[1]
-	local pos2Min_Y = pos2Min[2]
-	local pos2Min_Z = pos2Min[3]
-
-	return
-		(
-			pos1Min_X <= pos2Min_X and pos2Min_X <= pos1Max[1]
-		or	pos2Min_X <= pos1Min_X and pos1Min_X <= pos2Max[1]
-		)
-	and	(
-			pos1Min_Y <= pos2Min_Y and pos2Min_Y <= pos1Max[2]
-		or	pos2Min_Y <= pos1Min_Y and pos1Min_Y <= pos2Max[2]
-		)
-	and	(
-			pos1Min_Z <= pos2Min_Z and pos2Min_Z <= pos1Max[3]
-		or	pos2Min_Z <= pos1Min_Z and pos1Min_Z <= pos2Max[3]
-		)
-end
-
-local OffsetIThink = Vector(0,0,50)
-
-local function PlayerInCuboid(ply,min,max) -- check if vector is within cuboid
-	local plyMin = ply:OBBMins()
-	local plyMax = ply:OBBMaxs()
-	local plyPos = ply:GetPos()
-
-	plyMin:Add(plyPos)
-	plyMax:Add(plyPos)
-
-	plyPos:Add(OffsetIThink)
-
-	return
-		VectorInCuboid(plyPos,min,max)
-	or	CuboidOverlap(plyMin,plyMax,min,max)
-end
 
 --- @param ply Player?
 function ZoneSystem.SendZones(ply)
@@ -272,47 +207,49 @@ else
 	ScanRate = 1
 end
 
---local ZoneBorder = Vector(20,20,20)
-
 -- cycle through zones and check for players
 hook.Add("Tick","ZoneTick",function()
 	SkipCounter = (SkipCounter + 1) % ScanRate
 	if SkipCounter ~= 0 then return end
 
-	for name,zone in next,MapZones do
-		if not zone.type then continue end
+	for _,ent in PlayerIterator() do
+		if not ent.Initialized then continue end
 
-		local pos1 = zone.pos1
-		local pos2 = zone.pos2
+		local eyePos = ent:EyePos()
+		local inZones = ent.InZones
 
-		local posMin,posMax = DR.VectorMinMax(pos1,pos2)
-		--posMin:Sub(ZoneBorder)
-		--posMax:Add(ZoneBorder)
+		for name,zone in next,MapZones do
+			if not zone.type then continue end
 
-		for _,ent in Iterator,EntsFindInBox(posMin,posMax),0 do
-			if not ent:IsPlayer() then continue end
+			local exData = ZonesExtraData[name]
+			local posMin = exData.minBorder
+			local posMax = exData.maxBorder
 
-			local inZones = ent.InZones
-			local inCuboid = PlayerInCuboid(ent,pos1,pos2)
+			local isWithinZone = ent:EyePos():WithinAABox(posMin,posMax)
 			local hasChanged
 
 			if
 				inZones[name]
-			and	not inCuboid
+			and	not isWithinZone
 			then
 				-- if we remember them being inside, but they arent anymore, then they left.
 				inZones[name] = false
 				hasChanged = true
 			elseif
 				not inZones[name]
-			and	inCuboid
+			and	isWithinZone
 			then
 				-- if we don't remember them being inside, but they are inside, then they mustve just entered the zone.
 				inZones[name] = true
 				hasChanged = true
 			end
 
-			if not hasChanged then continue end
+			if
+				not (
+					hasChanged
+				and	inZones[name]
+				)
+			then continue end
 
 			HookRun("DeathrunPlayerEnteredZone",ent,name,zone)
 		end
