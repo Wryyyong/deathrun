@@ -58,7 +58,7 @@ local ColorGrey = Colors.Grey
 local CvFinishDuration = ConVars.FinishDuration
 local CvPlayRoundCues = ConVars.PlayRoundCues
 
-local CvAutoJump_Allowed = ConVars.AutoJump.Allow
+local CvAutoJump_Allowed = ConVars.AutoJump.Allowed
 
 local ConVarsCrosshair = ConVars.Crosshair
 local CvCrosshair_Thickness = ConVarsCrosshair.Thickness

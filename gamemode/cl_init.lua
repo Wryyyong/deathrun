@@ -203,7 +203,19 @@ function GM:CreateMove()
 	ThirdpersonToggle()
 end
 
+local DistFade = 0
+
+local function UpdateFadeDistance()
+	DistFade = CvThirdPerson_FadeDistance:GetFloat() ^ 2
+end
+
+cvars.AddChangeCallback("deathrun_teammate_fade_distance",UpdateFadeDistance,"DeathrunThirdPersonSquareFadeDistance")
+
+UpdateFadeDistance()
+
 function GM:PrePlayerDraw(ply)
+	if not CvThirdPerson_Enabled:GetBool() then return end
+
 	local localPly = LocalPlayer()
 
 	if ply:GetRenderMode() ~= RENDERMODE_TRANSALPHA then
@@ -216,12 +228,11 @@ function GM:PrePlayerDraw(ply)
 	if ply == localPly then
 		newAlpha = CvThirdPerson_Opacity:GetInt()
 	elseif ply:Team() == localPly:Team() then
-		local distFade = CvThirdPerson_FadeDistance:GetFloat()
-		local distEye = localPly:EyePos():Distance(ply:EyePos())
+		local distEye = localPly:EyePos():DistToSqr(ply:EyePos())
 
-		if distEye < distFade then
+		if distEye < DistFade then
 			newAlpha = Lerp(
-				DR.InverseLerp(distEye,5,distFade),
+				DR.InverseLerp(distEye,5,DistFade),
 				20,
 				255
 			)

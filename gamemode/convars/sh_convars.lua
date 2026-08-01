@@ -19,7 +19,7 @@ ConVars.RoundDuration = CreateConVar(
 
 ConVars.PrepDuration = CreateConVar(
 	"deathrun_preptime_duration",
-	5,
+	3,
 	DefaultFlags,
 	"How many seconds preptime should go for.",
 	0
@@ -94,7 +94,7 @@ ConVars.InfiniteAmmo = CreateConVar(
 
 ConVars.UnstuckCooldown = CreateConVar(
 	"deathrun_unstuck_cooldown",
-	30,
+	10,
 	DefaultFlags,
 	"Set the cooldown timer for when a player uses !stuck or takes damage, forcing them to wait that time until their next !stuck command.",
 	0
@@ -111,7 +111,7 @@ ConVars.HelpURL = CreateConVar(
 local AutoJump = ConVars.AutoJump or {}
 ConVars.AutoJump = AutoJump
 
-AutoJump.Allow = CreateConVar(
+AutoJump.Allowed = CreateConVar(
 	"deathrun_allow_autojump",
 	1,
 	DefaultFlags,

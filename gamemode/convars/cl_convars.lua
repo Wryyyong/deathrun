@@ -42,7 +42,7 @@ ConVars.SmallScoreboard = CreateConVar(
 
 ConVars.RenderYourStats = CreateConVar(
 	"deathrun_stats_visibility",
-	0,
+	1,
 	DefaultFlags,
 	nil,
 	0,
@@ -294,9 +294,9 @@ ThirdPerson.Opacity = CreateConVar(
 
 ThirdPerson.FadeDistance = CreateConVar(
 	"deathrun_teammate_fade_distance",
-	75,
+	512,
 	DefaultFlags,
 	nil,
-	0,
+	5,
 	512
 )
