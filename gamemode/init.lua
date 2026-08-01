@@ -140,6 +140,7 @@ local CvAllTalk = ConVars.AllTalk
 local CvDeathSprint = ConVars.DeathSprint
 local CvDisableDefaultDeathSpeed = ConVars.DisableDefaultDeathSpeed
 local CvDoPlayerConnectionNotifcations = ConVars.DoPlayerConnectionNotifcations
+local CvDropWeaponsOnDeath = ConVars.DropWeaponsOnDeath
 local CvDrownTimer = ConVars.DrownTimer
 local CvIdleTimer = ConVars.IdleTimer
 local CvStartingWeapon = ConVars.StartingWeapon
@@ -312,6 +313,8 @@ function GM:PlayerLoadout(ply)
 
 	ply:StripWeapons()
 	ply:RemoveAllAmmo()
+
+	ply:Give("weapon_unarmed")
 	ply:Give(CvStartingWeapon:GetString() or "weapon_crowbar")
 
 	ply:SetPlayerColor(ply:GetTeamColor():ToVector())
@@ -348,6 +351,29 @@ local CausesOfDeath = {
 	"The horses",
 	"A saxophone solo",
 }
+
+local UndroppableWeapons = {
+	["weapon_unarmed"] = true,
+	["weapon_crowbar"] = true,
+	["weapon_knife"] = true,
+}
+
+function GM:DoPlayerDeath(ply)
+	if not CvDropWeaponsOnDeath:GetBool() then return end
+
+	ply:SelectWeapon("weapon_unarmed")
+
+	for _,weapon in Iterator,ply:GetWeapons(),0 do
+		if
+			not IsValid(weapon)
+		or	UndroppableWeapons[weapon:GetClass()]
+		then continue end
+
+		ply:DropWeapon(weapon)
+
+		weapon:PhysWake()
+	end
+end
 
 function GM:PlayerDeath(ply,inflictor,attacker)
 	ply:Extinguish()
@@ -577,11 +603,6 @@ end)
 hook.Add("ShowHelp","DeathrunHelpBind",function(ply)
 	ply:ConCommand("deathrun_open_help")
 end)
-
-local UndroppableWeapons = {
-	["weapon_crowbar"] = true,
-	["weapon_knife"] = true,
-}
 
 concommand.Add("deathrun_dropweapon",function(ply)
 	local weapon = ply:GetActiveWeapon()
