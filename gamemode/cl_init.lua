@@ -9,8 +9,8 @@ local ChatAddText = chat.AddText
 
 local InputWasKeyPressed = input.WasKeyPressed
 
+local NetReadPlayer = net.ReadPlayer
 local NetReadString = net.ReadString
-local NetReadTable = net.ReadTable
 local NetSendToServer = net.SendToServer
 local NetStart = net.Start
 
@@ -78,6 +78,9 @@ local CvThirdPerson_OffsetRoll = ConVarsThirdPerson.OffsetRoll
 local CvThirdPerson_Opacity = ConVarsThirdPerson.Opacity
 local CvThirdPerson_FadeDistance = ConVarsThirdPerson.FadeDistance
 
+local MuteList = DR.MuteList or {}
+DR.MuteList = MuteList
+
 hook.Add("InitPostEntity","DeathrunClientInitialized",function()
 	NetStart("DeathrunClientInitialized")
 	NetSendToServer()
@@ -118,10 +121,18 @@ net.Receive("DeathrunChatMessage",function()
 	DR.ChatMessage(NetReadString())
 end)
 
-LocalPlayer().MuteList = LocalPlayer().MuteList or {}
+net.Receive("DeathrunMuteListAdd",function()
+	local ply = NetReadPlayer()
+	if not IsValid(ply) then return end
 
-net.Receive("DeathrunSyncMutelist",function()
-	LocalPlayer().MuteList = NetReadTable()
+	DR.MuteList[ply] = true
+end)
+
+net.Receive("DeathrunMuteListRemove",function()
+	local ply = NetReadPlayer()
+	if not IsValid(ply) then return end
+
+	DR.MuteList[ply] = nil
 end)
 
 local function ThirdpersonCheck(ply)
@@ -194,7 +205,7 @@ function GM:CalcView(ply,pos,ang,fov,znear,zfar)
 end
 
 function GM:OnSpawnMenuOpen()
-    RunConsoleCommand("deathrun_dropweapon")
+	RunConsoleCommand("deathrun_dropweapon")
 end
 
 function GM:ShouldDrawLocalPlayer()

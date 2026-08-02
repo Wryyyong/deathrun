@@ -12,8 +12,6 @@ function DR_ScoreboardPlayerMenuOptionMute:ValidClick()
 	local player = self.Player
 
 	RunConsoleCommand("deathrun_toggle_mute",player:SteamID())
-
-	DR.ChatMessage("Toggled mute on " .. player:Nick() .. "!")
 end
 
 derma.DefineControl("DR_ScoreboardPlayerMenuOptionMute","",DR_ScoreboardPlayerMenuOptionMute,"DR_ScoreboardPlayerMenuOptionBase")

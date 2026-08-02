@@ -25,8 +25,8 @@ local NetReadPlayer = net.ReadPlayer
 local NetSend = net.Send
 local NetStart = net.Start
 local NetWriteInt = net.WriteInt
+local NetWritePlayer = net.WritePlayer
 local NetWriteString = net.WriteString
-local NetWriteTable = net.WriteTable
 
 local OsTime = os.time
 
@@ -134,6 +134,7 @@ AddCSLuaFile("cl_announcer.lua")
 local DR = DR
 
 local ConVars = DR.ConVars
+local Players = DR.Players
 local RoundSystem = DR.RoundSystem
 
 local CvAllTalk = ConVars.AllTalk
@@ -147,11 +148,12 @@ local CvStartingWeapon = ConVars.StartingWeapon
 
 util.AddNetworkString("DeathrunClientInitialized")
 util.AddNetworkString("DeathrunChatMessage")
-util.AddNetworkString("DeathrunSyncMutelist")
 util.AddNetworkString("DeathrunNotification")
 util.AddNetworkString("DeathrunSpectatorNotification")
 util.AddNetworkString("DeathrunForceSpectator")
 util.AddNetworkString("DeathrunAddKillNote")
+util.AddNetworkString("DeathrunMuteListAdd")
+util.AddNetworkString("DeathrunMuteListRemove")
 
 -- required configz
 RunConsoleCommand("sv_friction",8)
@@ -163,6 +165,16 @@ net.Receive("DeathrunClientInitialized",function(_,ply)
 	ply.Initialized = true
 
 	HookRun("DeathrunClientInitialized",ply)
+end)
+
+hook.Add("DeathrunClientInitialized","DeathrunPlayerLoggingAdd",function(ply)
+	Players.SteamID[ply:SteamID()] = ply
+	Players.SteamID64[ply:SteamID64()] = ply
+end)
+
+hook.Add("PlayerDisconnected","DeathrunPlayerLoggingRemove",function(ply)
+	Players.SteamID[ply:SteamID()] = nil
+	Players.SteamID64[ply:SteamID64()] = nil
 end)
 
 local PlayerModels_Runner = {
@@ -183,6 +195,8 @@ local PlayerModelCount_Death = #PlayerModels_Death
 
 hook.Add("DeathrunClientInitialized","DeathrunPlayerFirstSpawn",function(ply)
 	ply.FirstSpawn = true
+	ply.MuteList = {}
+
 	ply:SetTeam(DR_TEAM_SPECTATOR)
 end)
 
@@ -545,32 +559,38 @@ end
 -- player muting
 concommand.Add("deathrun_toggle_mute",function(ply,_,args)
 	local id = args[1]
-	if not id then return end
+	local target = Players.SteamID[id]
 
-	local muteList = ply.MuteList or {}
-	ply.MuteList = muteList
+	if
+		not (
+			id
+		and	IsValid(target)
+		)
+	then return end
 
-	local found = false
+	if ply == target then
+		ply:DeathrunChatPrint("You can't mute yourself!")
 
-	for idx,tPly in next,muteList do
-		if tPly ~= id then continue end
-
-		muteList[idx] = nil
-		ply:DeathrunChatPrint("Player was unmuted.")
-
-		found = true
-
-		break
+		return
 	end
 
-	if not found then
-		muteList[#muteList + 1] = id
+	local muteList = ply.MuteList
+	local netId
+
+	if not muteList[id] then
+		muteList[target] = true
+		netId = "DeathrunMuteListAdd"
 
 		ply:DeathrunChatPrint("Player was muted.")
+	else
+		muteList[target] = nil
+		netId = "DeathrunMuteListRemove"
+
+		ply:DeathrunChatPrint("Player was unmuted.")
 	end
 
-	NetStart("DeathrunSyncMutelist")
-		NetWriteTable(muteList)
+	NetStart(netId)
+		NetWritePlayer(target)
 	NetSend(ply)
 end)
 

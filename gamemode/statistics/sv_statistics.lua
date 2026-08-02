@@ -214,6 +214,8 @@ local function FindEndZone()
 	SendEndZone()
 end
 
+hook.Add("DeathrunClientInitialized","DeathrunSendEndZoneToClient",SendEndZone)
+
 hook.Add("DeathrunPlayerFinishMap","DeathrunMapRecords",function(ply,_,_,_,seconds)
 	sql.QueryTyped(
 		"INSERT INTO " .. TableName_MapRecords

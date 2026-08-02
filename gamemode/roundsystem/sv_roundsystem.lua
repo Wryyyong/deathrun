@@ -15,7 +15,8 @@ local MathRand = math.Rand
 local NetBroadcast = net.Broadcast
 local NetSend = net.Send
 local NetStart = net.Start
-local NetWriteTable = net.WriteTable
+local NetWriteBool = net.WriteBool
+local NetWritePlayer = net.WritePlayer
 local NetWriteUInt = net.WriteUInt
 
 local PlayerGetCount = player.GetCount
@@ -146,7 +147,7 @@ function RoundSystem.FinishRound(winningTeam)
 
 	-- calculate MVPs
 	--- @type string[]
-	local mvpList = {}
+	local survivorList = {}
 	local mostKills = 0
 	local mostKillsMvp
 
@@ -158,7 +159,7 @@ function RoundSystem.FinishRound(winningTeam)
 			)
 		then continue end
 
-		mvpList[#mvpList + 1] = ply:Nick() .. " survived the round!"
+		survivorList[#survivorList + 1] = ply
 
 		if ply.KillsThisRound <= mostKills then continue end
 
@@ -166,15 +167,27 @@ function RoundSystem.FinishRound(winningTeam)
 		mostKillsMvp = ply
 	end
 
-	if mostKillsMvp and winningTeam == DR_TEAM_RUNNER then
-		mvpList[#mvpList + 1] = mostKillsMvp:Nick() .. " got " .. mostKills .. " kill" .. (mostKills > 1 and "s" or "") .. "!"
-	end
+	local doMostKills =
+		mostKillsMvp
+	and	winningTeam == DR_TEAM_RUNNER
 
 	NetStart("DeathrunSendMVPs")
-		NetWriteTable({
-			["winteam"] = winningTeam,
-			["mvps"] = mvpList,
-		})
+		NetWriteUInt(winningTeam,DR_TEAM_BITS)
+
+		for _,survivor in Iterator,survivorList,0 do
+			NetWriteBool(true)
+			NetWritePlayer(survivor)
+		end
+
+		NetWriteBool(false)
+
+		-- Most kills
+		NetWriteBool(doMostKills)
+
+		if doMostKills then
+			NetWritePlayer(mostKillsMvp)
+			NetWriteUInt(mostKills,MAX_PLAYER_BITS)
+		end
 	NetBroadcast()
 
 	HookRun("DeathrunRoundWin",winningTeam)

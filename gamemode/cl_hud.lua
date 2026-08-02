@@ -24,9 +24,11 @@ local MathFloor = math.floor
 local MathRound = math.Round
 local MathSin = math.sin
 
+local NetReadBool = net.ReadBool
 local NetReadInt = net.ReadInt
+local NetReadPlayer = net.ReadPlayer
 local NetReadString = net.ReadString
-local NetReadTable = net.ReadTable
+local NetReadUInt = net.ReadUInt
 
 local PlayerIterator = player.Iterator
 
@@ -269,10 +271,10 @@ local RoundNames = {
 local RoundEndData = {
 	["Active"] = false,
 	["BeginTime"] = 0,
-	["winteam"] = DR_WIN_STALEMATE,
+	["WinningTeam"] = DR_WIN_STALEMATE,
 
-	--- @type Player[]
-	["mvps"] = {},
+	["Survivors"] = {},
+	["MVP"] = "",
 }
 
 sound.Add({
@@ -295,7 +297,31 @@ sound.Add({
 })
 
 net.Receive("DeathrunSendMVPs",function()
-	RoundEndData = NetReadTable()
+	RoundEndData = {}
+
+	local winningTeam = NetReadUInt(DR_TEAM_BITS)
+	RoundEndData.WinningTeam = winningTeam
+
+	local survivors = {}
+	RoundEndData.Survivors = survivors
+
+	while NetReadBool() do
+		local ply = NetReadPlayer()
+		if not IsValid(ply) then continue end
+
+		survivors[#survivors + 1] = ply:Nick() .. " survived the round!"
+	end
+
+	-- Most kills
+
+	if NetReadBool() then
+		local ply = NetReadPlayer()
+		local killCount = NetReadUInt(MAX_PLAYER_BITS)
+
+		if IsValid(ply) then
+			survivors[#survivors + 1] = ply:Nick() .. " got " .. killCount .. " kill" .. (killCount > 1 and "s" or "") .. "!"
+		end
+	end
 
 	RoundEndData.Active = true
 	RoundEndData.BeginTime = CurTime()
@@ -303,14 +329,14 @@ net.Receive("DeathrunSendMVPs",function()
 	if CvPlayRoundCues:GetBool() then
 		SurfacePlaySound(
 			"Deathrun.RoundEnd." .. (
-				RoundEndData.winteam == DR_WIN_STALEMATE
+				winningTeam == DR_WIN_STALEMATE
 			and	"Stalemate"
 			or	"Normal"
 			)
 		)
 	end
 
-	HookRun("DeathrunRoundWin",RoundEndData.winteam)
+	HookRun("DeathrunRoundWin",winningTeam)
 end)
 
 local LastTime = CurTime()
@@ -1958,11 +1984,11 @@ function GM:HUDPaint()
 	-- check if it's stalemate, and don't do the thing, zhu li!
 	if RoundEndData.Active then
 		DrawWinners(
-			RoundEndData.winteam,
-			RoundEndData.mvps,
+			RoundEndData.WinningTeam,
+			RoundEndData.Survivors,
 			scrW_Half - WinnerOffset,
 			24,
-			RoundEndData.winteam == DR_WIN_STALEMATE
+			RoundEndData.WinningTeam == DR_WIN_STALEMATE
 		)
 
 		if curTime > RoundEndData.BeginTime + CvFinishDuration:GetInt() then
