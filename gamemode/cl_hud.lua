@@ -25,9 +25,7 @@ local MathRound = math.Round
 local MathSin = math.sin
 
 local NetReadBool = net.ReadBool
-local NetReadInt = net.ReadInt
 local NetReadPlayer = net.ReadPlayer
-local NetReadString = net.ReadString
 local NetReadUInt = net.ReadUInt
 
 local PlayerIterator = player.Iterator
@@ -170,14 +168,33 @@ local KillfeedTbl_Meta = {
 	["__index"] = KillfeedTbl_Default,
 }
 
+local CausesOfDeath = DR.CausesOfDeath
+
 net.Receive("DeathrunAddKillNote",function()
-	HUD.AddKillNote(NetReadString(),NetReadInt(8))
+	local victim = NetReadPlayer()
+	if not IsValid(victim) then return end
+
+	local attackerName
+
+	if NetReadBool() then
+		local attacker = NetReadPlayer()
+		if not IsValid(attacker) then return end
+
+		attackerName = attacker:Nick()
+	else
+		attackerName = CausesOfDeath[NetReadUInt(DR_KILLNOTE_BITS)]
+	end
+
+	HUD.AddKillNote(
+		attackerName .. "\t" .. "✕" .. "\t" .. victim:Nick(),
+		1
+	)
 end)
 
-function HUD.AddKillNote(msg,mod)
+function HUD.AddKillNote(msg,mode)
 	TableInsert(KillfeedQueue,1,setmetatable({
 		["text"] = msg,
-		["mode"] = mod,
+		["mode"] = mode,
 	},KillfeedTbl_Meta))
 end
 

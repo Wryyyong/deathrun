@@ -24,9 +24,9 @@ local NetBroadcast = net.Broadcast
 local NetReadPlayer = net.ReadPlayer
 local NetSend = net.Send
 local NetStart = net.Start
-local NetWriteInt = net.WriteInt
+local NetWriteBool = net.WriteBool
 local NetWritePlayer = net.WritePlayer
-local NetWriteString = net.WriteString
+local NetWriteUInt = net.WriteUInt
 
 local OsTime = os.time
 
@@ -352,20 +352,6 @@ hook.Add("AcceptInput","DeathrunKillers",function(ent,_,_,caller)
 	ent.LastCaller = caller
 end)
 
-local CausesOfDeath = {
-	"Natural causes",
-	"Inappropriate yelling",
-	"Vehicular homicide",
-	"Bio-engineered assault turtles with acid breath",
-	"Dark and mysterious forces beyond our control",
-	"Joe Biden",
-	"The cool, refreshing taste of Pepsi®",
-	"The Patriarchy",
-	"The rains down in Africa",
-	"The horses",
-	"A saxophone solo",
-}
-
 local UndroppableWeapons = {
 	["weapon_unarmed"] = true,
 	["weapon_crowbar"] = true,
@@ -389,15 +375,19 @@ function GM:DoPlayerDeath(ply)
 	end
 end
 
+local CausesOfDeath = DR.CausesOfDeath
+
 function GM:PlayerDeath(ply,inflictor,attacker)
 	ply:Extinguish()
 
 	ply:EmitSound("Deathrun.PlayerDeath")
 	ply:SetupHands(nil)
 	ply:DrawViewModel(false)
+
 	if ply:Team() == DR_TEAM_SPECTATOR then
 		ply:Spawn()
 		ply:BeginSpectate()
+
 		return
 	end
 
@@ -433,6 +423,7 @@ function GM:PlayerDeath(ply,inflictor,attacker)
 			end
 
 			ply.JustDied = false
+
 			HookRun("DeathrunDeadToSpectator",ply)
 		end
 	end)
@@ -446,23 +437,19 @@ function GM:PlayerDeath(ply,inflictor,attacker)
 	-- support for when traps kill players
 	HookRun("DeathrunPlayerDeath",ply,inflictor,attacker)
 
-	local attackerName
+	local attackerWasPlayer =
+		IsValid(attacker)
+	and	attacker:IsPlayer()
 
-	if IsValid(attacker) then
-		if attacker:IsPlayer() then
-			attackerName = attacker:Nick()
-		else
-			attackerName = CausesOfDeath[MathRandom(#CausesOfDeath)]
-		end
-	else return end
-
-	DR.DeathNotification(attackerName .. "\t" .. "✕" .. "\t" .. ply:Nick(),1)
-end
-
-function DR.DeathNotification(msg,mod)
 	NetStart("DeathrunAddKillNote")
-		NetWriteString(msg or "nil")
-		NetWriteInt(mod or 1,8)
+		NetWritePlayer(ply)
+		NetWriteBool(attackerWasPlayer)
+
+		if attackerWasPlayer then
+			NetWritePlayer(attacker)
+		else
+			NetWriteUInt(MathRandom(#CausesOfDeath),DR_KILLNOTE_BITS)
+		end
 	NetBroadcast()
 end
 

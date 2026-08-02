@@ -108,6 +108,32 @@ function DR.GetAllPlaying()
 	return plyPool
 end
 
+local CausesOfDeath = DR.CausesOfDeath or {
+	"Natural causes",
+	"Inappropriate yelling",
+	"Vehicular homicide",
+	"Bio-engineered assault turtles with acid breath",
+	"Dark and mysterious forces beyond our control",
+	"Joe Biden",
+	"The cool, refreshing taste of Pepsi®",
+	"The Patriarchy",
+	"The rains down in Africa",
+	"The horses",
+	"A saxophone solo",
+}
+DR.CausesOfDeath = CausesOfDeath
+
+DR_KILLNOTE_BITS = DR.CalcMaxBits(#CausesOfDeath)
+
+--- @param cause string
+function DR.AddCauseOfDeath(cause)
+	local newIdx = #CausesOfDeath + 1
+
+	CausesOfDeath[newIdx] = cause
+
+	DR_KILLNOTE_BITS = DR.CalcMaxBits(newIdx)
+end
+
 hook.Add("SetupMove","DeathrunDisableSpectatorSpacebar",function(ply,data,cmd)
 	if ply:GetObserverMode() ~= OBS_MODE_NONE then
 		data:SetButtons(Bitband(data:GetButtons(),Bitbnot(IN_JUMP)))
