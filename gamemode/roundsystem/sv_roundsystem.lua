@@ -128,7 +128,7 @@ hook.Add("PlayerDeath","DeathrunMVPs",function(ply,_,attacker)
 	attacker.KillsThisRound = (attacker.KillsThisRound or 0) + 1
 end)
 
-hook.Add("DeathrunBeginActive","DeathrunMVPs",function()
+hook.Add("DeathrunBeginPrep","DeathrunMVPs",function()
 	for _,ply in PlayerIterator() do
 		ply.KillsThisRound = 0
 	end
@@ -161,9 +161,11 @@ function RoundSystem.FinishRound(winningTeam)
 
 		survivorList[#survivorList + 1] = ply
 
-		if ply.KillsThisRound <= mostKills then continue end
+		local killCount = (ply.KillsThisRound or 0)
 
-		mostKills = ply.KillsThisRound
+		if killCount <= mostKills then continue end
+
+		mostKills = killCount
 		mostKillsMvp = ply
 	end
 

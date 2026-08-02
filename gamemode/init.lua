@@ -163,6 +163,7 @@ RunConsoleCommand("sv_gravity",800)
 
 net.Receive("DeathrunClientInitialized",function(_,ply)
 	ply.Initialized = true
+	ply.KillsThisRound = 0
 
 	HookRun("DeathrunClientInitialized",ply)
 end)
