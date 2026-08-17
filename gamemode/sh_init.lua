@@ -17,6 +17,163 @@ DR.UI = DR.UI or {}
 DR.UI.HUD = DR.UI.HUD or {}
 DR.UI.Scoreboard = DR.UI.Scoreboard or {}
 
+--- @type string[]
+local DermaFiles = {}
+DR.UI.DermaFiles = DermaFiles
+
+for idx,panelName in ipairs({
+	-- AvatarImage
+	"scoreboard/player/avatar",
+
+	-- Panel
+	"autoggle",
+	"customscrollpanel/panelcanvas",
+	"customscrollpanel/vscrollbar",
+	"multipanel/main",
+
+	-- DPanel
+	"crosshaircreator/preview",
+	"customscrollpanel/main",
+	"inner",
+	"mapvote/row",
+	"menu/controls",
+	"menu/spacer",
+	"multipanel/spacer",
+	"multipanel/tabpanel",
+	"scoreboard/item",
+	"scoreboard/main",
+	"scoreboard/player/icon",
+	"zoneeditor/data",
+
+	-- DFrame
+	"frame",
+
+	-- DLabel
+	"menu/item",
+
+	-- DButton
+	"button",
+	"customscrollpanel/button",
+	"scoreboard/player/button",
+	"mapvote/maplist/button",
+	"mapvote/voting/button",
+	"subbutton",
+	"togglebutton",
+
+	-- DIconLayout
+	"list",
+
+	-- DComboBox
+	"zoneeditor/edit",
+
+	-- DColorMixer
+	"crosshaircreator/colormixer",
+	"zoneeditor/colormixer",
+
+	-- DScrollBarGrip
+	"customscrollpanel/grip",
+
+	-- DMenu
+	"mapvote/menu",
+	"scoreboard/player/menu",
+
+	-- DMenuOption
+	"mapvote/maplist/nominateoption",
+	"scoreboard/player/menuoptions/_base",
+
+	-- DNumSlider
+	"menu/numslider",
+
+	-- DNumberWang
+	"zoneeditor/poswang",
+
+	-- DTextEntry
+	"zoneeditor/name",
+
+	-- DR_Button
+	"closebutton",
+	"misc/movedtospec/button",
+	"multipanel/navbutton",
+	"multipanel/tabbutton",
+	"zoneeditor/buttons/_base",
+
+	-- DR_CustomScrollPanel
+	"menu/scrollpanel",
+	"scoreboard/scrollpanel",
+
+	-- DR_Frame
+	"menu/frame",
+
+	-- DR_Inner
+	"mapvote/inner",
+	"menu/inner",
+
+	-- DR_List
+	"mapvote/list",
+	"menu/list",
+	"scoreboard/list",
+
+	-- DR_MenuFrame
+	"crosshaircreator/frame",
+	"mapvote/maplist/frame",
+	"mapvote/voting/frame",
+	"misc/movedtospec/frame",
+	"misc/waitingmenu/frame",
+	"zoneeditor/frame",
+
+	-- DR_MenuInner
+	"misc/movedtospec/inner",
+	"misc/waitingmenu/inner",
+
+	-- DR_MenuList
+	"zoneeditor/list",
+
+	-- DR_MenuItemBase
+	"mapvote/item",
+
+	-- DR_MenuScrollPanel
+	"mapvote/maplist/scrollpanel",
+
+	-- DR_MapVoteRowBase
+	"mapvote/voting/row",
+
+	-- DR_MapVoteListBase
+	"mapvote/maplist/list",
+	"mapvote/voting/list",
+
+	-- DR_ScoreboardItemBase
+	"scoreboard/player/data",
+	"scoreboard/top",
+
+	-- DR_ScoreboardItemSmallBase
+	"scoreboard/player/panel",
+
+	-- DR_ScoreboardPlayerMenuOptionBase
+	"scoreboard/player/menuoptions/_ulx",
+	"scoreboard/player/menuoptions/copyid",
+	"scoreboard/player/menuoptions/forcespec",
+	"scoreboard/player/menuoptions/mute",
+	"scoreboard/player/menuoptions/openprofile",
+
+	-- DR_ScoreboardPlayerMenuOptionULXBase
+	"scoreboard/player/menuoptions/ulx_ban",
+	"scoreboard/player/menuoptions/ulx_gag",
+	"scoreboard/player/menuoptions/ulx_kick",
+	"scoreboard/player/menuoptions/ulx_mute",
+	"scoreboard/player/menuoptions/ulx_slay",
+
+	-- DR_ZoneEditorButtonBase
+	"zoneeditor/buttons/create",
+	"zoneeditor/buttons/remove",
+	"zoneeditor/buttons/setdir",
+	"zoneeditor/buttons/setpos_eyetrace",
+	"zoneeditor/buttons/setpos_wang",
+	"zoneeditor/buttons/setcolor",
+	"zoneeditor/buttons/teleport",
+}) do
+	DermaFiles[idx] = "derma/" .. panelName .. ".lua"
+end
+
 GM.Name = "Deathrun"
 GM.Author = "Arizard"
 GM.Email = ""

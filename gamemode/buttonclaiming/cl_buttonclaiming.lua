@@ -48,6 +48,7 @@ end)
 
 net.Receive("DeathrunButtonEntsUpdateSimple",function(len)
 	local data = ButtonEnts[NetReadUInt(ButtonClaimSystem.EntBits)]
+	if not data then return end
 
 	local claimed = NetReadBool()
 	data.Claimed = claimed

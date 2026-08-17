@@ -238,7 +238,7 @@ hook.Add("DeathrunPlayerFinishMap","DeathrunMapRecords",function(ply,_,_,_,secon
 
 	if
 		current3rd
-	and	current3rd.Seconds >= seconds
+	and	current3rd.Seconds >= tonumber(seconds)
 	then return end
 
 	UpdateMapRecords(ply)
@@ -273,7 +273,7 @@ hook.Add("player_connect","UpdatePlayerIDs",function(data)
 end)
 
 hook.Add("PlayerDeath","DeathrunUpdateKillDeathStats",function(victim,_,attacker)
-	if RoundSystem.GetCurrent() ~= DR_ROUND_ACTIVE then return end
+	if RoundSystem.GetCurrent() == DR_ROUND_WAITING then return end
 
 	local victimTeam = victim:Team()
 
@@ -289,9 +289,7 @@ hook.Add("PlayerDeath","DeathrunUpdateKillDeathStats",function(victim,_,attacker
 		end
 	end
 
-	if victim:IsPlayer() then
-		UpdateStats(victim,DR_STATS_DEATHS)
-	end
+	UpdateStats(victim,DR_STATS_DEATHS)
 
 	sql.Commit()
 end)

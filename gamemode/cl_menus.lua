@@ -232,7 +232,7 @@ concommand.Add("deathrun_open_zone_editor",function(ply,cmd)
 	buttonSetColor.ZoneEdit = zoneEditCombo
 	buttonRemove.ZoneEdit = zoneEditCombo
 
-	zoneEditCombo:ChooseOption(LocalPlayer().LastSelectZone or "Select Zone")
+	zoneEditCombo:ChooseOption(LocalPlayer().LastSelectZone or "Select Zone",1)
 end)
 
 local function OpenQuickInfo()

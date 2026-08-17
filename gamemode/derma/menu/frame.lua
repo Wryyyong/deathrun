@@ -2,7 +2,7 @@ local DR = DR
 
 local ConVars = DR.ConVars
 local RoundSystem = DR.RoundSystem
-local HUD = DR.UI.HUD
+local UI = DR.UI
 
 local CvHelpUrl = ConVars.HelpURL
 
@@ -85,7 +85,7 @@ end
 function DR_QuickInfoFrame:OnClose()
 	if RoundSystem.GetCurrent() ~= DR_ROUND_WAITING then return end
 
-	HUD.OpenWaitingMenu()
+	UI.OpenWaitingMenu()
 end
 
 derma.DefineControl("DR_MenuFrame","",DR_MenuFrame,"DR_Frame")

@@ -310,6 +310,7 @@ RoundSystem.AddState(
 	nil
 )
 
+--[[
 local function AutoslayDelay()
 	for _,ply in Iterator,DR.GetAllPlaying(),0 do
 		local idleTime = DR.CheckIdleTime()
@@ -328,6 +329,7 @@ local function AutoslayDelay()
 		ply:ConCommand("deathrun_spectate_only 1")
 	end
 end
+--]]
 
 RoundSystem.AddState(
 	DR_ROUND_ACTIVE,
@@ -338,7 +340,7 @@ RoundSystem.AddState(
 
 		DR.RoundSystem.SetTimer(CvRoundDuration:GetInt())
 
-		TimerCreate("DeathrunAutoslay",CvAutoslayDelay:GetInt() + 5,1,AutoslayDelay)
+		--TimerCreate("DeathrunAutoslay",CvAutoslayDelay:GetInt() + 5,1,AutoslayDelay)
 	end,
 	function()
 		if not SERVER then return end

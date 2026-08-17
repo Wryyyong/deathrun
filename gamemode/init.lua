@@ -16,7 +16,7 @@ local FileWrite = file.Write
 local HookRun = hook.Run
 
 local MathCeil = math.ceil
-local MathFloor = math.floor
+--local MathFloor = math.floor
 local MathMax = math.max
 local MathRandom = math.random
 
@@ -43,6 +43,27 @@ local UtilTableToJSON = util.TableToJSON
 if not file.Exists("deathrun","DATA") then -- creates a folder in data for the gamemode
 	file.CreateDir("deathrun")
 end
+
+--[[
+--- @[call_arg("gmod.file_find","glob")]
+--- @param searchPath string
+--- @[call_arg("gmod.file_find","search_path")]
+--- @param mount string
+local function AddCSLuaFile_Recursive(searchPath,mount)
+	local files,dirs = file.Find(searchPath .. "/*",mount)
+
+	files = files or {}
+	dirs = dirs or {}
+
+	for _,filePath in ipairs(files) do
+		AddCSLuaFile(searchPath .. "/" .. filePath)
+	end
+
+	for _,dirPath in ipairs(dirs) do
+		AddCSLuaFile_Recursive(searchPath .. "/" .. dirPath,mount)
+	end
+end
+--]]
 
 -- init
 AddCSLuaFile("sh_init.lua")
@@ -119,8 +140,8 @@ AddCSLuaFile("cl_fonts.lua")
 -- derma
 AddCSLuaFile("cl_derma.lua")
 
-for _,fileName in ipairs(file.Find("gamemodes/deathrun/gamemode/derma/dr_*.lua","GAME",0 or {})) do
-	AddCSLuaFile("derma/" .. fileName)
+for _,panelName in ipairs(DR.UI.DermaFiles) do
+	AddCSLuaFile(panelName)
 end
 
 -- base
@@ -143,7 +164,7 @@ local CvDisableDefaultDeathSpeed = ConVars.DisableDefaultDeathSpeed
 local CvDoPlayerConnectionNotifcations = ConVars.DoPlayerConnectionNotifcations
 local CvDropWeaponsOnDeath = ConVars.DropWeaponsOnDeath
 local CvDrownTimer = ConVars.DrownTimer
-local CvIdleTimer = ConVars.IdleTimer
+--local CvIdleTimer = ConVars.IdleTimer
 local CvStartingWeapon = ConVars.StartingWeapon
 
 util.AddNetworkString("DeathrunClientInitialized")
@@ -195,9 +216,11 @@ local PlayerModels_Death = {
 local PlayerModelCount_Death = #PlayerModels_Death
 
 hook.Add("DeathrunClientInitialized","DeathrunPlayerFirstSpawn",function(ply)
-	ply.FirstSpawn = true
 	ply.MuteList = {}
+end)
 
+hook.Add("PlayerInitialSpawn","DeathrunPlayerInitialSpawn",function(ply)
+	ply.FirstSpawn = true
 	ply:SetTeam(DR_TEAM_SPECTATOR)
 end)
 
@@ -324,8 +347,6 @@ hook.Add("PlayerSpawn","DeathrunPlayerSpawn",function(ply)
 end)
 
 function GM:PlayerLoadout(ply)
-	local plyTeam = ply:Team()
-
 	ply:StripWeapons()
 	ply:RemoveAllAmmo()
 
@@ -339,7 +360,7 @@ function GM:PlayerLoadout(ply)
 	ply:SetWalkSpeed(250)
 	ply:SetJumpPower(290)
 
-	if plyTeam == DR_TEAM_DEATH then
+	if ply:Team() == DR_TEAM_DEATH then
 		ply:SetRunSpeed(CvDeathSprint:GetFloat())
 	end
 
@@ -672,6 +693,7 @@ hook.Add("SetupMove","DeathrunIdleCheck",function(ply,mv)
 	ply.LastButtons = curButtons
 end)
 
+--[[
 -- return how long the player has been idle for
 function DR.CheckIdleTime()
 	-- hotfix to prevent autokick after 22-02-2016 update
@@ -707,6 +729,7 @@ timer.Create("CheckIdlePlayers",1,0,function()
 		DR.ChatBroadcast(ply:Nick() .. " was specced for being idle too long.")
 	end
 end)
+--]]
 
 -- Punish death avoiders
 -- Bar the player for the next 3 rounds if they disconnect or idle while death.

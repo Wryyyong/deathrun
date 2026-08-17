@@ -225,7 +225,7 @@ hook.Add("Tick","ZoneTick",function()
 			local posMin = exData.minBorder
 			local posMax = exData.maxBorder
 
-			local isWithinZone = ent:EyePos():WithinAABox(posMin,posMax)
+			local isWithinZone = eyePos:WithinAABox(posMin,posMax)
 			local hasChanged
 
 			if

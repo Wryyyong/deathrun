@@ -150,6 +150,7 @@ function PlyMeta:SpecModify(num)
 		if
 			not ply:Alive()
 		or	ply:GetSpectate()
+		or	ply:IsGhost()
 		then continue end
 
 		pool[#pool + 1] = ply
