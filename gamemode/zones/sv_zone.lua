@@ -594,7 +594,7 @@ hook.Add("DeathrunPlayerEnteredZone","DeathrunPlayerFinishMap",function(ply,name
 	or	ply:GetSpectate()
 	or	ply:Team() ~= DR_TEAM_RUNNER
 	or	ply.HasFinishedMap
-	or	RoundSystem.GetCurrent() == DR_ROUND_WAITING
+	or	RoundSystem.CurrentState == DR_ROUND_WAITING
 	then return end
 
 	ply.HasFinishedMap = true

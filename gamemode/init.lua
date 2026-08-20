@@ -307,7 +307,7 @@ hook.Add("PlayerSpawn","DeathrunPlayerSpawn",function(ply)
 	if ply.FirstSpawn then
 		ply.FirstSpawn = false
 
-		local roundState = RoundSystem.GetCurrent()
+		local roundState = RoundSystem.CurrentState
 
 		if roundState == DR_ROUND_ACTIVE or roundState == DR_ROUND_OVER then
 			SpecBuffer[#SpecBuffer + 1] = ply
@@ -489,7 +489,7 @@ function GM:CanPlayerSuicide(ply)
 		)
 	or	plyTeam == DR_TEAM_DEATH -- never allow suicide on death team
 	or	plyTeam == DR_TEAM_GHOST -- never allow suicide on ghost team
-	or	RoundSystem.GetCurrent() == DR_ROUND_PREP -- players cannot suicide during round prep time
+	or	RoundSystem.CurrentState == DR_ROUND_PREP -- players cannot suicide during round prep time
 	then
 		return false
 	end
@@ -500,7 +500,7 @@ function GM:EntityTakeDamage(target,dmgInfo)
 	local dmgOrig = dmgInfo:GetDamage()
 
 	if target:IsPlayer() then
-		local roundState = RoundSystem.GetCurrent()
+		local roundState = RoundSystem.CurrentState
 
 		if
 			roundState == DR_ROUND_WAITING
@@ -739,6 +739,22 @@ local DeathAvoidersFile = "deathrun/deathavoiders.json"
 
 if not file.Exists(DeathAvoidersFile,"DATA") then
 	FileWrite(DeathAvoidersFile,"")
+end
+
+function DR.GetAllPlaying()
+	--- @type Player[]
+	local plyPool = {}
+
+	for _,ply in PlayerIterator() do
+		if
+			not IsValid(ply)
+		or	ply:ShouldStaySpectating()
+		then continue end
+
+		plyPool[#plyPool + 1] = ply
+	end
+
+	return plyPool
 end
 
 --- @alias DeathAvoiderData {

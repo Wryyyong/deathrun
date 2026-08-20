@@ -32,7 +32,7 @@ function PlyMeta:Respawn()
 end
 
 function PlyMeta:BeginSpectate()
-	local roundState = RoundSystem.GetCurrent()
+	local roundState = RoundSystem.CurrentState
 
 	if
 		self:Team() == DR_TEAM_DEATH
@@ -243,7 +243,7 @@ concommand.Add("deathrun_set_spectate",function(ply,_,args)
 	else
 		ply:SetShouldStaySpectating(false)
 
-		if RoundSystem.GetCurrent() == DR_ROUND_WAITING then
+		if RoundSystem.CurrentState == DR_ROUND_WAITING then
 			ply:SetTeam(DR_TEAM_RUNNER)
 			ply:Respawn()
 		end

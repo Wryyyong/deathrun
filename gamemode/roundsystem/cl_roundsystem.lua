@@ -7,17 +7,8 @@ net.Receive("DeathrunSyncRoundTimer",function(len,ply)
 end)
 
 net.Receive("DeathrunUpdateRoundState",function()
-	local round = NetReadUInt(16)
+	local newState = NetReadUInt(DR_ROUND_BITS)
 
-	local roundTblOld = RoundSystem.States[RoundSystem.CurrentState]
-	local roundTblNew = RoundSystem.States[round]
-	if not roundTblNew then return end
-
-	if roundTblOld then
-		roundTblOld.OnExit()
-	end
-
-	roundTblNew.OnEnter()
-
-	RoundSystem.CurrentState = round
+	RoundSystem.CurrentStateData:Exit()
+	RoundSystem.UpdateState(newState):Enter()
 end)

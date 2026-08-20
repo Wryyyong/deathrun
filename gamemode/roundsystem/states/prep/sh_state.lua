@@ -1,0 +1,2 @@
+ROUNDSTATE.ID = DR_ROUND_PREP
+ROUNDSTATE.EnterHook = "DeathrunBeginPrep"

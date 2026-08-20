@@ -273,7 +273,7 @@ hook.Add("player_connect","UpdatePlayerIDs",function(data)
 end)
 
 hook.Add("PlayerDeath","DeathrunUpdateKillDeathStats",function(victim,_,attacker)
-	if RoundSystem.GetCurrent() == DR_ROUND_WAITING then return end
+	if RoundSystem.CurrentState == DR_ROUND_WAITING then return end
 
 	local victimTeam = victim:Team()
 

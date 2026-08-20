@@ -10,8 +10,6 @@ local HookRun = hook.Run
 
 local MathClamp = math.Clamp
 
-local PlayerIterator = player.Iterator
-
 local Stringformat = string.format
 
 local DR = DR
@@ -92,22 +90,6 @@ function GM:CreateTeams()
 	team.SetColor(DR_TEAM_SPECTATOR,ColorSilver)
 end
 
-function DR.GetAllPlaying()
-	--- @type Player[]
-	local plyPool = {}
-
-	for _,ply in PlayerIterator() do
-		if
-			not IsValid(ply)
-		or	ply:ShouldStaySpectating()
-		then continue end
-
-		plyPool[#plyPool + 1] = ply
-	end
-
-	return plyPool
-end
-
 local CausesOfDeath = DR.CausesOfDeath or {
 	"Natural causes",
 	"Inappropriate yelling",
@@ -142,7 +124,7 @@ hook.Add("SetupMove","DeathrunDisableSpectatorSpacebar",function(ply,data,cmd)
 	if
 		not (
 			ply:Alive()
-		and	RoundSystem.GetCurrent() == DR_ROUND_PREP
+		and	RoundSystem.CurrentState == DR_ROUND_PREP
 		)
 	then return end
 

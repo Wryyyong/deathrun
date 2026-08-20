@@ -278,10 +278,10 @@ concommand.Add("deathrun_testkillnote",function()
 end)
 
 local RoundNames = {
-	[DR_ROUND_WAITING] = "Waiting for players",
-	[DR_ROUND_PREP] = "Preparing",
-	[DR_ROUND_ACTIVE] = "Time Left",
-	[DR_ROUND_OVER] = "Round Over",
+	[DR_ROUND_WAITING] = "WAITING FOR PLAYERS",
+	[DR_ROUND_PREP] = "PREPARING",
+	[DR_ROUND_ACTIVE] = "TIME LEFT",
+	[DR_ROUND_OVER] = "ROUND OVER",
 }
 
 --- @class RoundEndData
@@ -668,10 +668,12 @@ local function DrawPlayerHUDMain(x,y,alpha)
 	local isLocalPly = ply == localPly
 	local plyTeam = ply:Team()
 
+	local roundState = RoundSystem.CurrentState
+
 	local shouldDrawTime =
 		isLocalPly
 	and	CvHud_Theme:GetInt() == HUDTHEME_DEFAULTTIMER
-	and	RoundSystem.GetCurrent() == DR_ROUND_ACTIVE
+	and	roundState == DR_ROUND_ACTIVE
 	and	plyTeam == DR_TEAM_RUNNER
 
 	local teamColor = ply:GetTeamColor()
@@ -734,11 +736,10 @@ local function DrawPlayerHUDMain(x,y,alpha)
 		16
 	)
 
-	local roundState = RoundNames[RoundSystem.GetCurrent()]
 	local yTimeLeftText = y + 8 -- 16 * .5
 
 	UI.ShadowTextSimple(
-		roundState and roundState:upper() or "TIME LEFT",
+		RoundNames[roundState],
 		"Deathrun_DefaultHUD_Small",
 		x + 4,
 		yTimeLeftText,

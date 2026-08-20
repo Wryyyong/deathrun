@@ -98,7 +98,7 @@ concommand.Add("deathrun_respawn",function(ply,cmd,args)
 		if
 			(
 				canAccess
-			or	RoundSystem.GetCurrent() == DR_ROUND_WAITING
+			or	RoundSystem.CurrentState == DR_ROUND_WAITING
 			)
 		and	ply:Team() ~= DR_TEAM_SPECTATOR
 		then
@@ -118,7 +118,7 @@ concommand.Add("deathrun_cleanup",function(ply,cmd,args)
 
 	if
 		DR.CanAccessCommand(ply,cmd)
-	or	RoundSystem.GetCurrent() == DR_ROUND_WAITING
+	or	RoundSystem.CurrentState == DR_ROUND_WAITING
 	then
 		GameCleanUpMap()
 
