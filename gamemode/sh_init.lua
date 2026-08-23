@@ -5,13 +5,10 @@ DR = DR or {}
 DR.ButtonClaimSystem = DR.ButtonClaimSystem or {}
 DR.ConVars = DR.ConVars or {}
 DR.MapVote = DR.MapVote or {}
+DR.PlayerFilters = DR.PlayerFilters or {}
 DR.RoundSystem = DR.RoundSystem or {}
 DR.Stats = DR.Stats or {}
 DR.ZoneSystem = DR.ZoneSystem or {}
-
-DR.Players = DR.Players or {}
-DR.Players.SteamID = DR.Players.SteamID or {}
-DR.Players.SteamID64 = DR.Players.SteamID64 or {}
 
 DR.UI = DR.UI or {}
 DR.UI.HUD = DR.UI.HUD or {}
@@ -203,9 +200,11 @@ function DR.CalcMaxBits(max,min,signed)
 	+	(signed and 1 or 0)
 end
 
+DR_TEAM_CONNECTING = TEAM_CONNECTING
 DR_TEAM_RUNNER = 1
 DR_TEAM_DEATH = 2
 DR_TEAM_GHOST = 3
+DR_TEAM_UNASSIGNED = TEAM_UNASSIGNED
 DR_TEAM_SPECTATOR = TEAM_SPECTATOR
 
 DR_TEAM_BITS = DR.CalcMaxBits(DR_TEAM_SPECTATOR)
@@ -222,11 +221,11 @@ DR_ROUND_ENDING = DR_ROUND_OVER
 DR_ROUND_BITS = DR.CalcMaxBits(DR_ROUND_OVER)
 
 -- win constants
+DR_WIN_STALEMATE = 0
 DR_WIN_RUNNERS = DR_TEAM_RUNNER
 DR_WIN_DEATHS = DR_TEAM_DEATH
-DR_WIN_STALEMATE = 3
 
-DR_WINNER_BITS = DR.CalcMaxBits(DR_WIN_STALEMATE)
+DR_WINNER_BITS = DR.CalcMaxBits(DR_WIN_DEATHS)
 
 -- don't touch this otherwise shit will hit the fan and your custom colors won't work
 hook.Add("InitPostEntity","DeathrunChangeColors",function()

@@ -22,13 +22,12 @@ local NetWriteUInt = net.WriteUInt
 local PlayerGetCount = player.GetCount
 local PlayerIterator = player.Iterator
 
-local TeamGetName = team.GetName
-
 local UtilTraceHull = util.TraceHull
 
 local DR = DR
 
 local ConVars = DR.ConVars
+local PlayerFilters = DR.PlayerFilters
 local RoundSystem = DR.RoundSystem
 
 util.AddNetworkString("DeathrunUpdateRoundState")
@@ -94,16 +93,11 @@ hook.Add("PlayerDisconnected","DeathrunWatchDeathAvoid",function(ply)
 	local roundState = RoundSystem.CurrentState
 
 	if
-		ply:IsBot()
-	or	not (
-			(
-				roundState == DR_ROUND_PREP
-			or	roundState == DR_ROUND_ACTIVE
-			)
-		and	ply:Alive()
-		and	ply:Team() == DR_TEAM_DEATH
-		and	#DR.GetAllPlaying() > 2
-		)
+		roundState == DR_ROUND_WAITING
+	or	roundState == DR_ROUND_OVER
+	or	ply:IsBot()
+	or	not ply:Alive()
+	or	ply:Team() ~= DR_TEAM_DEATH
 	then return end
 
 	DR.PunishDeathAvoid(ply,ConVars.DeathAvoidPunishment:GetInt())
@@ -126,34 +120,25 @@ hook.Add("DeathrunBeginPrep","DeathrunMVPs",function()
 	end
 end)
 
+local WinnerAnnouncements = {
+	[DR_WIN_STALEMATE] = "It's a stalemate!",
+	[DR_WIN_RUNNERS] = "Runners win!",
+	[DR_WIN_DEATHS] = "Deaths win!",
+}
+
+--- @param winningTeam integer
 function RoundSystem.FinishRound(winningTeam)
+	DR.ChatBroadcast(WinnerAnnouncements[winningTeam])
+
 	RoundSystem.RoundSwitch(DR_ROUND_OVER)
 
-	DR.ChatBroadcast(
-		"Round over! " .. (
-			winningTeam == DR_WIN_RUNNERS and TeamGetName(DR_TEAM_RUNNER) .. " win!"
-		or	winningTeam == DR_WIN_DEATHS and TeamGetName(DR_TEAM_DEATH) .. " win!"
-		or	"Stalemate! Unbelievable!"
-		)
-	)
-
 	-- calculate MVPs
-	--- @type string[]
-	local survivorList = {}
+	local survivorList = PlayerFilters.WinningTeamsAlive[winningTeam]:GetPlayers()
 	local mostKills = 0
 	local mostKillsMvp
 
-	for _,ply in Iterator,DR.GetAllPlaying(),0 do
-		if
-			not (
-				ply:Alive()
-			and	ply:Team() == winningTeam
-			)
-		then continue end
-
-		survivorList[#survivorList + 1] = ply
-
-		local killCount = (ply.KillsThisRound or 0)
+	for _,ply in Iterator,survivorList,0 do
+		local killCount = ply.KillsThisRound or 0
 
 		if killCount <= mostKills then continue end
 

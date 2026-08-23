@@ -18,12 +18,12 @@ local TimerSimple = timer.Simple
 local DR = DR
 
 local ConVars = DR.ConVars
+local PlayerFilters = DR.PlayerFilters
+local RoundSystem = DR.RoundSystem
 
 local CvDeathMax = ConVars.DeathMax
 local CvDeathRatio = ConVars.DeathRatio
 local CvPrepDuration = ConVars.PrepDuration
-
-local RoundSystem = DR.RoundSystem
 
 local DeathTeamStreaks = RoundSystem.DeathTeamStreaks or {}
 RoundSystem.DeathTeamStreak = DeathTeamStreaks
@@ -54,7 +54,7 @@ function ROUNDSTATE:EnterRealm()
 	-- let's pick deaths at random, but ignore if they have been death the 2 previous rounds
 	local deaths = {}
 
-	local plyList = DR.GetAllPlaying()
+	local plyList = PlayerFilters.Playing:GetPlayers()
 	local pool = TableCopy(plyList)
 
 	local deathsNeeded = MathCeil(CvDeathRatio:GetFloat() * #plyList)

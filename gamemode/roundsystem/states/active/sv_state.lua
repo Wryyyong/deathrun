@@ -1,10 +1,9 @@
-local Iterator = ipairs({})
-
 local DR = DR
 
-local CvRoundDuration = DR.ConVars.RoundDuration
-
+local PlayerFilters = DR.PlayerFilters
 local RoundSystem = DR.RoundSystem
+
+local CvRoundDuration = DR.ConVars.RoundDuration
 
 --[[
 local function AutoslayDelay()
@@ -34,37 +33,17 @@ function ROUNDSTATE:EnterRealm()
 end
 
 function ROUNDSTATE:ThinkRealm()
-	local playing = DR.GetAllPlaying()
-
-	if #playing < 2 then
+	if PlayerFilters.Playing:GetCount() < 2 then
 		RoundSystem.RoundSwitch(DR_ROUND_WAITING)
 
 		return
 	end
 
-	local deaths = {}
-	local runners = {}
-
-	for _,ply in Iterator,playing,0 do
-		if not ply:Alive() then continue end
-
-		local targetTbl
-		local plyTeam = ply:Team()
-
-		if plyTeam == DR_TEAM_RUNNER then
-			targetTbl = runners
-		elseif plyTeam == DR_TEAM_DEATH then
-			targetTbl = deaths
-		else continue end
-
-		targetTbl[#targetTbl + 1] = ply
-	end
-
-	local allGoneDeaths = #deaths == 0
-	local allGoneRunners = #runners == 0
+	local allGoneRunners = PlayerFilters.RunnersAlive:GetCount() == 0
+	local allGoneDeaths = PlayerFilters.DeathsAlive:GetCount() == 0
 	local winTeam
 
-	if allGoneDeaths and allGoneRunners or RoundSystem.GetTimer() == 0 then
+	if RoundSystem.GetTimer() <= 0 or allGoneDeaths and allGoneRunners then
 		winTeam = DR_WIN_STALEMATE
 	elseif allGoneDeaths then
 		winTeam = DR_WIN_RUNNERS

@@ -70,6 +70,9 @@ AddCSLuaFile("sh_init.lua")
 
 include("sh_init.lua")
 
+-- player filters
+include("sv_playerfilters.lua")
+
 -- convars
 AddCSLuaFile("convars/sh_convars.lua")
 AddCSLuaFile("convars/cl_convars.lua")
@@ -155,7 +158,7 @@ AddCSLuaFile("cl_announcer.lua")
 local DR = DR
 
 local ConVars = DR.ConVars
-local Players = DR.Players
+local PlayerFilters = DR.PlayerFilters
 local RoundSystem = DR.RoundSystem
 
 local CvAllTalk = ConVars.AllTalk
@@ -182,22 +185,23 @@ RunConsoleCommand("sv_sticktoground",0)
 RunConsoleCommand("sv_airaccelerate",0)
 RunConsoleCommand("sv_gravity",800)
 
-net.Receive("DeathrunClientInitialized",function(_,ply)
+local function ClientInitialized(_,ply)
 	ply.Initialized = true
 	ply.KillsThisRound = 0
 
 	HookRun("DeathrunClientInitialized",ply)
+end
+
+hook.Add("PlayerInitialSpawn","DeathrunPlayerInitialSpawn",function(ply)
+	ply.FirstSpawn = true
+	ply:SetTeam(DR_TEAM_SPECTATOR)
+
+	if not ply:IsBot() then return end
+
+	ClientInitialized(nil,ply)
 end)
 
-hook.Add("DeathrunClientInitialized","DeathrunPlayerLoggingAdd",function(ply)
-	Players.SteamID[ply:SteamID()] = ply
-	Players.SteamID64[ply:SteamID64()] = ply
-end)
-
-hook.Add("PlayerDisconnected","DeathrunPlayerLoggingRemove",function(ply)
-	Players.SteamID[ply:SteamID()] = nil
-	Players.SteamID64[ply:SteamID64()] = nil
-end)
+net.Receive("DeathrunClientInitialized",ClientInitialized)
 
 local PlayerModels_Runner = {
 	"models/player/gasmask.mdl",
@@ -217,11 +221,6 @@ local PlayerModelCount_Death = #PlayerModels_Death
 
 hook.Add("DeathrunClientInitialized","DeathrunPlayerFirstSpawn",function(ply)
 	ply.MuteList = {}
-end)
-
-hook.Add("PlayerInitialSpawn","DeathrunPlayerInitialSpawn",function(ply)
-	ply.FirstSpawn = true
-	ply:SetTeam(DR_TEAM_SPECTATOR)
 end)
 
 hook.Add("PlayerConnect","DeathrunPlayerConnectMessage",function(name)
@@ -568,7 +567,7 @@ end
 -- player muting
 concommand.Add("deathrun_toggle_mute",function(ply,_,args)
 	local id = args[1]
-	local target = Players.SteamID[id]
+	local target = PlayerFilters.SteamIDs[id]
 
 	if
 		not (
@@ -739,22 +738,6 @@ local DeathAvoidersFile = "deathrun/deathavoiders.json"
 
 if not file.Exists(DeathAvoidersFile,"DATA") then
 	FileWrite(DeathAvoidersFile,"")
-end
-
-function DR.GetAllPlaying()
-	--- @type Player[]
-	local plyPool = {}
-
-	for _,ply in PlayerIterator() do
-		if
-			not IsValid(ply)
-		or	ply:ShouldStaySpectating()
-		then continue end
-
-		plyPool[#plyPool + 1] = ply
-	end
-
-	return plyPool
 end
 
 --- @alias DeathAvoiderData {

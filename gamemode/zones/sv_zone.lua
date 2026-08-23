@@ -38,13 +38,12 @@ local StringToMinutesSecondsMilliseconds = string.ToMinutesSecondsMilliseconds
 
 local TableCopyFromTo = table.CopyFromTo
 
-local TeamGetPlayers = team.GetPlayers
-
 local UtilJSONToTable = util.JSONToTable
 local UtilTableToJSON = util.TableToJSON
 
 local DR = DR
 
+local PlayerFilters = DR.PlayerFilters
 local RoundSystem = DR.RoundSystem
 local ZoneSystem = DR.ZoneSystem
 
@@ -629,7 +628,7 @@ hook.Add("DeathrunPlayerEnteredZone","DeathrunPlayerFinishMap",function(ply,name
 
 	if place == 1 then
 		-- deaths lose sprint when the first runner finishes
-		for _,death in Iterator,TeamGetPlayers(DR_TEAM_DEATH),0 do
+		for _,death in Iterator,PlayerFilters.Deaths:GetPlayers(),0 do
 			death:SetRunSpeed(250)
 		end
 	end

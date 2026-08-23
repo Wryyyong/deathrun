@@ -14,6 +14,7 @@ local PlayerIterator = player.Iterator
 
 local DR = DR
 
+local PlayerFilters = DR.PlayerFilters
 local RoundSystem = DR.RoundSystem
 
 local ColorTurq = DR.Colors.Turq
@@ -41,7 +42,7 @@ function PlyMeta:BeginSpectate()
 			roundState == DR_ROUND_PREP
 		or	roundState == DR_ROUND_ACTIVE
 		)
-	and	#DR.GetAllPlaying() > 1
+	and	PlayerFilters.Playing:GetCount() > 1
 	then
 		DR.PunishDeathAvoid(self,CvDeathAvoidPunishment:GetInt())
 
@@ -116,17 +117,7 @@ function PlyMeta:ChangeSpectate()
 
 		if not target then
 			-- this means we are spectating a player
-			local pool = {}
-
-			for _,ply in PlayerIterator() do
-				if
-					not ply:Alive()
-				or	ply:GetSpectate()
-				then continue end
-
-				pool[#pool + 1] = ply
-			end
-
+			local pool = PlayerFilters.PlayingAlive:GetPlayers()
 			local newTarget = pool[MathRandom(#pool)]
 
 			-- if they don't then give em one
@@ -143,19 +134,7 @@ end
 
 function PlyMeta:SpecModify(num)
 	local idx = self.SpecEntIdx or 1
-
-	local pool = {}
-
-	for _,ply in PlayerIterator() do
-		if
-			not ply:Alive()
-		or	ply:GetSpectate()
-		or	ply:IsGhost()
-		then continue end
-
-		pool[#pool + 1] = ply
-	end
-
+	local pool = PlayerFilters.PlayingAlive:GetPlayers()
 	local plyCount = #pool
 
 	idx = idx + num

@@ -2,6 +2,7 @@ local Iterator = ipairs({})
 
 local DR = DR
 
+local PlayerFilters = DR.PlayerFilters
 local RoundSystem = DR.RoundSystem
 local Stats = DR.Stats
 local ZoneSystem = DR.ZoneSystem
@@ -214,7 +215,23 @@ local function FindEndZone()
 	SendEndZone()
 end
 
-hook.Add("DeathrunClientInitialized","DeathrunSendEndZoneToClient",SendEndZone)
+hook.Add("DeathrunClientInitialized","DeathrunSendEndZoneToClient",function(ply)
+	if ply:IsBot() then return end
+
+	local id64 = ply:SteamID64()
+
+	sql.QueryTyped(
+		[[INSERT INTO "DeathrunSteamID64Index" VALUES (?,?);]],
+		id64,
+		ply:Nick()
+	)
+	sql.QueryTyped(
+		[[INSERT OR IGNORE INTO "DeathrunStats" ("SteamID64") VALUES (?);]],
+		id64
+	)
+
+	SendEndZone(ply)
+end)
 
 hook.Add("DeathrunPlayerFinishMap","DeathrunMapRecords",function(ply,_,_,_,seconds)
 	sql.QueryTyped(
@@ -256,22 +273,6 @@ FindEndZone()
 
 hook.Add("DeathrunBeginPrep","DeathrunSendRecords",UpdateMapRecords)
 
-hook.Add("player_connect","UpdatePlayerIDs",function(data)
-	if data.bot == 1 then return end
-
-	local id64 = util.SteamIDTo64(data.networkid)
-
-	sql.QueryTyped(
-		[[INSERT INTO "DeathrunSteamID64Index" VALUES (?,?);]],
-		id64,
-		data.name
-	)
-	sql.QueryTyped(
-		[[INSERT OR IGNORE INTO "DeathrunStats" ("SteamID64") VALUES (?);]],
-		id64
-	)
-end)
-
 hook.Add("PlayerDeath","DeathrunUpdateKillDeathStats",function(victim,_,attacker)
 	if RoundSystem.CurrentState == DR_ROUND_WAITING then return end
 
@@ -284,7 +285,7 @@ hook.Add("PlayerDeath","DeathrunUpdateKillDeathStats",function(victim,_,attacker
 			UpdateStats(attacker,DR_STATS_KILLS)
 		end
 	elseif victimTeam == DR_TEAM_RUNNER then
-		for _,ply in Iterator,team.GetPlayers(DR_TEAM_DEATH),0 do
+		for _,ply in Iterator,PlayerFilters.Deaths:GetPlayers(),0 do
 			UpdateStats(ply,DR_STATS_KILLS)
 		end
 	end
@@ -297,12 +298,11 @@ end)
 hook.Add("DeathrunRoundWin","DeathrunUpdateWinStats",function(winningTeam)
 	if winningTeam == DR_WIN_STALEMATE then return end
 
-	local column = WinningTeamToStats[winningTeam]
-	local plyList = team.GetPlayers(winningTeam)
-
 	sql.Begin()
 
-	for _,ply in Iterator,plyList,0 do
+	local column = WinningTeamToStats[winningTeam]
+
+	for _,ply in Iterator,PlayerFilters.WinningTeams[winningTeam]:GetPlayers(),0 do
 		UpdateStats(ply,column)
 	end
 

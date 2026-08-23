@@ -16,13 +16,13 @@ local NetWriteDouble = net.WriteDouble
 local NetWritePlayer = net.WritePlayer
 local NetWriteUInt = net.WriteUInt
 
-local TeamGetPlayers = team.GetPlayers
-
 local TimerCreate = timer.Create
 
 local DR = DR
 
 local ButtonClaimSystem = DR.ButtonClaimSystem
+local PlayerFilters = DR.PlayerFilters
+
 local ButtonEnts = ButtonClaimSystem.ButtonEnts
 local ClaimRadius = ButtonClaimSystem.ClaimRadius
 
@@ -93,16 +93,14 @@ hook.Add("DeathrunClientInitialized","DeathrunSendButtonEntsToNewClient",functio
 end)
 
 TimerCreate("CheckButtonClaims",1 / 3,0,function()
-	--- @type Player[]
-	local plyList = {}
-
-	for _,ply in Iterator,TeamGetPlayers(DR_TEAM_DEATH),0 do
-		if not ply:Alive() then continue end
-
-		plyList[#plyList + 1] = ply
-	end
-
+	local plyList = PlayerFilters.DeathsAlive:GetPlayers()
 	if #plyList <= 0 then return end
+
+	local eyePosIndex = {}
+
+	for _,ply in Iterator,plyList,0 do
+		eyePosIndex[ply] = ply:EyePos()
+	end
 
 	-- compile all the button entities into the table buttons
 	--- @param mapId integer
@@ -115,8 +113,8 @@ TimerCreate("CheckButtonClaims",1 / 3,0,function()
 		local closestDist = math.huge
 		local closestPlayer
 
-		for _,ply in Iterator,plyList,0 do
-			local dist = pos:DistToSqr(ply:EyePos())
+		for ply,eyePos in next,eyePosIndex do
+			local dist = pos:DistToSqr(eyePos)
 			if dist >= closestDist then continue end
 
 			closestDist = dist
@@ -126,7 +124,7 @@ TimerCreate("CheckButtonClaims",1 / 3,0,function()
 		local currentClaimPlyDist = math.huge
 
 		if IsValid(claimer) then
-			currentClaimPlyDist = pos:DistToSqr(claimer:EyePos())
+			currentClaimPlyDist = pos:DistToSqr(eyePosIndex[claimer])
 		end
 
 		-- nobody within claiming distance

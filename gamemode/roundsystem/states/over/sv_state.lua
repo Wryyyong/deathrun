@@ -24,7 +24,7 @@ function ROUNDSTATE:EnterRealm()
 		not HookRun("DeathrunShouldMapSwitch",roundsPlayed)
 	and	roundsPlayed < roundLimit
 	then
-		DR.ChatBroadcast("Round " .. roundsPlayed .. " over. " .. (roundLimit - roundsPlayed) .. " rounds to go!")
+		DR.ChatBroadcast("Round " .. roundsPlayed .. " over, " .. (roundLimit - roundsPlayed) .. " rounds to go!")
 
 		local finishDur = CvFinishDuration:GetInt()
 

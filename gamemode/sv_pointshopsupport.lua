@@ -1,14 +1,16 @@
+--- @diagnostic disable: undefined-field
 local Iterator = ipairs({})
 
---- @diagnostic disable: undefined-field
 local DR = DR
 
-local PointShop = DR.ConVars.PointShop
+local PlayerFilters = DR.PlayerFilters
 
-local CvFinishReward = PointShop.FinishReward
-local CvKillReward = PointShop.KillReward
-local CvWinReward = PointShop.WinReward
-local CvRewardMessage = PointShop.RewardMessage
+local ConVarsPointShop = DR.ConVars.PointShop
+
+local CvFinishReward = ConVarsPointShop.FinishReward
+local CvKillReward = ConVarsPointShop.KillReward
+local CvWinReward = ConVarsPointShop.WinReward
+local CvRewardMessage = ConVarsPointShop.RewardMessage
 
 local HasPointShop = PS ~= nil
 local HasPointShop2 = Pointshop2 ~= nil
@@ -57,10 +59,9 @@ hook.Add("PlayerDeath","PointshopRewards",function(ply,_,attacker)
 	DR.RewardPlayer(attacker,CvKillReward:GetInt(),"Killing " .. ply:Nick())
 end)
 
-hook.Add("DeathrunRoundWin","PointshopRewards",function(winteam)
-	for _,ply in Iterator,DR.GetAllPlaying(),0 do
-		if ply:Team() ~= winteam then continue end
-
+--- @param winningTeam integer
+hook.Add("DeathrunRoundWin","PointshopRewards",function(winningTeam)
+	for _,ply in Iterator,PlayerFilters.WinningTeams[winningTeam]:GetPlayers(),0 do
 		DR.RewardPlayer(ply,CvWinReward:GetInt(),"Winning the round")
 	end
 end)

@@ -35,6 +35,7 @@ local TimerSimple = timer.Simple
 local DR = DR
 
 local MapVote = DR.MapVote
+local PlayerFilters = DR.PlayerFilters
 local RoundSystem = DR.RoundSystem
 
 local CvRtvRatio = DR.ConVars.MapVoteRTVRatio
@@ -76,22 +77,13 @@ end
 local MapStats = MapVote.MapStats or util.JSONToTable(file.Read("deathrun/MapStatistics.json","DATA")) or {}
 MapVote.MapStats = MapStats
 
-local function SaveStats()
-	FileWrite("deathrun/MapStatistics.json",util.TableToJSON(MapStats))
-end
-
 -- increment stats by 1 each time a round is played on the map
 hook.Add("DeathrunBeginPrep","RecordMapStats",function()
 	local map = GameGetMap()
-	local stats = MapStats[map]
-	local plyNum = #DR.GetAllPlaying()
 
-	MapStats[map] =
-		stats
-	and	stats + plyNum
-	or	plyNum
+	MapStats[map] = (MapStats[map] or 0) + PlayerFilters.Playing:GetCount()
 
-	SaveStats()
+	FileWrite("deathrun/MapStatistics.json",util.TableToJSON(MapStats))
 end)
 
 -- commands
