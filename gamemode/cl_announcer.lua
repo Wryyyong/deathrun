@@ -13,12 +13,15 @@ local ConVarsAnnouncements = DR.ConVars.Announcements
 local CvAnnouncements_Enabled = ConVarsAnnouncements.Enabled
 local CvAnnouncements_Interval = ConVarsAnnouncements.Interval
 
-local AnnouncementCounter = 1
+local Announcer = DR.Announcer or {}
+DR.Announcer = Announcer
 
-DR.AnnouncerName = DR.AnnouncerName or "HELP" -- incase the file refreshes
-DR.AnnouncerColor = DR.AnnouncerColor or ColorAlizarin
+Announcer.Counter = Announcer.Counter or 1
 
-local AnnouncementMessages = {
+Announcer.Name = Announcer.Name or "HELP"
+Announcer.Color = Announcer.Color or ColorAlizarin
+
+local Messages = Announcer.Messages or {
 	"Don't hesitate to ask the staff any questions, they are here to help.",
 	"Type !rtv to force a mapchange.",
 	"Type !crosshair to customize your crosshair settings and achieve different designs.",
@@ -33,25 +36,38 @@ local AnnouncementMessages = {
 	"Change your HUD theme in the F2 menu.",
 	"Disconnecting while on the Death team is not allowed and will be considered death avoidance. You will be forced to play extra rounds as Death.",
 }
+Announcer.Messages = Messages
 
---- @param announcement string
-function DR.AddAnnouncement(announcement)
-	AnnouncementMessages[#AnnouncementMessages + 1] = announcement
+local MessageHashes = Announcer.MessageHashes or {}
+Announcer.MessageHashes = MessageHashes
+
+for _,msg in ipairs(Messages) do
+	MessageHashes[msg] = true
+end
+
+--- @param msg string
+function DR.AddAnnouncement(msg)
+	if MessageHashes[msg] then return end
+
+	MessageHashes[msg] = true
+	Messages[#Messages + 1] = msg
 end
 
 timer.Create("DeathrunAnnouncementTimer",CvAnnouncements_Interval:GetFloat(),0,function()
 	if not CvAnnouncements_Enabled:GetBool() then return end
 
+	local counter = Announcer.Counter
+
 	ChatAddText(
 		ColorClouds,
 		"[",
-		DR.AnnouncerColor,
-		DR.AnnouncerName,
+		Announcer.Color,
+		Announcer.Name,
 		ColorClouds,
-		"] " .. AnnouncementMessages[AnnouncementCounter]
+		"] " .. Messages[counter]
 	)
 
-	AnnouncementCounter = next(AnnouncementMessages,AnnouncementCounter) or 1
+	Announcer.Counter = next(Messages,counter) or 1
 end)
 
 cvars.AddChangeCallback("deathrun_announcement_interval",function(_,_,new)
