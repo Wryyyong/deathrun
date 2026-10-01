@@ -98,7 +98,7 @@ concommand.Add("mapvote_list_maps",function(ply,cmd)
 	NetSend(ply)
 end)
 
-function MapVote.SyncMapList()
+function MapVote.UpdateMapVote()
 	NetStart("MapvoteUpdateMapList")
 		NetWriteTable(MapList)
 	NetBroadcast()
@@ -114,28 +114,27 @@ function MapVote.GetGoodMaps()
 	end
 
 	-- remove files that don't have the right prefix
+	--- @type string[]
 	local goodMaps = {}
+	local goodMapsCache = {}
 
+	--- @param filter string
 	for _,filter in ipairs,MapVote.Filter,0 do
 		local length = #filter
 
+		--- @param map string
 		for _,map in ipairs,mapList,0 do
 			if
 				map:sub(1,length) ~= filter
-			or	TableHasValue(goodMaps,map)
+			or	goodMapsCache[map]
 			then continue end
 
+			goodMapsCache[map] = true
 			goodMaps[#goodMaps + 1] = map
 		end
 	end
 
 	return goodMaps
-end
-
-function MapVote.UpdateMapVote()
-	NetStart("MapvoteUpdateMapList")
-		NetWriteTable(MapList)
-	NetBroadcast()
 end
 
 local function SendMapVoteStatus()
@@ -329,6 +328,7 @@ concommand.Add("mapvote_update_mapvote",function(ply,cmd)
 	MapVote.UpdateMapVote()
 end)
 
+--- @param suppress boolean?
 function MapVote.CheckRTV(suppress)
 	if MapVote.Active then return end
 

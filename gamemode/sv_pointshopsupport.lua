@@ -16,26 +16,28 @@ local HasPointShop = PS ~= nil
 local HasPointShop2 = Pointshop2 ~= nil
 local HasRedactedHub = RS ~= nil
 
-function DR.RewardPlayer(ply,amt,reason)
-	amt = amt or 0
+--- @param amount integer
+--- @param reason string
+function DR.RewardPlayer(ply,amount,reason)
+	amount = amount or 0
 
 	if HasPointShop then
-		ply:PS_GivePoints(amt)
+		ply:PS_GivePoints(amount)
 
 		if CvRewardMessage:GetBool() then
-			ply:PS_Notify("You were given " .. amt .. " points for " .. (reason or "playing") .. "!")
+			ply:PS_Notify("You were given " .. amount .. " points for " .. (reason or "playing") .. "!")
 		end
 	elseif HasPointShop2 then
-		ply:PS2_AddStandardPoints(amt,"You were given " .. amt .. " points for " .. (reason or "playing") .. "!",true)
+		ply:PS2_AddStandardPoints(amount,"You were given " .. amount .. " points for " .. (reason or "playing") .. "!",true)
 	elseif HasRedactedHub then
 		local storedMoney = RS:GetStoreMoney() or 0
 		local msg
 
-		if amt <= storedMoney then
-			ply:AddMoney(amt)
-			RS:SubStoreMoney(amt)
+		if amount <= storedMoney then
+			ply:AddMoney(amount)
+			RS:SubStoreMoney(amount)
 
-			msg = "You were given " .. amt .. " points for " .. (reason or "playing") .. "!"
+			msg = "You were given " .. amount .. " points for " .. (reason or "playing") .. "!"
 		else
 			msg = "Unfortunately, the store does not have enough points to reward you."
 		end

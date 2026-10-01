@@ -148,7 +148,7 @@ AddCSLuaFile("cl_fonts.lua")
 -- derma
 AddCSLuaFile("cl_derma.lua")
 
-for _,panelName in ipairs(DR.UI.DermaFiles) do
+for _,panelName in ipairs,DR.UI.DermaFiles,0 do
 	AddCSLuaFile(panelName)
 end
 
@@ -785,15 +785,17 @@ function DR.GetDeathAvoiderData(ply)
 	return data
 end
 
-function DR.PunishDeathAvoid(ply,amt)
+--- @param amount integer
+function DR.PunishDeathAvoid(ply,amount)
 	local data = DR.GetDeathAvoiderData(ply)
 
-	data.RoundsLeft = data.RoundsLeft + (amt or 1)
+	data.RoundsLeft = data.RoundsLeft + (amount or 1)
 	data.LastPunished = OsTime()
 end
 
-function DR.PardonDeathAvoid(ply,amt)
-	DR.PunishDeathAvoid(ply,-(amt or 1))
+--- @param amount integer
+function DR.PardonDeathAvoid(ply,amount)
+	DR.PunishDeathAvoid(ply,-(amount or 1))
 end
 
 -- returns how many rounds they still need to serve as punishment
@@ -896,6 +898,7 @@ end)
 function DR.RemoveSpeedMods()
 	if not CvDisableDefaultDeathSpeed:GetBool() then return end
 
+	--- @param ent Entity
 	for _,ent in ipairs,EntsFindByClass("player_speedmod"),0 do
 		SafeRemoveEntity(ent)
 	end

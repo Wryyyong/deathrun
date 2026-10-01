@@ -105,12 +105,22 @@ local CausesOfDeath = DR.CausesOfDeath or {
 }
 DR.CausesOfDeath = CausesOfDeath
 
+local CausesOfDeathHashes = DR.CausesOfDeathHashes or {}
+DR.CausesOfDeathHashes = CausesOfDeathHashes
+
+for _,cause in ipairs(CausesOfDeath) do
+	CausesOfDeathHashes[cause] = true
+end
+
 DR_KILLNOTE_BITS = DR.CalcMaxBits(#CausesOfDeath)
 
 --- @param cause string
 function DR.AddCauseOfDeath(cause)
+	if CausesOfDeathHashes[cause] then return end
+
 	local newIdx = #CausesOfDeath + 1
 
+	CausesOfDeathHashes[cause] = true
 	CausesOfDeath[newIdx] = cause
 
 	DR_KILLNOTE_BITS = DR.CalcMaxBits(newIdx)
@@ -184,8 +194,6 @@ end)
 local GroundForce = {}
 local VelocitySub = Vector(0,0,0)
 
---- @param ply Player
---- @param data CMoveData
 function GM:Move(ply,data)
 	if not IsValid(ply) then return end
 

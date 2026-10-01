@@ -132,6 +132,7 @@ function PlyMeta:ChangeSpectate()
 	self:SetupHands(self:GetObserverTarget())
 end
 
+--- @param num integer
 function PlyMeta:SpecModify(num)
 	local idx = self.SpecEntIdx or 1
 	local pool = PlayerFilters.PlayingAlive:GetPlayers()
@@ -231,6 +232,7 @@ end)
 
 local LastMsg = ""
 
+--- @param msg string
 function PlyMeta:DeathrunChatPrint(msg)
 	NetStart("DeathrunChatMessage")
 		NetWriteString(msg)
@@ -244,6 +246,7 @@ function PlyMeta:DeathrunChatPrint(msg)
 	LastMsg = printMsg
 end
 
+--- @param msg string
 function DR.ChatBroadcast(msg)
 	NetStart("DeathrunChatMessage")
 		NetWriteString(msg)

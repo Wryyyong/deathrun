@@ -56,7 +56,11 @@ local BeamPointCached6 = Vector()
 local BeamPointCached7 = Vector()
 local BeamPointCached8 = Vector()
 
-function ZoneSystem.DrawCuboid(posMin,posMax,col,alt)
+--- @param posMin Vector
+--- @param posMax Vector
+--- @param color Color?
+--- @param isDenialZone boolean?
+function ZoneSystem.DrawCuboid(posMin,posMax,color,isDenialZone)
 	local rangeX = posMax[1] - posMin[1]
 	local rangeY = posMax[2] - posMin[2]
 
@@ -86,37 +90,37 @@ function ZoneSystem.DrawCuboid(posMin,posMax,col,alt)
 
 	RenderSetMaterial(MatLine)
 
-	RenderDrawBeam(BeamPointCached1,BeamPointCached2,BaseBeamWidth,1,1,col)
-	RenderDrawBeam(BeamPointCached2,BeamPointCached3,BaseBeamWidth,1,1,col)
-	RenderDrawBeam(BeamPointCached3,BeamPointCached4,BaseBeamWidth,1,1,col)
-	RenderDrawBeam(BeamPointCached4,BeamPointCached1,BaseBeamWidth,1,1,col) -- top level
-	RenderDrawBeam(BeamPointCached5,BeamPointCached6,BaseBeamWidth,1,1,col) -- bottom level
-	RenderDrawBeam(BeamPointCached6,BeamPointCached7,BaseBeamWidth,1,1,col)
-	RenderDrawBeam(BeamPointCached7,BeamPointCached8,BaseBeamWidth,1,1,col)
-	RenderDrawBeam(BeamPointCached8,BeamPointCached5,BaseBeamWidth,1,1,col)
+	RenderDrawBeam(BeamPointCached1,BeamPointCached2,BaseBeamWidth,1,1,color)
+	RenderDrawBeam(BeamPointCached2,BeamPointCached3,BaseBeamWidth,1,1,color)
+	RenderDrawBeam(BeamPointCached3,BeamPointCached4,BaseBeamWidth,1,1,color)
+	RenderDrawBeam(BeamPointCached4,BeamPointCached1,BaseBeamWidth,1,1,color) -- top level
+	RenderDrawBeam(BeamPointCached5,BeamPointCached6,BaseBeamWidth,1,1,color) -- bottom level
+	RenderDrawBeam(BeamPointCached6,BeamPointCached7,BaseBeamWidth,1,1,color)
+	RenderDrawBeam(BeamPointCached7,BeamPointCached8,BaseBeamWidth,1,1,color)
+	RenderDrawBeam(BeamPointCached8,BeamPointCached5,BaseBeamWidth,1,1,color)
 
 	-- Vertical connectors
-	RenderDrawBeam(BeamPointCached1,BeamPointCached5,BaseBeamWidth,1,1,col)
-	RenderDrawBeam(BeamPointCached2,BeamPointCached6,BaseBeamWidth,1,1,col)
-	RenderDrawBeam(BeamPointCached3,BeamPointCached7,BaseBeamWidth,1,1,col)
-	RenderDrawBeam(BeamPointCached4,BeamPointCached8,BaseBeamWidth,1,1,col)
+	RenderDrawBeam(BeamPointCached1,BeamPointCached5,BaseBeamWidth,1,1,color)
+	RenderDrawBeam(BeamPointCached2,BeamPointCached6,BaseBeamWidth,1,1,color)
+	RenderDrawBeam(BeamPointCached3,BeamPointCached7,BaseBeamWidth,1,1,color)
+	RenderDrawBeam(BeamPointCached4,BeamPointCached8,BaseBeamWidth,1,1,color)
 
-	if not alt then return end
+	if not isDenialZone then return end
 
 	local widthBoost = BaseBeamWidth * .5 * (1 + MathFloor(CurTime() * 4) % 2)
 
-	RenderDrawBeam(BeamPointCached1,BeamPointCached3,widthBoost,1,1,col)
-	RenderDrawBeam(BeamPointCached2,BeamPointCached4,widthBoost,1,1,col)
-	RenderDrawBeam(BeamPointCached1,BeamPointCached6,widthBoost,1,1,col)
-	RenderDrawBeam(BeamPointCached2,BeamPointCached5,widthBoost,1,1,col)
-	RenderDrawBeam(BeamPointCached4,BeamPointCached7,widthBoost,1,1,col)
-	RenderDrawBeam(BeamPointCached3,BeamPointCached8,widthBoost,1,1,col)
-	RenderDrawBeam(BeamPointCached3,BeamPointCached6,widthBoost,1,1,col)
-	RenderDrawBeam(BeamPointCached2,BeamPointCached7,widthBoost,1,1,col)
-	RenderDrawBeam(BeamPointCached1,BeamPointCached8,widthBoost,1,1,col)
-	RenderDrawBeam(BeamPointCached4,BeamPointCached5,widthBoost,1,1,col)
-	RenderDrawBeam(BeamPointCached5,BeamPointCached7,widthBoost,1,1,col)
-	RenderDrawBeam(BeamPointCached6,BeamPointCached8,widthBoost,1,1,col)
+	RenderDrawBeam(BeamPointCached1,BeamPointCached3,widthBoost,1,1,color)
+	RenderDrawBeam(BeamPointCached2,BeamPointCached4,widthBoost,1,1,color)
+	RenderDrawBeam(BeamPointCached1,BeamPointCached6,widthBoost,1,1,color)
+	RenderDrawBeam(BeamPointCached2,BeamPointCached5,widthBoost,1,1,color)
+	RenderDrawBeam(BeamPointCached4,BeamPointCached7,widthBoost,1,1,color)
+	RenderDrawBeam(BeamPointCached3,BeamPointCached8,widthBoost,1,1,color)
+	RenderDrawBeam(BeamPointCached3,BeamPointCached6,widthBoost,1,1,color)
+	RenderDrawBeam(BeamPointCached2,BeamPointCached7,widthBoost,1,1,color)
+	RenderDrawBeam(BeamPointCached1,BeamPointCached8,widthBoost,1,1,color)
+	RenderDrawBeam(BeamPointCached4,BeamPointCached5,widthBoost,1,1,color)
+	RenderDrawBeam(BeamPointCached5,BeamPointCached7,widthBoost,1,1,color)
+	RenderDrawBeam(BeamPointCached6,BeamPointCached8,widthBoost,1,1,color)
 end
 
 local ColorCache = color_white:Copy()

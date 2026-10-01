@@ -1,6 +1,5 @@
 local ipairs = ipairs({})
 local pairs = next
-
 local setmetatable = setmetatable
 local tonumber = tonumber
 
@@ -192,6 +191,8 @@ net.Receive("DeathrunAddKillNote",function()
 	)
 end)
 
+--- @param msg string
+--- @param mode integer
 function HUD.AddKillNote(msg,mode)
 	TableInsert(KillfeedQueue,1,setmetatable({
 		["text"] = msg,
@@ -205,6 +206,8 @@ local KillfeedModeColors = {
 	Color(255,0,0),
 }
 
+--- @param x number
+--- @param y number
 function HUD.DrawKillfeed(x,y)
 	local dy = 0
 
@@ -440,6 +443,8 @@ end
 hook.Add("OnScreenSizeChanged","Deathrun_UpdateHudPositions",UpdateScreenSize)
 UpdateScreenSize(nil,nil,ScrW(),ScrH())
 
+--- @param x number
+--- @param y number
 function HUD.DrawCrosshair(x,y)
 	local thick = CvCrosshair_Thickness:GetFloat()
 	local thickHalf = thick * .5

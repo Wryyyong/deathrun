@@ -36,6 +36,7 @@ util.AddNetworkString("DeathrunSendMVPs")
 
 -- this can be used to switch or restart states
 -- send this each time round state changes so that the player can update themselves
+--- @param newState integer
 function RoundSystem.RoundSwitch(newState)
 	RoundSystem.CurrentStateData:Exit()
 	RoundSystem.UpdateState(newState):Enter()

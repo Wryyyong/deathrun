@@ -121,6 +121,7 @@ local Settings = {
 	{SETTINGTYPE_UPDATETEXT},
 }
 
+--- @param tbl table
 function DR.AddSetting(tbl)
 	Settings[#Settings + 1] = tbl
 end
