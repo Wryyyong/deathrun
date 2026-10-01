@@ -1,4 +1,4 @@
-local Iterator = ipairs({})
+local ipairs = ipairs({})
 
 local CurTime = CurTime
 local IsValid = IsValid
@@ -315,7 +315,7 @@ local function DrawMapRecords()
 		2
 	)
 
-	for idx,data in Iterator,MapRecordsCache,0 do
+	for idx,data in ipairs,MapRecordsCache,0 do
 		local offsetY = -150 + 100 * (idx - 1)
 
 		UI.ShadowTextSimple(

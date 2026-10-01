@@ -1,4 +1,4 @@
-local Iterator = ipairs({})
+local ipairs = ipairs({})
 
 local DR = DR
 
@@ -205,7 +205,7 @@ hook.Add("PlayerDisconnected","DeathrunFiltersDisconnect",function(ply)
 	print(ply,"Disconnect")
 
 	--- @param filter CRecipientFilter
-	for _,filter in Iterator,FilterList,0 do
+	for _,filter in ipairs,FilterList,0 do
 		filter:RemovePlayer(ply)
 	end
 

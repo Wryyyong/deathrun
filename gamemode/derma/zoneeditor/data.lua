@@ -1,4 +1,4 @@
-local Iterator = ipairs({})
+local ipairs = ipairs({})
 
 local DrawSimpleText = draw.SimpleText
 
@@ -35,7 +35,7 @@ function DR_ZoneData:Init()
 end
 
 function DR_ZoneData:Paint()
-	for idx,info in Iterator,self.InfoCache,0 do
+	for idx,info in ipairs,self.InfoCache,0 do
 		local offset = idx - 1
 
 		DrawSimpleText(info,"Deathrun_Derma_ExtraSmall",0,TextSize * offset,ColorGrey)

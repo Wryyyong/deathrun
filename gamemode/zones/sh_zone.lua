@@ -1,3 +1,5 @@
+local pairs = next
+
 local Vector = Vector
 
 --- @alias Zone {
@@ -40,7 +42,7 @@ ZoneSystem.ZonesExtraData = ZonesExtraData
 local ZoneBorder = Vector(20,20,20)
 
 function ZoneSystem.CreateZonesExtraData()
-	for name,zone in next,MapZones do
+	for name,zone in pairs,MapZones do
 		local posMin = Vector(zone.pos1)
 		local posMax = Vector(zone.pos2)
 

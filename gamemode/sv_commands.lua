@@ -1,5 +1,4 @@
-local Iterator = ipairs({})
-
+local ipairs = ipairs({})
 local print = print
 local tonumber = tonumber
 
@@ -83,7 +82,7 @@ concommand.Add("deathrun_respawn",function(ply,cmd,args)
 			local playersStr = ""
 
 			if #targetList > 0 then
-				for _,target in Iterator,targetList,0 do
+				for _,target in ipairs,targetList,0 do
 					target:Respawn()
 
 					playersStr = (playersStr ~= "" and ", " or playersStr) .. target:Nick()

@@ -1,4 +1,5 @@
-local Iterator = ipairs({})
+local ipairs = ipairs({})
+local pairs = next
 
 local setmetatable = setmetatable
 local tonumber = tonumber
@@ -227,7 +228,7 @@ function HUD.DrawKillfeed(x,y)
 
 	--local queueCountHalf = #KillfeedQueue * .5 * Distance
 
-	for idx,obj in Iterator,KillfeedQueue,0 do
+	for idx,obj in ipairs,KillfeedQueue,0 do
 		local hp = obj.hp - Distance
 		obj.hp = hp
 
@@ -264,7 +265,7 @@ function HUD.DrawKillfeed(x,y)
 
 	-- Handle notification cleanup separately for safety against undefined behaviour
 	-- from removing and shifting table entries while iterating over the table
-	for idx in next,KillfeedsToCleanup do
+	for idx in pairs,KillfeedsToCleanup do
 		TableRemove(KillfeedQueue,idx)
 
 		KillfeedsToCleanup[idx] = nil
@@ -1249,7 +1250,7 @@ local ColorNotifWhite = color_white:Copy()
 function HUD.DrawNotifications()
 	local fadeMul = 100 / (1 / FrameTime())
 
-	for idx,notif in Iterator,NotificationQueue,0 do
+	for idx,notif in ipairs,NotificationQueue,0 do
 		local text = notif.text
 		local x = notif.x
 		local y = notif.y
@@ -1292,7 +1293,7 @@ function HUD.DrawNotifications()
 
 	-- Handle notification cleanup separately for safety against undefined behaviour
 	-- from removing and shifting table entries while iterating over the table
-	for idx in next,NotificationsToCleanup do
+	for idx in pairs,NotificationsToCleanup do
 		TableRemove(NotificationQueue,idx)
 
 		NotificationsToCleanup[idx] = nil
@@ -1381,7 +1382,7 @@ local function DrawWinners(winteam,tbl_mvps,x,y,stalemate)
 	-- Draw MVPs
 	SurfaceSetDrawColor(teamColor)
 
-	for idx,mvp in Iterator,tbl_mvps,0 do
+	for idx,mvp in ipairs,tbl_mvps,0 do
 		local offsetY = yHeightGap + WinnerGapMh * idx
 
 		SurfaceDrawRect(

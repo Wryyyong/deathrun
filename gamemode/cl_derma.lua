@@ -1,4 +1,4 @@
-local Iterator = ipairs({})
+local ipairs = ipairs({})
 
 local Color = Color
 
@@ -130,7 +130,7 @@ function UI.GetWordWrapText(text,width,font)
 
 	local args = text:Split(" ")
 
-	for _,word in Iterator,args,0 do
+	for _,word in ipairs,args,0 do
 		local textWidth = SurfaceGetTextSize(displayLine .. word .. " ")
 
 		if textWidth > width then
@@ -144,7 +144,7 @@ function UI.GetWordWrapText(text,width,font)
 	return displayText .. displayLine
 end
 
-for _,panelName in Iterator,UI.DermaFiles,0 do
+for _,panelName in ipairs,UI.DermaFiles,0 do
 	include(panelName)
 end
 

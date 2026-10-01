@@ -1,3 +1,5 @@
+local pairs = next
+
 --- @class DR_ZoneEditorList : DR_MenuList
 local DR_ZoneEditorList = {}
 
@@ -64,7 +66,7 @@ function DR_ZoneEditorList:AddComboBox(caption,choiceTbl,defaultChoice)
 		18
 	)
 
-	for _,val in next,choiceTbl do
+	for _,val in pairs,choiceTbl do
 		comboBox:AddChoice(val)
 	end
 

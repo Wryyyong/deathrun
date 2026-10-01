@@ -1,7 +1,7 @@
-local Iterator = ipairs({})
-
-local next = next
+local ipairs = ipairs({})
 local istable = istable
+local next = next
+local pairs = next
 local print = print
 local setmetatable = setmetatable
 local tonumber = tonumber
@@ -72,7 +72,7 @@ util.AddNetworkString("DeathrunSendZones")
 --- @param ply Player?
 function ZoneSystem.SendZones(ply)
 	NetStart("DeathrunSendZones")
-		for name,zone in next,MapZones do
+		for name,zone in pairs,MapZones do
 			NetWriteBool(true)
 
 			NetWriteString(name)
@@ -143,7 +143,7 @@ function ZoneSystem.Load()
 
 	TableCopyFromTo(data,MapZones)
 
-	for name,zone in next,MapZones do
+	for name,zone in pairs,MapZones do
 		local color = zone.color
 
 		zone.color = Color(
@@ -217,7 +217,7 @@ hook.Add("Tick","ZoneTick",function()
 		local eyePos = ent:EyePos()
 		local inZones = ent.InZones
 
-		for name,zone in next,MapZones do
+		for name,zone in pairs,MapZones do
 			if not zone.type then continue end
 
 			local exData = ZonesExtraData[name]
@@ -558,7 +558,7 @@ hook.Add("DeathrunBeginPrep","DeathrunResetFinishers",function()
 		ply.HasFinishedMap = false
 	end
 
-	for idx in Iterator,FinishOrder,0 do
+	for idx in ipairs,FinishOrder,0 do
 		FinishOrder[idx] = nil
 	end
 end)
@@ -628,7 +628,7 @@ hook.Add("DeathrunPlayerEnteredZone","DeathrunPlayerFinishMap",function(ply,name
 
 	if place == 1 then
 		-- deaths lose sprint when the first runner finishes
-		for _,death in Iterator,PlayerFilters.Deaths:GetPlayers(),0 do
+		for _,death in ipairs,PlayerFilters.Deaths:GetPlayers(),0 do
 			death:SetRunSpeed(250)
 		end
 	end

@@ -1,4 +1,4 @@
-local Iterator = ipairs({})
+local ipairs = ipairs({})
 
 local IsFirstTimePredicted = IsFirstTimePredicted
 
@@ -59,7 +59,7 @@ local SETTINGTYPE_UPDATETEXT = 7
 --- @param list DR_MenuList
 --- @param settings table
 local function SetupMenuList(list,settings)
-	for _,data in Iterator,settings,0 do
+	for _,data in ipairs,settings,0 do
 		-- ConVar type
 		local cvType = data[1]
 

@@ -7,7 +7,7 @@ local CvRoundDuration = DR.ConVars.RoundDuration
 
 --[[
 local function AutoslayDelay()
-	for _,ply in Iterator,DR.GetAllPlaying(),0 do
+	for _,ply in ipairs,DR.GetAllPlaying(),0 do
 		local idleTime = DR.CheckIdleTime()
 
 		if idleTime <= CvAutoslayDelay:GetInt() then continue end

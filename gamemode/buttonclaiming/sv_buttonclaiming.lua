@@ -1,4 +1,5 @@
-local Iterator = ipairs({})
+local ipairs = ipairs({})
+local pairs = next
 
 local IsValid = IsValid
 
@@ -32,7 +33,7 @@ util.AddNetworkString("DeathrunButtonEntsUpdateSimple")
 hook.Add("InitPostEntity","SetupButtonEntData",function()
 	local maxId = -1
 
-	for _,ent in Iterator,EntsFindByClass("func_button"),0 do
+	for _,ent in ipairs,EntsFindByClass("func_button"),0 do
 		local mapId = ent:MapCreationID()
 		maxId = MathMax(mapId,maxId)
 
@@ -70,7 +71,7 @@ hook.Add("DeathrunClientInitialized","DeathrunSendButtonEntsToNewClient",functio
 	NetStart("DeathrunButtonEntsUpdateFull")
 		NetWriteUInt(entBits,16)
 
-		for mapId,data in next,ButtonEnts do
+		for mapId,data in pairs,ButtonEnts do
 			NetWriteBool(true)
 
 			NetWriteUInt(mapId,entBits)
@@ -98,14 +99,14 @@ TimerCreate("CheckButtonClaims",1 / 3,0,function()
 
 	local eyePosIndex = {}
 
-	for _,ply in Iterator,plyList,0 do
+	for _,ply in ipairs,plyList,0 do
 		eyePosIndex[ply] = ply:EyePos()
 	end
 
 	-- compile all the button entities into the table buttons
 	--- @param mapId integer
 	--- @param data ButtonEntData
-	for mapId,data in next,ButtonEnts do
+	for mapId,data in pairs,ButtonEnts do
 		local claimed = data.Claimed
 		local claimer = data.ClaimingPlayer
 		local pos = data.Position
@@ -113,7 +114,7 @@ TimerCreate("CheckButtonClaims",1 / 3,0,function()
 		local closestDist = math.huge
 		local closestPlayer
 
-		for ply,eyePos in next,eyePosIndex do
+		for ply,eyePos in pairs,eyePosIndex do
 			local dist = pos:DistToSqr(eyePos)
 			if dist >= closestDist then continue end
 

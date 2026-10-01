@@ -1,5 +1,5 @@
 --- @diagnostic disable: undefined-field
-local Iterator = ipairs({})
+local ipairs = ipairs({})
 
 local DR = DR
 
@@ -61,7 +61,7 @@ end)
 
 --- @param winningTeam integer
 hook.Add("DeathrunRoundWin","PointshopRewards",function(winningTeam)
-	for _,ply in Iterator,PlayerFilters.WinningTeams[winningTeam]:GetPlayers(),0 do
+	for _,ply in ipairs,PlayerFilters.WinningTeams[winningTeam]:GetPlayers(),0 do
 		DR.RewardPlayer(ply,CvWinReward:GetInt(),"Winning the round")
 	end
 end)

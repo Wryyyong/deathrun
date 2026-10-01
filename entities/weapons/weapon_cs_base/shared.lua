@@ -1,4 +1,5 @@
-local Iterator = ipairs({})
+local ipairs = ipairs({})
+local pairs = next
 
 -- Note from Arizard:
 -- This is a heavily modified version of the weapon_cs_base in Gravious' release of Flow Network Gamemodes.
@@ -272,7 +273,7 @@ function BulletLaserCallback(ply, tr, dmginfo)
 	newBeam.b = math.random(0,100)
 
 	if SERVER then
-		for k,v in Iterator,player.GetAll(),0 do
+		for k,v in ipairs,player.GetAll(),0 do
 			if v ~= ply then
 				net.Start("NewBeamMeme")
 				net.WriteString( util.TableToJSON(newBeam) )
@@ -640,7 +641,7 @@ if CLIENT then
 	local laser = Material('color.vmt')
 	hook.Add("PreDrawTranslucentRenderables", "Lasers", function()
 		render.SetMaterial(laser)
-		for k,v in next,WeaponBeams do
+		for k,v in pairs,WeaponBeams do
 			if v ~= nil then
 				if v.alpha > 0 then
 					render.DrawBeam( v.start, v.endpos, 1, 0, 1, Color(v.r,v.g,v.b, v.alpha) )

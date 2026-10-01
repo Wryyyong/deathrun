@@ -1,4 +1,4 @@
-local next = next
+local pairs = next
 
 local IsValid = IsValid
 local Lerp = Lerp
@@ -70,7 +70,7 @@ hook.Add("HUDPaint","DeathrunButtonClaimHUD",function()
 	local eyePos = localPly:EyePos()
 
 	--- @param data ButtonEntData
-	for _,data in next,ButtonEnts do
+	for _,data in pairs,ButtonEnts do
 		local pos = data.Position
 		local dist = eyePos:DistToSqr(pos)
 

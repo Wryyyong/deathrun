@@ -1,4 +1,4 @@
-local next = next
+local pairs = next
 local tostring = tostring
 
 local LocalPlayer = LocalPlayer
@@ -14,7 +14,7 @@ function DR_ZoneEditComboBox:Init()
 		18
 	)
 
-	for name in next,ZoneSystem.MapZones do
+	for name in pairs,ZoneSystem.MapZones do
 		self:AddChoice(name)
 	end
 

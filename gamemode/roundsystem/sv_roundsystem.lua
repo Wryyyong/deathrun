@@ -1,4 +1,4 @@
-local Iterator = ipairs({})
+local ipairs = ipairs({})
 
 local tonumber = tonumber
 
@@ -137,7 +137,7 @@ function RoundSystem.FinishRound(winningTeam)
 	local mostKills = 0
 	local mostKillsMvp
 
-	for _,ply in Iterator,survivorList,0 do
+	for _,ply in ipairs,survivorList,0 do
 		local killCount = ply.KillsThisRound or 0
 
 		if killCount <= mostKills then continue end
@@ -153,7 +153,7 @@ function RoundSystem.FinishRound(winningTeam)
 	NetStart("DeathrunSendMVPs")
 		NetWriteUInt(winningTeam,DR_TEAM_BITS)
 
-		for _,survivor in Iterator,survivorList,0 do
+		for _,survivor in ipairs,survivorList,0 do
 			NetWriteBool(true)
 			NetWritePlayer(survivor)
 		end

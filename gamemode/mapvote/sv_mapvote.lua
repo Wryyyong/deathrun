@@ -1,5 +1,5 @@
-local Iterator = ipairs({})
-
+local ipairs = ipairs({})
+local pairs = next
 local tostring = tostring
 
 local CurTime = CurTime
@@ -109,17 +109,17 @@ function MapVote.GetGoodMaps()
 	local mapList = FileFind("maps/*.bsp","GAME","nameasc")
 
 	-- cleanup the names
-	for idx,map in Iterator,mapList,0 do
+	for idx,map in ipairs,mapList,0 do
 		mapList[idx] = map:StripExtension():lower()
 	end
 
 	-- remove files that don't have the right prefix
 	local goodMaps = {}
 
-	for _,filter in Iterator,MapVote.Filter,0 do
+	for _,filter in ipairs,MapVote.Filter,0 do
 		local length = #filter
 
-		for _,map in Iterator,mapList,0 do
+		for _,map in ipairs,mapList,0 do
 			if
 				map:sub(1,length) ~= filter
 			or	TableHasValue(goodMaps,map)
@@ -204,7 +204,7 @@ function MapVote.FinishMapVote()
 	local winner
 	local winningVotes = 0
 
-	for map,voteCount in next,MapList do
+	for map,voteCount in pairs,MapList do
 		if winningVotes >= voteCount then continue end
 
 		winningVotes = voteCount
@@ -213,7 +213,7 @@ function MapVote.FinishMapVote()
 
 	TableEmpty(VotingMapsNoVotes)
 
-	for mapId in next,MapList do
+	for mapId in pairs,MapList do
 		VotingMapsNoVotes[#VotingMapsNoVotes + 1] = mapId
 	end
 
@@ -264,11 +264,11 @@ concommand.Add("mapvote_vote",function(ply,cmd,args)
 	if targetMap then
 		Players[ply] = targetMap
 
-		for map in next,MapList do
+		for map in pairs,MapList do
 			MapList[map] = 0
 		end
 
-		for _,map in next,Players do
+		for _,map in pairs,Players do
 			MapList[map] = MapList[map] + 1
 		end
 
@@ -305,7 +305,7 @@ concommand.Add("mapvote_nominate_map",function(ply,cmd,args)
 
 		PlayerNominations[ply] = nomNum
 
-		for _,plyNom in next,PlayerNominations do
+		for _,plyNom in pairs,PlayerNominations do
 			if TableHasValue(Nominations,plyNom) then continue end
 
 			Nominations[#Nominations + 1] = plyNom
@@ -345,7 +345,7 @@ function MapVote.CheckRTV(suppress)
 	local plyList = PlayerGetAll()
 	local plyCount = #plyList
 
-	for _,ply in Iterator,plyList,0 do
+	for _,ply in ipairs,plyList,0 do
 		local wantsRtv = ply.WantsRTV or false
 		ply.WantsRTV = wantsRtv
 

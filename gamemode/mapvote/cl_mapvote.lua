@@ -1,4 +1,5 @@
-local Iterator = ipairs({})
+local ipairs = ipairs({})
+local pairs = next
 
 local IsValid = IsValid
 local RunConsoleCommand = RunConsoleCommand
@@ -72,7 +73,7 @@ function MapVote.RepopulateMapList()
 
 	local curMap = GameGetMap()
 
-	for _,map in Iterator,maps,0 do
+	for _,map in ipairs,maps,0 do
 		if map == curMap then continue end
 
 		list:AddRow(map)
@@ -101,7 +102,7 @@ function MapVote.RefreshVotingPanel()
 	local winner
 	local winningVotes = 0
 
-	for map,voteCount in next,VotingMapList do
+	for map,voteCount in pairs,VotingMapList do
 		if winningVotes >= voteCount then continue end
 
 		winningVotes = voteCount
@@ -112,7 +113,7 @@ function MapVote.RefreshVotingPanel()
 
 	local num = 0
 
-	for map,voteCount in next,VotingMapList do
+	for map,voteCount in pairs,VotingMapList do
 		num = num + 1
 
 		VotingMapsNoVotes[#VotingMapsNoVotes + 1] = map

@@ -1,4 +1,4 @@
-local Iterator = ipairs({})
+local ipairs = ipairs({})
 
 local GameCleanUpMap = game.CleanUpMap
 
@@ -20,7 +20,7 @@ end
 function ROUNDSTATE:EnterRealm()
 	GameCleanUpMap()
 
-	for _,ply in Iterator,PlayerFilters.Playing:GetPlayers(),0 do
+	for _,ply in ipairs,PlayerFilters.Playing:GetPlayers(),0 do
 		ply:StripWeapons()
 		ply:RemoveAllAmmo()
 		ply:SetTeam(DR_TEAM_RUNNER)

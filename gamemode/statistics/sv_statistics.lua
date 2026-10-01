@@ -1,4 +1,5 @@
-local Iterator = ipairs({})
+local ipairs = ipairs({})
+local pairs = next
 
 local DR = DR
 
@@ -158,7 +159,7 @@ local function UpdateMapRecords(plyFinish)
 	MapRecordsCache = newRecords
 
 	net.Start("DeathrunSendMapRecords")
-		for _,data in Iterator,MapRecordsCache,0 do
+		for _,data in ipairs,MapRecordsCache,0 do
 			net.WriteBool(true)
 			net.WriteString(data.Name:sub(1,24))
 			net.WriteFloat(data.Seconds)
@@ -203,7 +204,7 @@ local function FindEndZone()
 	Stats.EndZoneExtraData = nil
 
 	--- @param zone Zone
-	for name,zone in next,ZoneSystem.MapZones do
+	for name,zone in pairs,ZoneSystem.MapZones do
 		if zone.type ~= "end" then continue end
 
 		Stats.EndZone = zone
@@ -285,7 +286,7 @@ hook.Add("PlayerDeath","DeathrunUpdateKillDeathStats",function(victim,_,attacker
 			UpdateStats(attacker,DR_STATS_KILLS)
 		end
 	elseif victimTeam == DR_TEAM_RUNNER then
-		for _,ply in Iterator,PlayerFilters.Deaths:GetPlayers(),0 do
+		for _,ply in ipairs,PlayerFilters.Deaths:GetPlayers(),0 do
 			UpdateStats(ply,DR_STATS_KILLS)
 		end
 	end
@@ -302,7 +303,7 @@ hook.Add("DeathrunRoundWin","DeathrunUpdateWinStats",function(winningTeam)
 
 	local column = WinningTeamToStats[winningTeam]
 
-	for _,ply in Iterator,PlayerFilters.WinningTeams[winningTeam]:GetPlayers(),0 do
+	for _,ply in ipairs,PlayerFilters.WinningTeams[winningTeam]:GetPlayers(),0 do
 		UpdateStats(ply,column)
 	end
 

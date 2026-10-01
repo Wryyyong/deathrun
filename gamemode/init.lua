@@ -1,5 +1,5 @@
-local Iterator = ipairs({})
-
+local ipairs = ipairs({})
+local pairs = next
 local print = print
 local tobool = tobool
 
@@ -276,7 +276,7 @@ DR.SpecBuffer = SpecBuffer
 
 local function FixSpecBuffer()
 	-- SUDDENTLY SPECTATOR IS MAGICALLY FIXED
-	for idx,spectator in Iterator,SpecBuffer,0 do
+	for idx,spectator in ipairs,SpecBuffer,0 do
 		if not IsValid(spectator) then continue end
 
 		SpawnSpectator(spectator)
@@ -384,7 +384,7 @@ function GM:DoPlayerDeath(ply)
 
 	ply:SelectWeapon("weapon_unarmed")
 
-	for _,weapon in Iterator,ply:GetWeapons(),0 do
+	for _,weapon in ipairs,ply:GetWeapons(),0 do
 		if
 			not IsValid(weapon)
 		or	UndroppableWeapons[weapon:GetClass()]
@@ -660,7 +660,7 @@ hook.Add("PlayerCanPickupWeapon","StopWeaponAbuseAustraliaSaysNo",function(ply,w
 	--- @type table<integer,bool>
 	local inventory = {}
 
-	for _,wepInv in Iterator,ply:GetWeapons(),0 do
+	for _,wepInv in ipairs,ply:GetWeapons(),0 do
 		local slot = wepInv:GetSlot()
 		if slot == nil then continue end
 
@@ -706,7 +706,7 @@ timer.Create("CheckIdlePlayers",1,0,function()
 	local idleTimer = CvIdleTimer:GetInt()
 	local idleWarn = idleTimer - 20
 
-	for _,ply in Iterator,DR.GetAllPlaying(),0 do
+	for _,ply in ipairs,DR.GetAllPlaying(),0 do
 		local idlePly = DR.CheckIdleTime()
 
 		if MathFloor(idlePly) == idleWarn then
@@ -752,7 +752,7 @@ DR.DeathAvoiders = DeathAvoiders
 function DR.SaveDeathAvoiders()
 	local oneDayAgo = OsTime() - 86400
 
-	for id64,data in next,DeathAvoiders do
+	for id64,data in pairs,DeathAvoiders do
 		if
 			data.RoundsLeft > 0 -- remove all players with 0 rounds left
 		or	data.LastPunished > oneDayAgo -- remove all players punished 24 hours ago
@@ -891,7 +891,7 @@ end)
 function DR.RemoveSpeedMods()
 	if not CvDisableDefaultDeathSpeed:GetBool() then return end
 
-	for _,ent in Iterator,EntsFindByClass("player_speedmod"),0 do
+	for _,ent in ipairs,EntsFindByClass("player_speedmod"),0 do
 		SafeRemoveEntity(ent)
 	end
 end

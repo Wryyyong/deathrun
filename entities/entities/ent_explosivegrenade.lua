@@ -1,4 +1,4 @@
-local Iterator = ipairs({})
+local ipairs = ipairs({})
 
 AddCSLuaFile( )
 ENT.Type 		= "anim"
@@ -80,7 +80,7 @@ if SERVER then
 		util.Effect( "Explosion", effectdata )
 
 		local entities = ents.FindInSphere( self:GetPos(), 300 )
-		for k, e in Iterator,entities,0 do
+		for k, e in ipairs,entities,0 do
 			local td = {
 				start = e:IsPlayer() and e:EyePos() or e:GetPos() + e:OBBCenter(),
 				endpos = self:GetPos(),

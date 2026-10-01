@@ -1,3 +1,5 @@
+local pairs = next
+
 local CurTime = CurTime
 local LocalPlayer = LocalPlayer
 
@@ -143,7 +145,7 @@ hook.Add("PostDrawTranslucentRenderables","DeathrunZoneCuboidDrawing",function()
 	local isRunner = team == DR_TEAM_RUNNER
 	local isDeath = team == DR_TEAM_DEATH
 
-	for name,zone in next,MapZones do
+	for name,zone in pairs,MapZones do
 		local type = zone.type
 		if not type then return end
 

@@ -1,4 +1,4 @@
-local Iterator = ipairs({})
+local ipairs = ipairs({})
 
 local DermaColors = DR.Colors.Derma
 
@@ -42,7 +42,7 @@ function DR_MultiPanel:SetTab(idx)
 	local buttons = self.Buttons
 	local panels = self.Panels
 
-	for _,tab in Iterator,tabs,0 do
+	for _,tab in ipairs,tabs,0 do
 		buttons[tab]:SetSelected(false)
 		panels[tab]:SetVisible(false)
 	end
@@ -101,7 +101,7 @@ function DR_MultiPanel:PerformLayout()
 	self.NavRight:SetPos(width - 24,0)
 	self.Spacer:SetSize(width,4)
 
-	for idx,tab in Iterator,tabs,0 do
+	for idx,tab in ipairs,tabs,0 do
 		local button = buttons[tab]
 		local offset = (idx - 1) * 92
 

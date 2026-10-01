@@ -1,4 +1,5 @@
-local Iterator = ipairs({})
+local ipairs = ipairs({})
+local pairs = next
 
 local IsValid = IsValid
 
@@ -73,7 +74,7 @@ function ROUNDSTATE:EnterRealm()
 		local lowestIdx = 0
 		local lowestPly
 
-		for idx,ply in next,listUnordered do
+		for idx,ply in pairs,listUnordered do
 			local deathTime = DeathTimes[ply]
 			if deathTime >= lowest then continue end
 
@@ -89,7 +90,7 @@ function ROUNDSTATE:EnterRealm()
 	local poolPunishment = DR.GetOnlineDeathAvoiders()
 
 	-- remove players from orderedpool and pool if they have been death 2 rounds in a row
-	for _,ply in Iterator,plyList,0 do
+	for _,ply in ipairs,plyList,0 do
 		local streak = DeathTeamStreaks[ply] or 0
 		if streak <= 0 then continue end
 
@@ -136,17 +137,17 @@ function ROUNDSTATE:EnterRealm()
 	end
 
 	-- Set our selected Deaths
-	for _,death in Iterator,deaths,0 do
+	for _,death in ipairs,deaths,0 do
 		death:SetTeam(DR_TEAM_DEATH)
 	end
 
 	-- Set everyone left in the pool as Runners
-	for _,runner in Iterator,pool,0 do
+	for _,runner in ipairs,pool,0 do
 		runner:SetTeam(DR_TEAM_RUNNER)
 	end
 
 	-- make sure nobody is dead??????
-	for _,ply in Iterator,plyList,0 do
+	for _,ply in ipairs,plyList,0 do
 		ply:StripWeapons()
 		ply:RemoveAllAmmo()
 		ply:Spawn()
@@ -167,7 +168,7 @@ function ROUNDSTATE:EnterRealm()
 		DeathTeamStreaks[ply] = deathTeamStreak
 	end
 
-	for ply,time in next,DeathTimes do
+	for ply,time in pairs,DeathTimes do
 		if IsValid(ply) then continue end
 
 		DeathTimes[ply] = nil
