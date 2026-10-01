@@ -8,8 +8,8 @@ local MathFloor = math.floor
 
 local NetReadBool = net.ReadBool
 local NetReadColor = net.ReadColor
-local NetReadDouble = net.ReadDouble
 local NetReadString = net.ReadString
+local NetReadVectorFull = net.ReadVectorFull
 
 local RenderDrawBeam = render.DrawBeam
 local RenderSetMaterial = render.SetMaterial
@@ -36,21 +36,9 @@ net.Receive("DeathrunSendZones",function(len)
 
 		zone.type = NetReadString()
 		zone.color = NetReadColor(true)
-		zone.pos1 = Vector(
-			NetReadDouble(),
-			NetReadDouble(),
-			NetReadDouble()
-		)
-		zone.pos2 = Vector(
-			NetReadDouble(),
-			NetReadDouble(),
-			NetReadDouble()
-		)
-		zone.dir = Vector(
-			NetReadDouble(),
-			NetReadDouble(),
-			NetReadDouble()
-		)
+		zone.pos1 = NetReadVectorFull()
+		zone.pos2 = NetReadVectorFull()
+		zone.dir = NetReadVectorFull()
 	end
 
 	TableCopyFromTo(newData,MapZones)

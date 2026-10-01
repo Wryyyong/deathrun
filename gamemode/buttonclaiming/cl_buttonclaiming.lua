@@ -3,14 +3,13 @@ local pairs = next
 local IsValid = IsValid
 local Lerp = Lerp
 local LocalPlayer = LocalPlayer
-local Vector = Vector
 
 local DrawSimpleText = draw.SimpleText
 
 local NetReadBool = net.ReadBool
-local NetReadDouble = net.ReadDouble
 local NetReadPlayer = net.ReadPlayer
 local NetReadUInt = net.ReadUInt
+local NetReadVectorFull = net.ReadVectorFull
 
 local DR = DR
 
@@ -41,7 +40,7 @@ net.Receive("DeathrunButtonEntsUpdateFull",function(len)
 			and	NetReadPlayer()
 			or	NULL
 			,
-			["Position"] = Vector(NetReadDouble(),NetReadDouble(),NetReadDouble()),
+			["Position"] = NetReadVectorFull(),
 		}
 	end
 end)

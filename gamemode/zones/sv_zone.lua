@@ -29,8 +29,8 @@ local NetSend = net.Send
 local NetStart = net.Start
 local NetWriteBool = net.WriteBool
 local NetWriteColor = net.WriteColor
-local NetWriteDouble = net.WriteDouble
 local NetWriteString = net.WriteString
+local NetWriteVectorFull = net.WriteVectorFull
 
 local PlayerIterator = player.Iterator
 
@@ -72,6 +72,8 @@ util.AddNetworkString("DeathrunSendZones")
 --- @param ply Player?
 function ZoneSystem.SendZones(ply)
 	NetStart("DeathrunSendZones")
+		--- @param name string
+		--- @param zone DR_ZoneData
 		for name,zone in pairs,MapZones do
 			NetWriteBool(true)
 
@@ -79,20 +81,9 @@ function ZoneSystem.SendZones(ply)
 			NetWriteString(zone.type)
 			NetWriteColor(zone.color,true)
 
-			local pos1 = zone.pos1
-			NetWriteDouble(pos1[1])
-			NetWriteDouble(pos1[2])
-			NetWriteDouble(pos1[3])
-
-			local pos2 = zone.pos2
-			NetWriteDouble(pos2[1])
-			NetWriteDouble(pos2[2])
-			NetWriteDouble(pos2[3])
-
-			local dir = zone.dir
-			NetWriteDouble(dir[1])
-			NetWriteDouble(dir[2])
-			NetWriteDouble(dir[3])
+			NetWriteVectorFull(zone.pos1)
+			NetWriteVectorFull(zone.pos2)
+			NetWriteVectorFull(zone.dir)
 		end
 
 		NetWriteBool(false)

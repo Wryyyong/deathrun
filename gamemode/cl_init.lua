@@ -20,6 +20,8 @@ local UtilTraceHull = util.TraceHull
 
 include("sh_init.lua")
 
+include("sh_net_ext.lua")
+
 include("convars/sh_convars.lua")
 include("convars/cl_convars.lua")
 

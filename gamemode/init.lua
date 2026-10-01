@@ -70,6 +70,11 @@ AddCSLuaFile("sh_init.lua")
 
 include("sh_init.lua")
 
+-- net library extensions
+AddCSLuaFile("sh_net_ext.lua")
+
+include("sh_net_ext.lua")
+
 -- player filters
 include("sv_playerfilters.lua")
 

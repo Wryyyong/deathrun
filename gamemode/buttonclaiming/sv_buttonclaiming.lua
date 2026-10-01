@@ -13,9 +13,9 @@ local NetBroadcast = net.Broadcast
 local NetSend = net.Send
 local NetStart = net.Start
 local NetWriteBool = net.WriteBool
-local NetWriteDouble = net.WriteDouble
 local NetWritePlayer = net.WritePlayer
 local NetWriteUInt = net.WriteUInt
+local NetWriteVectorFull = net.WriteVectorFull
 
 local TimerCreate = timer.Create
 
@@ -71,6 +71,8 @@ hook.Add("DeathrunClientInitialized","DeathrunSendButtonEntsToNewClient",functio
 	NetStart("DeathrunButtonEntsUpdateFull")
 		NetWriteUInt(entBits,16)
 
+		--- @param mapId integer
+		--- @param data ButtonEntData
 		for mapId,data in pairs,ButtonEnts do
 			NetWriteBool(true)
 
@@ -83,10 +85,7 @@ hook.Add("DeathrunClientInitialized","DeathrunSendButtonEntsToNewClient",functio
 				NetWritePlayer(data.ClaimingPlayer)
 			end
 
-			local pos = data.Position
-			NetWriteDouble(pos[1])
-			NetWriteDouble(pos[2])
-			NetWriteDouble(pos[3])
+			NetWriteVectorFull(data.Position)
 		end
 
 		NetWriteBool(false)
