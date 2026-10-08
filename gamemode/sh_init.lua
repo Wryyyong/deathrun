@@ -4,6 +4,7 @@ DR = DR or {}
 
 DR.ButtonClaimSystem = DR.ButtonClaimSystem or {}
 DR.ConVars = DR.ConVars or {}
+DR.GhostMode = DR.GhostMode or {}
 DR.MapVote = DR.MapVote or {}
 DR.PlayerFilters = DR.PlayerFilters or {}
 DR.RoundSystem = DR.RoundSystem or {}

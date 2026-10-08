@@ -31,6 +31,10 @@ include("shared.lua")
 
 include("sh_player.lua")
 
+include("ghostmode/sh_ghost.lua")
+include("ghostmode/sh_preventhooks.lua")
+include("ghostmode/cl_ghost.lua")
+
 include("roundsystem/sh_roundsystem.lua")
 include("roundsystem/cl_roundsystem.lua")
 

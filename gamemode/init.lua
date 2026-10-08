@@ -104,6 +104,15 @@ AddCSLuaFile("sh_player.lua")
 include("sh_player.lua")
 include("sv_player.lua")
 
+-- ghost mode
+AddCSLuaFile("ghostmode/sh_ghost.lua")
+AddCSLuaFile("ghostmode/sh_preventhooks.lua")
+AddCSLuaFile("ghostmode/cl_ghost.lua")
+
+include("ghostmode/sh_ghost.lua")
+include("ghostmode/sh_preventhooks.lua")
+include("ghostmode/sv_ghost.lua")
+
 -- pointshop support
 include("sv_pointshopsupport.lua")
 
