@@ -1,3 +1,9 @@
+local NetStart = net.Start
+local NetSend = net.Send
+local NetWriteBool = net.WriteBool
+
+local PlayerIterator = player.Iterator
+
 local DR = DR
 
 local RoundSystem = DR.RoundSystem
@@ -19,8 +25,8 @@ local function AddGhost(ply)
 	ply:SetBloodColor(DONT_BLEED)
 	ply:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
 
-	net.Start("GhostModeSendStart")
-	net.Send(ply)
+	NetStart("GhostModeSendStart")
+	NetSend(ply)
 end
 
 local function RemoveGhost(ply,silent)
@@ -31,9 +37,9 @@ local function RemoveGhost(ply,silent)
 	ply:SetNWFloat("GhostPrevTeam",-1)
 	ply:BeginSpectate()
 
-	net.Start("GhostModeSendEnd")
-		net.WriteBool(silent)
-	net.Send(ply)
+	NetStart("GhostModeSendEnd")
+		NetWriteBool(silent)
+	NetSend(ply)
 end
 
 --- @param ply Player
@@ -68,7 +74,7 @@ hook.Add("PlayerSay","PlayerRequestGhostCheck",function(ply,text)
 end)
 
 local function ResetGhosts()
-	for _,ply in player.Iterator() do
+	for _,ply in PlayerIterator() do
 		if not ply:IsGhost() then continue end
 
 		SetGhost(ply,false,true)
@@ -79,6 +85,6 @@ hook.Add("DeathrunBeginWaiting","ResetGhosts",ResetGhosts)
 hook.Add("DeathrunBeginPrep","ResetGhosts",ResetGhosts)
 
 hook.Add("PlayerDeath","GhostModeNotif",function(ply)
-	net.Start("GhostModeSendNotif")
-	net.Send(ply)
+	NetStart("GhostModeSendNotif")
+	NetSend(ply)
 end)

@@ -1,12 +1,18 @@
 local ipairs = ipairs({})
 local pairs = next
 
+local DrawColorModify = DrawColorModify
 local FrameTime = FrameTime
 local Lerp = Lerp
 
 local ChatAddText = chat.AddText
 
 local DrawSimpleText = draw.SimpleText
+
+local HookAdd = hook.Add
+local HookRemove = hook.Remove
+
+local NetReadBool = net.ReadBool
 
 local SurfaceDrawRect = surface.DrawRect
 local SurfaceSetDrawColor = surface.SetDrawColor
@@ -43,13 +49,13 @@ local NotifsToRemove = {}
 local function HandleNotifications()
 	if #Notifications <= 0 then return end
 
-	local height = ScrH()
+	local height = DR.ScreenHeight
 	local heightMinus64 = height - 64
 
 	local frameTime = FrameTime()
 	local frameTimeDoubled = frameTime * 2
 
-	local x = ScrW() * .5
+	local x = DR.ScreenWidth * .5
 	local xMinusWidthHalf = x - NotifWidthHalf
 
 	for idx,notif in ipairs,Notifications,0 do
@@ -104,8 +110,8 @@ net.Receive("GhostModeSendNotif",function()
 end)
 
 net.Receive("GhostModeSendStart",function()
-	hook.Add("RenderScreenspaceEffects","HandleCustomGhostScreenEffects",HandleCustomGhostScreenEffects)
-	hook.Add("HUDPaint","HandleNotifications",HandleNotifications)
+	HookAdd("RenderScreenspaceEffects","HandleCustomGhostScreenEffects",HandleCustomGhostScreenEffects)
+	HookAdd("HUDPaint","HandleNotifications",HandleNotifications)
 
 	ChatAddText(
 		ChatColor,
@@ -118,10 +124,10 @@ Type !ghost again to exit Ghost Mode.
 end)
 
 net.Receive("GhostModeSendEnd",function()
-	hook.Remove("RenderScreenspaceEffects","HandleCustomGhostScreenEffects")
-	hook.Remove("HUDPaint","HandleNotifications")
+	HookRemove("RenderScreenspaceEffects","HandleCustomGhostScreenEffects")
+	HookRemove("HUDPaint","HandleNotifications")
 
-	if not net.ReadBool() then return end
+	if not NetReadBool() then return end
 
 	ChatAddText(
 		ChatColor,
