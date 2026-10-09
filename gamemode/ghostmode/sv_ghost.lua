@@ -8,10 +8,6 @@ local DR = DR
 
 local RoundSystem = DR.RoundSystem
 
-local GHOST_COMMAND_BASE = "ghost"
-local GHOST_COMMAND_EXCLAMATION = "!" .. GHOST_COMMAND_BASE
-local GHOST_COMMAND_SLASH = "/" .. GHOST_COMMAND_BASE
-
 RunConsoleCommand("mp_show_voice_icons",0)
 
 util.AddNetworkString("GhostModeSendNotif")
@@ -57,19 +53,13 @@ local function SetGhost(ply,status,silent)
 	end
 end
 
-hook.Add("PlayerSay","PlayerRequestGhostCheck",function(ply,text)
-	text = text:lower()
-
-	if text == GHOST_COMMAND_EXCLAMATION or text == GHOST_COMMAND_SLASH then
-		if not ply:Alive() and RoundSystem.CurrentState == DR_ROUND_ACTIVE then
-			SetGhost(ply,true)
-		elseif ply:IsGhost() then
-			SetGhost(ply,false)
-		else
-			ply:ChatPrint("You can't do that right now.")
-		end
-
-		return ""
+DR.AddChatCommand("ghost",function(ply)
+	if not ply:Alive() and RoundSystem.CurrentState == DR_ROUND_ACTIVE then
+		SetGhost(ply,true)
+	elseif ply:IsGhost() then
+		SetGhost(ply,false)
+	else
+		ply:ChatPrint("You can't do that right now.")
 	end
 end)
 

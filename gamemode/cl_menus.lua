@@ -15,6 +15,7 @@ local CvPlayRoundCues = ConVars.PlayRoundCues
 local CvRenderZones = ConVars.RenderZones
 local CvShowInfo = ConVars.ShowInfo
 local CvSpectateOnly = ConVars.SpectateOnly
+local CvAutoGhostMode = ConVars.AutoGhostMode
 
 local ConVarsAnnouncements = ConVars.Announcements
 local CvAnnouncements_Enabled = ConVarsAnnouncements.Enabled
@@ -117,6 +118,7 @@ local Settings = {
 	{SETTINGTYPE_BOOLEAN,"Show the info menu when joining the server",CvShowInfo},
 	{SETTINGTYPE_BOOLEAN,"Play audible round cues at the start and end of each round",CvPlayRoundCues},
 	{SETTINGTYPE_BOOLEAN,"Enable AutoJump (Max velocity is capped depending on server settings)",CvAutoJump_Enabled},
+	{SETTINGTYPE_BOOLEAN,"Automatically enter Ghost Mode shortly after dying",CvAutoGhostMode},
 
 	{SETTINGTYPE_UPDATETEXT},
 }

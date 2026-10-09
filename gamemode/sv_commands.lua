@@ -15,6 +15,8 @@ local NetWriteTable = net.WriteTable
 local PlayerGetAll = player.GetAll
 local PlayerIterator = player.Iterator
 
+local TableRemove = table.remove
+
 local UtilTraceHull = util.TraceHull
 
 local DR = DR
@@ -174,23 +176,14 @@ hook.Add("PlayerSay","ProcessDeathrunChat",function(ply,text)
 	local args = text:Split(" ")
 	local cmdArg = args[1]
 
-	local prefix = cmdArg:sub(1,1)
-	if not ValidPrefixes[prefix] then return end
+	if not ValidPrefixes[cmdArg:sub(1,1)] then return end
 
 	local func = ChatCommands[cmdArg:sub(2,-1)]
 	if not func then return end
 
-	--- @type string[]
-	local newArgs = {}
-	local argCount = #args
+	TableRemove(args,1)
 
-	if argCount > 1 then
-		for idx = 2,argCount do
-			newArgs[idx - 1] = args[idx]
-		end
-	end
-
-	func(ply,newArgs)
+	func(ply,args)
 
 	return ""
 end)

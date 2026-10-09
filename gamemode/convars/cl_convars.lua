@@ -58,6 +58,15 @@ ConVars.SpectateOnly = CreateConVar(
 	1
 )
 
+ConVars.AutoGhostMode = CreateConVar(
+	"deathrun_auto_ghostmode",
+	0,
+	DefaultFlags,
+	nil,
+	0,
+	1
+)
+
 -- AutoJump
 local AutoJump = ConVars.AutoJump
 

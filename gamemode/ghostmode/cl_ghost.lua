@@ -19,7 +19,12 @@ local SurfaceSetDrawColor = surface.SetDrawColor
 
 local TableRemove = table.remove
 
+local TimerCreate = timer.Create
+local TimerRemove = timer.Remove
+
 local Notifications = DR.GhostMode.Notifications
+
+local CvAutoGhostMode = DR.ConVars.AutoGhostMode
 
 local ColorMod = {
 	["$pp_colour_addr"] = 0,
@@ -102,7 +107,17 @@ local function HandleNotifications()
 	end
 end
 
+local function AutoGhostModeFunc()
+	RunConsoleCommand("say","!ghost")
+end
+
 net.Receive("GhostModeSendNotif",function()
+	if CvAutoGhostMode:GetBool() then
+		TimerCreate("AutoGhostModeTimer",3,1,AutoGhostModeFunc)
+
+		return
+	end
+
 	ChatAddText(
 		ChatColor,
 		[[Type !ghost in chat to continue practicing your movement in peace while waiting for the next round.]]
@@ -110,6 +125,8 @@ net.Receive("GhostModeSendNotif",function()
 end)
 
 net.Receive("GhostModeSendStart",function()
+	TimerRemove("AutoGhostModeTimer")
+
 	HookAdd("RenderScreenspaceEffects","HandleCustomGhostScreenEffects",HandleCustomGhostScreenEffects)
 	HookAdd("HUDPaint","HandleNotifications",HandleNotifications)
 
@@ -124,6 +141,8 @@ Type !ghost again to exit Ghost Mode.
 end)
 
 net.Receive("GhostModeSendEnd",function()
+	TimerRemove("AutoGhostModeTimer")
+
 	HookRemove("RenderScreenspaceEffects","HandleCustomGhostScreenEffects")
 	HookRemove("HUDPaint","HandleNotifications")
 
