@@ -55,7 +55,6 @@ local SETTINGTYPE_BOOLEAN = 3
 local SETTINGTYPE_NUMBER = 4
 local SETTINGTYPE_INTEGER = 5
 local SETTINGTYPE_CROSSHAIRCOLORMIXER = 6
-local SETTINGTYPE_UPDATETEXT = 7
 
 --- @param list DR_MenuList
 --- @param settings table
@@ -77,8 +76,6 @@ local function SetupMenuList(list,settings)
 		elseif cvType == SETTINGTYPE_CROSSHAIRCOLORMIXER then
 			list:Add("DR_MenuSpacerSmall")
 			list:Add("DR_CrosshairColorMixer")
-		elseif cvType == SETTINGTYPE_UPDATETEXT then
-			list:AddUpdateText()
 		end
 	end
 end
@@ -119,8 +116,6 @@ local Settings = {
 	{SETTINGTYPE_BOOLEAN,"Play audible round cues at the start and end of each round",CvPlayRoundCues},
 	{SETTINGTYPE_BOOLEAN,"Enable AutoJump (Max velocity is capped depending on server settings)",CvAutoJump_Enabled},
 	{SETTINGTYPE_BOOLEAN,"Automatically enter Ghost Mode shortly after dying",CvAutoGhostMode},
-
-	{SETTINGTYPE_UPDATETEXT},
 }
 
 --- @param tbl table

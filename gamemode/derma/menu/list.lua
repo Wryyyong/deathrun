@@ -78,13 +78,4 @@ function DR_MenuList:AddInteger(text,cvar,forceMax)
 	return integer,slider
 end
 
-function DR_MenuList:AddUpdateText()
-	self:Add("DR_MenuSpacerLarge")
-
-	local update = self:Add("DR_MenuImportant")
-	update:SetText("Last Significant Update: " .. DR.TimeStampFormatted)
-
-	return update
-end
-
 derma.DefineControl("DR_MenuList","",DR_MenuList,"DR_List")
