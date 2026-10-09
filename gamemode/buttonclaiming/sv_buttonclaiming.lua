@@ -7,9 +7,9 @@ local EntsFindByClass = ents.FindByClass
 
 local HookRun = hook.Run
 
+local MathHuge = math.huge
 local MathMax = math.max
 
-local NetBroadcast = net.Broadcast
 local NetSend = net.Send
 local NetStart = net.Start
 local NetWriteBool = net.WriteBool
@@ -17,22 +17,40 @@ local NetWritePlayer = net.WritePlayer
 local NetWriteUInt = net.WriteUInt
 local NetWriteVectorFull = net.WriteVectorFull
 
+local TableEmpty = table.Empty
+
 local TimerCreate = timer.Create
 
 local DR = DR
 
 local ButtonClaimSystem = DR.ButtonClaimSystem
-local PlayerFilters = DR.PlayerFilters
+local PlayerFilter_DeathsAlive = DR.PlayerFilters.DeathsAlive
 
 local ButtonEnts = ButtonClaimSystem.ButtonEnts
 local ClaimRadius = ButtonClaimSystem.ClaimRadius
 
+local OutputList = {
+	"OnPressed",
+}
+
+for idx,outputName in ipairs,OutputList,0 do
+	OutputList[idx] = outputName .. " DeathrunButtonClaimingOutputHandler:RunPassedCode:hook.Run('DeathrunButtonClaiming_" .. outputName .. "'):0:-1"
+end
+
 util.AddNetworkString("DeathrunButtonEntsUpdateFull")
 util.AddNetworkString("DeathrunButtonEntsUpdateSimple")
 
-hook.Add("InitPostEntity","SetupButtonEntData",function()
+local function SetupOutputHandler()
+	local outputHandler = ents.Create("lua_run") --- @cast outputHandler -NULL
+
+	outputHandler:SetName("DeathrunButtonClaimingOutputHandler")
+	outputHandler:Spawn()
+
 	local maxId = -1
 
+	TableEmpty(ButtonEnts)
+
+	--- @param ent Entity
 	for _,ent in ipairs,EntsFindByClass("func_button"),0 do
 		local mapId = ent:MapCreationID()
 		maxId = MathMax(mapId,maxId)
@@ -41,14 +59,26 @@ hook.Add("InitPostEntity","SetupButtonEntData",function()
 		pos:Add(ent:OBBCenter())
 
 		ButtonEnts[mapId] = {
+			["Active"] = true,
 			["Claimed"] = false,
 			["ClaimingPlayer"] = NULL,
+			["Entity"] = ent,
 			["Position"] = pos,
 		}
+
+		for _,output in ipairs,OutputList,0 do
+			ent:Fire("AddOutput",output)
+		end
+
+		ent:RemoveFlags(512) -- 512: Damage Activates
 	end
 
 	ButtonClaimSystem.EntBits = DR.CalcMaxBits(maxId)
-end)
+end
+
+for _,hookName in ipairs,{"InitPostEntity","PostCleanupMap"},0 do
+	hook.Add(hookName,"DeathrunButtonClaimingSetupOutputHandler",SetupOutputHandler)
+end
 
 --- @param mapId integer
 --- @param data ButtonEntData
@@ -57,12 +87,13 @@ local function SingleUpdate(mapId,data)
 		NetWriteUInt(mapId,ButtonClaimSystem.EntBits)
 
 		local claimed = data.Claimed
+		NetWriteBool(data.Active)
 		NetWriteBool(claimed)
 
 		if claimed then
 			NetWritePlayer(data.ClaimingPlayer)
 		end
-	NetBroadcast()
+	NetSend(PlayerFilter_DeathsAlive)
 end
 
 hook.Add("DeathrunClientInitialized","DeathrunSendButtonEntsToNewClient",function(ply)
@@ -79,6 +110,7 @@ hook.Add("DeathrunClientInitialized","DeathrunSendButtonEntsToNewClient",functio
 			NetWriteUInt(mapId,entBits)
 
 			local claimed = data.Claimed
+			NetWriteBool(data.Active)
 			NetWriteBool(claimed)
 
 			if claimed then
@@ -93,7 +125,7 @@ hook.Add("DeathrunClientInitialized","DeathrunSendButtonEntsToNewClient",functio
 end)
 
 TimerCreate("CheckButtonClaims",1 / 3,0,function()
-	local plyList = PlayerFilters.DeathsAlive:GetPlayers()
+	local plyList = PlayerFilter_DeathsAlive:GetPlayers()
 	if #plyList <= 0 then return end
 
 	local eyePosIndex = {}
@@ -110,7 +142,7 @@ TimerCreate("CheckButtonClaims",1 / 3,0,function()
 		local claimer = data.ClaimingPlayer
 		local pos = data.Position
 
-		local closestDist = math.huge
+		local closestDist = MathHuge
 		local closestPlayer
 
 		for ply,eyePos in pairs,eyePosIndex do
@@ -121,7 +153,7 @@ TimerCreate("CheckButtonClaims",1 / 3,0,function()
 			closestPlayer = ply
 		end
 
-		local currentClaimPlyDist = math.huge
+		local currentClaimPlyDist = MathHuge
 
 		if IsValid(claimer) then
 			currentClaimPlyDist = pos:DistToSqr(eyePosIndex[claimer])
@@ -143,7 +175,38 @@ TimerCreate("CheckButtonClaims",1 / 3,0,function()
 	end
 end)
 
-hook.Add("PlayerUse","DeathrunButtonClaimPlayerUse",function(ply,ent)
+local function IsButtonActive(ent)
+	return
+		ent:GetInternalVariable("m_toggle_state") == 1 -- TS_AT_TOP
+	and	not ent:GetInternalVariable("m_bLocked")
+end
+
+hook.Add("DeathrunButtonClaiming_OnPressed","DeathrunButtonClaiming_LogicOnPressed",function()
+	--- @type Entity?
+	local button = CALLER
+	if not button then return end
+
+	local mapId = button:MapCreationID()
+	local data = ButtonEnts[mapId]
+
+	data.Active = false
+	SingleUpdate(mapId,data)
+end)
+
+TimerCreate("DeathrunButtonClaimingCheckInactiveButtons",1,0,function()
+	--- @param mapId integer
+	--- @param data ButtonEntData
+	for mapId,data in pairs,ButtonEnts do
+		if data.Active then continue end
+		if not IsButtonActive(data.Entity) then continue end
+
+		data.Active = true
+
+		SingleUpdate(mapId,data)
+	end
+end)
+
+hook.Add("PlayerUse","DeathrunButtonClaimingPlayerUse",function(ply,ent)
 	local plyTeam = ply:Team()
 
 	if
@@ -167,8 +230,7 @@ hook.Add("PlayerUse","DeathrunButtonClaimPlayerUse",function(ply,ent)
 	or	data.ClaimingPlayer == ply
 	then
 		if
-			ent:GetInternalVariable("m_toggle_state") == 1 -- TS_AT_TOP
-		and	not ent:GetInternalVariable("m_bLocked")
+			IsButtonActive(ent)
 		and	ply:KeyPressed(IN_USE)
 		then
 			HookRun("DeathrunButtonActivated",ply,ent)

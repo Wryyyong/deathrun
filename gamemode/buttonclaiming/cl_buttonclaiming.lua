@@ -31,9 +31,11 @@ net.Receive("DeathrunButtonEntsUpdateFull",function(len)
 	while NetReadBool() do
 		local mapId = NetReadUInt(entBits)
 
+		local active = NetReadBool()
 		local claimed = NetReadBool()
 
 		ButtonEnts[mapId] = {
+			["Active"] = active,
 			["Claimed"] = claimed,
 			["ClaimingPlayer"] =
 				claimed
@@ -49,6 +51,7 @@ net.Receive("DeathrunButtonEntsUpdateSimple",function(len)
 	local data = ButtonEnts[NetReadUInt(ButtonClaimSystem.EntBits)]
 	if not data then return end
 
+	data.Active = NetReadBool()
 	local claimed = NetReadBool()
 	data.Claimed = claimed
 
@@ -70,6 +73,8 @@ hook.Add("HUDPaint","DeathrunButtonClaimHUD",function()
 
 	--- @param data ButtonEntData
 	for _,data in pairs,ButtonEnts do
+		if not data.Active then continue end
+
 		local pos = data.Position
 		local dist = eyePos:DistToSqr(pos)
 
@@ -86,10 +91,12 @@ hook.Add("HUDPaint","DeathrunButtonClaimHUD",function()
 		local claimed = data.Claimed
 		local claimer = data.ClaimingPlayer
 
-		local claimText = "Unclaimed"
+		local claimText
 
 		if claimed and IsValid(claimer) then
 			claimText = "Claimed by " .. claimer:Nick()
+		else
+			claimText = "Unclaimed"
 		end
 
 		local toScreen = pos:ToScreen()
