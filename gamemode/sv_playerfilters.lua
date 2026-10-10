@@ -193,7 +193,7 @@ local WinningTeamsAlive = {
 PlayerFilters.WinningTeamsAlive = WinningTeamsAlive
 
 hook.Add("DeathrunClientInitialized","DeathrunFiltersConnect",function(ply)
-	print(ply,"Connect")
+	--print(ply,"Connect")
 
 	All:AddPlayer(ply)
 
@@ -202,7 +202,7 @@ hook.Add("DeathrunClientInitialized","DeathrunFiltersConnect",function(ply)
 end)
 
 hook.Add("PlayerDisconnected","DeathrunFiltersDisconnect",function(ply)
-	print(ply,"Disconnect")
+	--print(ply,"Disconnect")
 
 	--- @param filter CRecipientFilter
 	for _,filter in ipairs,FilterList,0 do
@@ -214,7 +214,7 @@ hook.Add("PlayerDisconnected","DeathrunFiltersDisconnect",function(ply)
 end)
 
 hook.Add("PlayerChangedTeam","DeathrunFiltersChangeTeam",function(ply,teamOld,teamNew)
-	print(ply,"ChangedTeam",teamOld,teamNew)
+	--print(ply,"ChangedTeam",teamOld,teamNew)
 
 	AllByTeam[teamOld]:RemovePlayer(ply)
 	AllByTeam[teamNew]:AddPlayer(ply)
@@ -229,7 +229,7 @@ hook.Add("PlayerChangedTeam","DeathrunFiltersChangeTeam",function(ply,teamOld,te
 end)
 
 hook.Add("PlayerSpawn","DeathrunFiltersPlayerSpawn",function(ply)
-	print(ply,"Spawn")
+	--print(ply,"Spawn")
 
 	Dead:RemovePlayer(ply)
 	Alive:AddPlayer(ply)
@@ -247,7 +247,7 @@ hook.Add("PlayerSpawn","DeathrunFiltersPlayerSpawn",function(ply)
 end)
 
 hook.Add("PostPlayerDeath","DeathrunFiltersPlayerDeath",function(ply)
-	print(ply,"Death")
+	--print(ply,"Death")
 
 	Alive:RemovePlayer(ply)
 	Dead:AddPlayer(ply)
