@@ -57,6 +57,7 @@ local ZoneDataFilepath = ZoneDataDir .. "/" .. GameGetMap() .. ".json"
 
 --- @type Zone
 local Zone_Default = {
+	["enabled"] = true,
 	["type"] = "start",
 	["color"] = color_white,
 	["pos1"] = vector_origin,
@@ -78,6 +79,7 @@ function ZoneSystem.SendZones(ply)
 			NetWriteBool(true)
 
 			NetWriteString(name)
+			NetWriteBool(zone.enabled)
 			NetWriteString(zone.type)
 			NetWriteColor(zone.color,true)
 
@@ -170,6 +172,7 @@ function ZoneSystem.Create(name,pos1,pos2,dir,color,type,force)
 	or	force
 	then
 		MapZones[name] = setmetatable({
+			["enabled"] = true,
 			["type"] = type,
 			["color"] = color,
 			["pos1"] = pos1,
@@ -202,14 +205,19 @@ hook.Add("Tick","ZoneTick",function()
 	SkipCounter = (SkipCounter + 1) % ScanRate
 	if SkipCounter ~= 0 then return end
 
-	for _,ent in PlayerIterator() do
-		if not ent.Initialized then continue end
+	for _,ply in PlayerIterator() do
+		if not ply.Initialized then continue end
 
-		local eyePos = ent:EyePos()
-		local inZones = ent.InZones
+		local eyePos = ply:EyePos()
+		local inZones = ply.InZones
 
 		for name,zone in pairs,MapZones do
-			if not zone.type then continue end
+			if
+				not (
+					zone.enabled
+				and	zone.type
+				)
+			then continue end
 
 			local exData = ZonesExtraData[name]
 			local posMin = exData.minBorder
@@ -218,15 +226,17 @@ hook.Add("Tick","ZoneTick",function()
 			local isWithinZone = eyePos:WithinAABox(posMin,posMax)
 			local hasChanged
 
+			local inZoneData = inZones[name]
+
 			if
-				inZones[name]
+				inZoneData
 			and	not isWithinZone
 			then
 				-- if we remember them being inside, but they arent anymore, then they left.
 				inZones[name] = false
 				hasChanged = true
 			elseif
-				not inZones[name]
+				not inZoneData
 			and	isWithinZone
 			then
 				-- if we don't remember them being inside, but they are inside, then they mustve just entered the zone.
@@ -237,11 +247,11 @@ hook.Add("Tick","ZoneTick",function()
 			if
 				not (
 					hasChanged
-				and	inZones[name]
+				and	inZoneData
 				)
 			then continue end
 
-			HookRun("DeathrunPlayerEnteredZone",ent,name,zone)
+			HookRun("DeathrunPlayerEnteredZone",ply,name,zone)
 		end
 	end
 end)

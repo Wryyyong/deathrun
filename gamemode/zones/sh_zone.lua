@@ -3,6 +3,7 @@ local pairs = next
 local Vector = Vector
 
 --- @alias Zone {
+---		enabled: boolean,
 --- 	type: string,
 --- 	color: Color,
 --- 	pos1: Vector,

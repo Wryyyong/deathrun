@@ -34,6 +34,7 @@ net.Receive("DeathrunSendZones",function(len)
 		local zone = {}
 		newData[NetReadString()] = zone
 
+		zone.enabled = NetReadBool()
 		zone.type = NetReadString()
 		zone.color = NetReadColor(true)
 		zone.pos1 = NetReadVectorFull()
@@ -139,7 +140,12 @@ hook.Add("PostDrawTranslucentRenderables","DeathrunZoneCuboidDrawing",function()
 
 	for name,zone in pairs,MapZones do
 		local type = zone.type
-		if not type then return end
+		if
+			not (
+				zone.enabled
+			and	type
+			)
+		then continue end
 
 		local exData = ZonesExtraData[name]
 

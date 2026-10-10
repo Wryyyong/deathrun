@@ -10,8 +10,11 @@ local DR_ZoneData = {
 	["InfoCache"] = {},
 }
 
+local TextSize = 16
+
 local InfoCache_Default = {
 	"Zone Name: ---------",
+	"Enabled: ---------",
 	"Zone Type: ---------",
 	"Pos1: --- --- ---",
 	"Pos2: --- --- ---",
@@ -22,8 +25,12 @@ local InfoCache_Meta = {
 	["__index"] = InfoCache_Default,
 }
 
-local TextSize = 16
 local Height = #InfoCache_Default * TextSize
+local OffsetCache = {}
+
+for idx in ipairs,InfoCache_Default,0 do
+	OffsetCache[idx] = TextSize * (idx - 1)
+end
 
 function DR_ZoneData:Init()
 	self.InfoCache = setmetatable({},InfoCache_Meta)
@@ -36,9 +43,7 @@ end
 
 function DR_ZoneData:Paint()
 	for idx,info in ipairs,self.InfoCache,0 do
-		local offset = idx - 1
-
-		DrawSimpleText(info,"Deathrun_Derma_ExtraSmall",0,TextSize * offset,ColorGrey)
+		DrawSimpleText(info,"Deathrun_Derma_ExtraSmall",0,OffsetCache[idx],ColorGrey)
 	end
 end
 

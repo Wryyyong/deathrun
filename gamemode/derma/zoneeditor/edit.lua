@@ -36,11 +36,12 @@ function DR_ZoneEditComboBox:OnSelect(_,value)
 	local color = zone.color
 
 	cache[1] = "Zone Name: " .. value
-	cache[2] = "Zone Type: " .. zone.type
-	cache[3] = "Pos1: " .. tostring(zone.pos1)
-	cache[4] = "Pos2: " .. tostring(zone.pos2)
-	cache[5] = "Dir: " .. tostring(zone.dir)
-	cache[6] = "Color: " .. color.r .. " " .. color.g .. " " .. color.b .. " " .. color.a
+	cache[2] = "Enabled: " .. tostring(zone.enabled)
+	cache[3] = "Zone Type: " .. zone.type
+	cache[4] = "Pos1: " .. tostring(zone.pos1)
+	cache[5] = "Pos2: " .. tostring(zone.pos2)
+	cache[6] = "Dir: " .. tostring(zone.dir)
+	cache[7] = "Color: " .. color.r .. " " .. color.g .. " " .. color.b .. " " .. color.a
 
 	self:UpdatePosWangs(1)
 	self:UpdatePosWangs(2)
