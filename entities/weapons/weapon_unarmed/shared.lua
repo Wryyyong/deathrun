@@ -1,6 +1,7 @@
 SWEP.Base = "weapon_base"
 SWEP.Slot = 6
 SWEP.SlotPos = 0
+SWEP.WorldModel = ""
 
 function SWEP:Initialize()
 	self:SetHoldType("normal")
