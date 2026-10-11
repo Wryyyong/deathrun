@@ -69,8 +69,6 @@ local function SetupOutputHandler()
 		for _,output in ipairs,OutputList,0 do
 			ent:Fire("AddOutput",output)
 		end
-
-		ent:RemoveFlags(512) -- 512: Damage Activates
 	end
 
 	ButtonClaimSystem.EntBits = DR.CalcMaxBits(maxId)
@@ -206,7 +204,8 @@ TimerCreate("DeathrunButtonClaimingCheckInactiveButtons",1,0,function()
 	end
 end)
 
-hook.Add("PlayerUse","DeathrunButtonClaimingPlayerUse",function(ply,ent)
+--- @param ply Player
+local function ButtonInteractCheck(ply,ent)
 	local plyTeam = ply:Team()
 
 	if
@@ -242,4 +241,19 @@ hook.Add("PlayerUse","DeathrunButtonClaimingPlayerUse",function(ply,ent)
 	end
 
 	return false
+end
+
+hook.Add("PlayerUse","DeathrunButtonClaimingPlayerUse",ButtonInteractCheck)
+
+hook.Add("EntityTakeDamage","DeathrunButtonClaimingBlockDamageActivation",function(target,dmgInfo)
+	local attacker = dmgInfo:GetAttacker()
+
+	if
+		not attacker:IsPlayer()
+	or	target:GetClass() ~= "func_button"
+	then return end
+
+	local check = ButtonInteractCheck(attacker,target)
+
+	return (check ~= nil and not check) or nil
 end)
